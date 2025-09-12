@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Koordinator Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Panel Koordinator</h1>
+      <button id="logoutBtn" class="logout-button">Logout</button>
+    </div>
+
+    <form id="tripForm">
+      <label for="driverSelect">Pilih Sopir</label>
+      <select id="driverSelect" required>
+        <option value="">Memuat daftar sopir...</option>
+      </select>
+
+      <label for="nopol">No. Polisi</label>
+      <input id="nopol" type="text" required>
+
+      <label for="asal">Asal</label>
+      <input id="asal" type="text" required>
+
+      <label for="tujuan">Tujuan</label>
+      <input id="tujuan" type="text" required>
+
+      <label for="muatan">Muatan</label>
+      <input id="muatan" type="text" required>
+
+      <label for="tanggal">Tanggal Keberangkatan</label>
+      <input id="tanggal" type="date" required>
+
+      <button type="submit">Kirim Data Perjalanan</button>
+    </form>
+    <p id="statusMsg" style="color:green; margin-top:10px;"></p>
+
+    <h2>Status Perjalanan Saya</h2>
+    <ul id="tripList"><li>Memuat data...</li></ul>
+  </div>
+
+  <script type="module">
+    import { auth, onAuthStateChanged, signOut, db, ref, get, push, set, onValue, query, orderByChild, equalTo } from './firebase.js';
+    import { badge, fmtDate, el } from './utils.js';
+
+    const tripForm = document.getElementById('tripForm');
+    const tripList = document.getElementById('tripList');
+    const driverSelect = document.getElementById('driverSelect');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = 'index.html';
+      currentUser = user;
+
+      const snap = await get(ref(db, 'users/' + currentUser.uid));
+      if (!snap.exists() || snap.val().role !== 'koordinator') {
+        alert('Akses ditolak. Hanya untuk koordinator.');
+        return window.location.href = 'index.html';
+      }
+
+      loadMyTrips();
+      loadDrivers(); 
+    });
+
+    // Fungsi untuk memuat semua user dengan role 'driver' ke dropdown
+    async function loadDrivers() {
+        try {
+            console.log("Memuat daftar driver...");
+            const usersRef = ref(db, 'users');
+            const q = query(usersRef, orderByChild('role'), equalTo('driver'));
+            const snapshot = await get(q);
+
+            console.log("Snapshot driver:", snapshot.val());
+            
+            driverSelect.innerHTML = '<option value="">-- Pilih Sopir --</option>';
+            
+            if (snapshot.exists()) {
+                let driversFound = false;
+                snapshot.forEach(child => {
+                    console.log("Driver ditemukan:", child.key, child.val());
+                    const driver = child.val();
+                    if (driver.role === 'driver') {
+                        driversFound = true;
+                        const option = el('option', driver.name, { value: child.key });
+                        driverSelect.appendChild(option);
+                    }
+                });
+                
+                if (!driversFound) {
+                    console.log("Tidak ada driver ditemukan");
+                    driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
+                }
+            } else {
+                console.log("Tidak ada driver ditemukan di database");
+                driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
+            }
+        } catch (error) {
+            console.error("Gagal memuat daftar sopir:", error);
+            driverSelect.innerHTML = '<option value="">Error memuat driver</option>';
+            alert('Gagal memuat daftar driver: ' + error.message);
+        }
+    }
+
+    tripForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = '';
+      if (!currentUser) return alert('Anda belum login.');
+
+      const selectedDriverOption = driverSelect.options[driverSelect.selectedIndex];
+      const driverId = selectedDriverOption.value;
+      const driverName = selectedDriverOption.text;
+
+      if (!driverId) {
+        alert('Silakan pilih sopir terlebih dahulu.');
+        return;
+      }
+
+      const data = {
+        koorId: currentUser.uid,
+        driverId: driverId,
+        driverName: driverName,
+        nopol: document.getElementById('nopol').value,
+        asal: document.getElementById('asal').value,
+        tujuan: document.getElementById('tujuan').value,
+        muatan: document.getElementById('muatan').value,
+        tanggal: document.getElementById('tanggal').value,
+        status: 'submitted',
+        createdAt: Date.now()
+      };
+
+      try {
+        await set(push(ref(db, 'trips')), data);
+        tripForm.reset();
+        statusMsg.textContent = '✔️ Data perjalanan berhasil dikirim dan sedang menunggu persetujuan admin.';
+      } catch(err) {
+        statusMsg.style.color = 'red';
+        statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
+      }
+    });
+
+    function loadMyTrips() {
+      const tripsRef = ref(db, 'trips');
+      const q = query(tripsRef, orderByChild('koorId'), equalTo(currentUser.uid));
+
+      onValue(q, (snapshot) => {
+        tripList.innerHTML = '';
+        let hasTrips = false;
+
+        snapshot.forEach(childSnapshot => {
+          const tripData = childSnapshot.val();
+          hasTrips = true;
+
+          const li = el('li');
+          const statusBadge = badge(tripData.status);
+          
+          let content = `
+            <strong>${tripData.asal} → ${tripData.tujuan}</strong> 
+            (${fmtDate(tripData.tanggal)})<br>
+            Sopir: ${tripData.driverName || '-'} | Status: 
+          `;
+          li.innerHTML = content;
+          li.appendChild(statusBadge);
+
+          if (tripData.status === 'approved') {
+            const sjButton = el('button', 'Surat Jalan');
+            const invButton = el('button', 'Invoice');
+            sjButton.onclick = () => window.open('surat-jalan.html?id=' + childSnapshot.key);
+            invButton.onclick = () => window.open('invoice.html?id=' + childSnapshot.key);
+            li.append(sjButton, invButton);
+          }
+          tripList.appendChild(li);
+        });
+
+        if (!hasTrips) {
+          tripList.innerHTML = '<li>Belum ada data perjalanan yang Anda buat.</li>';
+        }
+      });
+    }
+
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    });
+
+  </script>
+</body>
+</html>

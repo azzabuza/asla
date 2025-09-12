@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Surat Jalan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="print-container" id="content">Memuat...</div>
+
+  <script type="module">
+    import { db, ref, get } from './firebase.js';
+    import { qparam, fmtDate } from './utils.js'; // ADDED: Import helpers
+
+    const id = qparam('id');
+    const content = document.getElementById('content');
+
+    (async () => {
+      if (!id) return content.textContent = 'Trip ID tidak ditemukan di URL.';
+      
+      const snap = await get(ref(db, 'trips/' + id));
+      if (!snap.exists()) return content.textContent = 'Data perjalanan tidak ditemukan.';
+      
+      const d = snap.val();
+      content.innerHTML = `
+        <h1>PT SLA Trucking</h1>
+        <h2>SURAT JALAN</h2>
+        <p><strong>Nama Sopir:</strong> ${d.driverName}</p>
+        <p><strong>No. Polisi:</strong> ${d.nopol}</p>
+        <p><strong>Asal:</strong> ${d.asal}</p>
+        <p><strong>Tujuan:</strong> ${d.tujuan}</p>
+        <p><strong>Muatan:</strong> ${d.muatan}</p>
+        <p><strong>Tanggal:</strong> ${fmtDate(d.tanggal)}</p> 
+      `;
+      // window.print(); // Uncomment to enable auto-print
+    })();
+  </script>
+</body>
+</html>

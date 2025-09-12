@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+        <h1>Panel Admin</h1>
+        <button id="logoutBtn" class="logout-button">Logout</button>
+    </div>
+
+    <h2>Monitoring Perjalanan</h2>
+    <ul id="tripList"><li>Memuat data...</li></ul>
+
+    <h2>Daftar Semua User</h2>
+
+    <div style="margin-bottom:10px;">
+      <label>Filter Role: </label>
+      <select id="filterRole">
+        <option value="all">Semua</option>
+        <option value="admin">Admin</option>
+        <option value="koordinator">Koordinator</option>
+        <option value="driver">Driver</option>
+      </select>
+
+      <label style="margin-left:20px;">Cari Nama: </label>
+      <input type="text" id="searchName" placeholder="Ketik nama user..." />
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>UID</th>
+          <th>Nama</th>
+          <th>Role</th>
+          <th>Last Login</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="userList">
+        <tr><td colspan="5">Memuat data...</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Kinerja Role</h2>
+    <div id="roleStats">Memuat statistik...</div>
+  </div>
+
+  <script type="module">
+    import { 
+      auth, 
+      onAuthStateChanged, 
+      signOut,
+      db, 
+      ref, 
+      onValue, 
+      update, 
+      get, 
+      set 
+    } from './firebase.js';
+    import { badge, fmtDate, el } from './utils.js';
+
+    const tripList = document.getElementById('tripList');
+    const userList = document.getElementById('userList');
+    const roleStats = document.getElementById('roleStats');
+    const filterRole = document.getElementById('filterRole');
+    const searchName = document.getElementById('searchName');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    let currentUser = null;
+    let allUsers = {}; // Menyimpan semua user data untuk filtering
+    
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = 'index.html';
+      currentUser = user;
+
+      try {
+        const userRef = ref(db, 'users/' + user.uid);
+        const snap = await get(userRef);
+        let userData = snap.val();
+
+        if (snap.exists() && userData.role !== 'admin') {
+          alert('Akses ditolak. Hanya untuk admin.');
+          return window.location.href = 'index.html';
+        }
+        
+        await update(userRef, { lastLogin: Date.now(), online: true });
+
+        loadAllTrips();
+        loadAllUsers();
+        loadRoleStats();
+      } catch (e) {
+        console.error("❌ Error cek admin:", e);
+      }
+    });
+
+    function loadAllTrips() {
+      const tripsRef = ref(db, 'trips');
+      
+      onValue(tripsRef, (snapshot) => {
+        tripList.innerHTML = '';
+        if (!snapshot.exists()) {
+          tripList.innerHTML = '<li>Belum ada data perjalanan.</li>';
+          return;
+        }
+        
+        snapshot.forEach(child => {
+          const tripId = child.key;
+          const trip = child.val();
+
+          const li = el('li');
+          li.innerHTML = `
+            <strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br>
+            Sopir: ${trip.driverName || 'Belum Ditugaskan'} | Nopol: ${trip.nopol}<br>
+            Status: 
+          `;
+          li.appendChild(badge(trip.status));
+
+          if (trip.status === 'submitted') {
+            const approveBtn = el('button', 'Setujui');
+            const rejectBtn = el('button', 'Tolak', { class: 'danger' });
+
+            approveBtn.addEventListener('click', () => {
+              update(ref(db, 'trips/' + tripId), { 
+                status: 'approved', 
+                approvedAt: Date.now(), 
+                approvedBy: currentUser.uid 
+              });
+            });
+            
+            rejectBtn.addEventListener('click', () => {
+              update(ref(db, 'trips/' + tripId), { 
+                status: 'rejected', 
+                rejectedAt: Date.now(), 
+                rejectedBy: currentUser.uid 
+              });
+            });
+            
+            li.appendChild(approveBtn);
+            li.appendChild(rejectBtn);
+          }
+          tripList.appendChild(li);
+        });
+      }, (error) => {
+        console.error("❌ Error load trips:", error);
+        tripList.innerHTML = '<li>Error memuat data perjalanan.</li>';
+      });
+    }
+
+    function loadAllUsers() {
+      const usersRef = ref(db, 'users');
+      
+      onValue(usersRef, (snapshot) => {
+        if (snapshot.exists()) {
+          allUsers = snapshot.val(); // Simpan semua user data
+          renderUsers();
+        } else {
+          userList.innerHTML = '<tr><td colspan="5">Belum ada user.</td></tr>';
+        }
+      }, (error) => {
+        console.error("❌ Error load users:", error);
+        userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
+      });
+
+      // Event listeners untuk filtering
+      filterRole.addEventListener('change', renderUsers);
+      searchName.addEventListener('input', renderUsers);
+    }
+
+    function renderUsers() {
+      userList.innerHTML = '';
+      
+      if (!allUsers || Object.keys(allUsers).length === 0) {
+        userList.innerHTML = '<tr><td colspan="5">Belum ada user.</td></tr>';
+        return;
+      }
+
+      const selectedRole = filterRole.value;
+      const keyword = searchName.value.toLowerCase();
+      let found = false;
+
+      Object.entries(allUsers).forEach(([uid, userData]) => {
+        const u = userData || {};
+        
+        // Filter berdasarkan role
+        if (selectedRole !== 'all' && u.role !== selectedRole) {
+          return;
+        }
+        
+        // Filter berdasarkan nama
+        if (keyword && !(u.name || '').toLowerCase().includes(keyword)) {
+          return;
+        }
+        
+        found = true;
+
+        const tr = el('tr');
+        tr.innerHTML = `
+            <td>${uid}</td>
+            <td>${u.name || '-'}</td>
+            <td>${u.role || '-'}</td>
+            <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+            <td style="color:${u.online ? 'green' : 'gray'}">${u.online ? '🟢 Online' : '⚪ Offline'}</td>
+        `;
+        userList.appendChild(tr);
+      });
+
+      if (!found) {
+        userList.innerHTML = '<tr><td colspan="5">Tidak ada user ditemukan.</td></tr>';
+      }
+    }
+
+    function loadRoleStats() {
+      onValue(ref(db, 'trips'), (snapshot) => {
+        if (!snapshot.exists()) {
+          roleStats.textContent = "Belum ada data perjalanan.";
+          return;
+        }
+        let stats = { koordinator: {}, driver: {}, admin: 0 };
+        snapshot.forEach(child => {
+          const t = child.val();
+          if (t.koorId) stats.koordinator[t.koorId] = (stats.koordinator[t.koorId] || 0) + 1;
+          if (t.driverId) stats.driver[t.driverId] = (stats.driver[t.driverId] || 0) + 1;
+          if (t.approvedBy) stats.admin++;
+        });
+
+        roleStats.innerHTML = `
+          <p>📊 Total kontribusi (berdasarkan jumlah aksi):</p>
+          <ul>
+            <li>Admin (approve perjalanan): ${stats.admin}</li>
+            <li>Koordinator (buat perjalanan): ${Object.keys(stats.koordinator).length} user</li>
+            <li>Driver (menjalankan perjalanan): ${Object.keys(stats.driver).length} user</li>
+          </ul>
+        `;
+      });
+    }
+
+    // Fungsi untuk menandai user offline saat tab ditutup
+    const handleBeforeUnload = () => {
+      if (auth.currentUser) {
+        update(ref(db, 'users/' + auth.currentUser.uid), { online: false });
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    logoutBtn.addEventListener('click', () => {
+        handleBeforeUnload(); // Tandai offline sebelum logout
+        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    });
+  </script>
+</body>
+</html>

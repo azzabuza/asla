@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login SLA Trucking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="login-container container">
+    <h2>Login SLA Trucking</h2>
+    <form id="loginForm">
+      <label>Email</label>
+      <input type="email" id="email" required>
+      <label>Password</label>
+      <input type="password" id="password" required>
+      <button type="submit">Login</button>
+    </form>
+    <p id="errorMsg" style="color:red; margin-top:8px;"></p>
+  </div>
+
+  <script type="module">
+    import { auth, signInWithEmailAndPassword, db, ref, get, set } from './firebase.js';
+
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = '';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const user = cred.user;
+
+        const userRef = ref(db, 'users/' + user.uid);
+        let snap = await get(userRef);
+
+        // Jika user baru → set default role = driver
+        if (!snap.exists()) {
+          await set(userRef, {
+            name: email.split('@')[0],
+            role: 'driver'
+          });
+          snap = await get(userRef);
+        }
+
+        const role = snap.val().role;
+        console.log("Login sebagai:", role, "UID:", user.uid);
+
+        if (role === 'admin') {
+          window.location.href = 'admin.html';
+        } else if (role === 'koordinator') {
+          window.location.href = 'koordinator.html';
+        } else if (role === 'driver') {
+          window.location.href = 'driver.html';
+        } else {
+          errorMsg.textContent = 'Role tidak dikenal: ' + role;
+        }
+
+      } catch (err) {
+        console.error('Login error:', err);
+        errorMsg.textContent = 'Login gagal. Periksa kembali email dan password Anda.';
+      }
+    });
+  </script>
+</body>
+</html>
