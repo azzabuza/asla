@@ -1,125 +1,149 @@
-/* General Body and Container Styles */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* === FONT DARI GOOGLE === */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* === VARIABLE CSS === */
+:root {
+    --header-height: 3.5rem;
+
+    /* Warna */
+    --primary-color: #3685FB;
+    --primary-color-dark: #2F73D9;
+    --primary-color-light: #EBF2FC;
+    --title-color: #2c3e50;
+    --text-color: #595959;
+    --text-color-light: #989898;
+    --body-color: #F4F7F6;
+    --container-color: #FFFFFF;
+    --border-color: #E0E0E0;
+
+    /* Status Warna */
+    --success-color: #28a745;
+    --warning-color: #f39c12;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+
+    /* Font & Tipografi */
+    --body-font: 'Poppins', sans-serif;
+    --biggest-font-size: 2.25rem;
+    --h1-font-size: 1.75rem;
+    --h2-font-size: 1.25rem;
+    --h3-font-size: 1rem;
+    --normal-font-size: .938rem;
+    --small-font-size: .813rem;
+    --smaller-font-size: .75rem;
+
+    /* Font Weight */
+    --font-regular: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+
+    /* Shadow */
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+    /* Border Radius */
+    --border-radius: 0.75rem;
+    --border-radius-small: 0.25rem;
+}
+
+/* === BASE STYLES === */
+* {
+    box-sizing: border-box;
+    padding: 0;
     margin: 0;
-    padding: 20px;
-    background-color: #f4f7f6;
-    color: #333;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body,
+button,
+input,
+select {
+    font-family: var(--body-font);
+    font-size: var(--normal-font-size);
+}
+
+body {
+    background-color: var(--body-color);
+    color: var(--text-color);
     line-height: 1.6;
 }
 
+h1, h2, h3 {
+    color: var(--title-color);
+    font-weight: var(--font-semibold);
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* === LAYOUT & CONTAINER === */
 .container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 800px;
-    margin: 20px auto;
-    box-sizing: border-box;
+    background-color: var(--container-color);
+    padding: 2.5rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 850px;
+    margin: 2rem auto;
+    width: 90%;
 }
 
 .login-container {
-    max-width: 400px;
-    margin-top: 100px;
+    max-width: 450px;
+    margin-top: 5rem;
 }
 
-/* NEW: Header Styles */
+/* === HEADER === */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .header h1 {
+    font-size: var(--h1-font-size);
     margin: 0;
-    font-size: 2em;
 }
 
-.logout-button {
-    background-color: #dc3545; /* Red color */
-    padding: 8px 15px;
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-.logout-button:hover {
-    background-color: #c82333;
-}
-
-
-/* Headings */
-h1, h2 {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 25px;
-    font-weight: 600;
-}
-
-h2 {
-    font-size: 1.8em;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 10px;
-    margin-top: 40px;
-    text-align: left; /* Align subheadings left */
-}
-
-/* Form Styles */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-label {
-    font-weight: 500;
-    color: #555;
-    margin-bottom: -5px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-select { /* Added select */
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1em;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease;
-    background-color: #fff; /* Ensure select bg is white */
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="date"]:focus,
-select:focus { /* Added select */
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
+/* === TOMBOL (BUTTONS) === */
 button {
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
-    padding: 12px 20px;
+    padding: 0.8rem 1.5rem;
     border: none;
-    border-radius: 5px;
-    font-size: 1.1em;
+    border-radius: var(--border-radius-small);
+    font-size: var(--normal-font-size);
+    font-weight: var(--font-medium);
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-color-dark);
     transform: translateY(-2px);
+}
+
+.logout-button {
+    background-color: var(--danger-color);
+    padding: 0.6rem 1rem;
 }
 
 button.danger {
@@ -129,62 +153,163 @@ button.danger:hover {
     background-color: #5a6268;
 }
 
-/* List Styles (Trip List) */
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+
+/* === FORMULIR (FORMS) === */
+form {
+    display: grid;
+    gap: 1.25rem;
 }
 
-ul li {
+label {
+    font-weight: var(--font-medium);
+    color: var(--title-color);
+    margin-bottom: -0.5rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    font-size: var(--normal-font-size);
+    background-color: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(54, 133, 251, 0.2);
+}
+
+
+/* === DAFTAR (LISTS) - Trip, Job, User === */
+ul#tripList li,
+ul#jobList li {
     background-color: #fdfdfd;
-    border: 1px solid #e0e0e0;
-    padding: 15px 20px;
-    margin-bottom: 10px;
-    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 0.75rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+ul#tripList li:hover,
+ul#jobList li:hover {
+    transform: translateY(-3px);
 }
 
 ul li strong {
-    color: #34495e;
+    color: var(--title-color);
     font-size: 1.1em;
     flex-basis: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 0.25rem;
+    font-weight: var(--font-semibold);
+}
+
+ul li code {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color-dark);
+    padding: .2rem .5rem;
+    border-radius: var(--border-radius-small);
+    font-size: var(--small-font-size);
 }
 
 ul li button {
-    padding: 8px 15px;
-    font-size: 0.9em;
+    padding: 0.5rem 1rem;
+    font-size: var(--small-font-size);
     margin-left: auto;
-    flex-shrink: 0;
 }
 
-/* Badges for Status */
+/* === BADGES === */
 .badge {
     display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 600;
-    text-transform: uppercase;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px; /* Pill shape */
+    font-size: var(--small-font-size);
+    font-weight: var(--font-semibold);
+    text-transform: capitalize;
     color: white;
 }
 
-.badge.warn { background-color: #f39c12; }
-.badge.success { background-color: #28a745; }
-.badge.danger { background-color: #dc3545; }
-.badge.arrived { background-color: #17a2b8; } /* NEW status color */
+.badge.success { background-color: var(--success-color); }
+.badge.warn { background-color: var(--warning-color); }
+.badge.danger { background-color: var(--danger-color); }
+.badge.arrived { background-color: var(--info-color); }
 
-/* Responsive Adjustments */
+/* === TABEL (TABLES) - Admin Panel === */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+th, td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+
+th {
+    background: #f9fafb;
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    font-size: var(--small-font-size);
+    color: var(--text-color-light);
+}
+
+tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* === KELAS BANTUAN (UTILITY CLASSES) === */
+.text-center { text-align: center; }
+.color-green { color: var(--success-color); }
+.color-red { color: var(--danger-color); }
+.color-blue { color: var(--primary-color); }
+
+/* === DESAIN RESPONSIVE === */
 @media (max-width: 768px) {
-    body { padding: 10px; }
-    .container { padding: 20px; }
-    .header { flex-direction: column; gap: 15px; }
-    h1, .header h1 { font-size: 1.8em; }
-    ul li { flex-direction: column; align-items: flex-start; }
-    ul li button { margin-left: 0; width: 100%; margin-top: 10px; }
+    body { padding: 1rem 0; }
+    .container {
+        width: 100%;
+        margin: 1rem auto;
+        padding: 1.5rem 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    h1, .header h1 { font-size: 1.5em; }
+    h2 { font-size: 1.2em; }
+
+    ul li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ul li button {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }
