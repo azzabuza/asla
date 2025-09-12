@@ -31,6 +31,28 @@
     <h2>Monitoring Perjalanan</h2>
     <ul id="tripList"><li>Memuat data...</li></ul>
 
+    <h2>Tambah User Baru</h2>
+    <form id="addUserForm">
+      <label for="newUserName">Nama</label>
+      <input type="text" id="newUserName" required>
+
+      <label for="newUserEmail">Email</label>
+      <input type="email" id="newUserEmail" required>
+
+      <label for="newUserPassword">Password</label>
+      <input type="password" id="newUserPassword" required>
+
+      <label for="newUserRole">Role</label>
+      <select id="newUserRole" required>
+        <option value="admin">Admin</option>
+        <option value="koordinator">Koordinator</option>
+        <option value="driver">Driver</option>
+      </select>
+
+      <button type="submit">Tambah User</button>
+    </form>
+    <p id="addUserStatus" style="margin-top:10px;"></p>
+
     <h2>Daftar Semua User</h2>
 
     <div style="margin-bottom:10px;">
@@ -70,6 +92,7 @@
       auth, 
       onAuthStateChanged, 
       signOut,
+      createUserWithEmailAndPassword,
       db, 
       ref, 
       onValue, 
@@ -85,6 +108,8 @@
     const filterRole = document.getElementById('filterRole');
     const searchName = document.getElementById('searchName');
     const logoutBtn = document.getElementById('logoutBtn');
+    const addUserForm = document.getElementById('addUserForm');
+    const addUserStatus = document.getElementById('addUserStatus');
 
     let currentUser = null;
     let allUsers = {}; // Menyimpan semua user data untuk filtering
@@ -111,6 +136,36 @@
       } catch (e) {
         console.error("❌ Error cek admin:", e);
       }
+    });
+
+    addUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        addUserStatus.textContent = '';
+        addUserStatus.style.color = 'green';
+
+        const name = document.getElementById('newUserName').value;
+        const email = document.getElementById('newUserEmail').value;
+        const password = document.getElementById('newUserPassword').value;
+        const role = document.getElementById('newUserRole').value;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = userCredential.user;
+
+            await set(ref(db, 'users/' + newUser.uid), {
+                name: name,
+                role: role,
+                online: false // Default offline
+            });
+            
+            addUserStatus.textContent = `✔️ User ${name} (${role}) berhasil ditambahkan.`;
+            addUserForm.reset();
+
+        } catch (error) {
+            console.error("❌ Gagal menambah user:", error);
+            addUserStatus.style.color = 'red';
+            addUserStatus.textContent = 'Gagal menambah user: ' + error.message;
+        }
     });
 
     function loadAllTrips() {
