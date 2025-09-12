@@ -97,7 +97,8 @@
       onValue, 
       update, 
       get, 
-      set 
+      set,
+      onDisconnect // Pastikan onDisconnect diimpor dari firebase.js
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
@@ -111,23 +112,26 @@
     const addUserStatus = document.getElementById('addUserStatus');
 
     let currentUser = null;
-    let allUsers = {}; // Menyimpan semua user data untuk filtering
+    let allUsers = {};
     
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
+      const userRef = ref(db, 'users/' + user.uid);
 
       try {
-        const userRef = ref(db, 'users/' + user.uid);
         const snap = await get(userRef);
-        let userData = snap.val();
-
-        if (snap.exists() && userData.role !== 'admin') {
+        if (!snap.exists() || snap.val().role !== 'admin') {
           alert('Akses ditolak. Hanya untuk admin.');
           return window.location.href = 'index.html';
         }
         
+        // Atur status online dan last login
         await update(userRef, { lastLogin: Date.now(), online: true });
+
+        // Gunakan onDisconnect untuk mengatur status offline saat koneksi terputus
+        const userStatusRef = ref(db, 'users/' + user.uid + '/online');
+        onDisconnect(userStatusRef).set(false);
 
         loadAllTrips();
         loadAllUsers();
@@ -148,13 +152,16 @@
         const role = document.getElementById('newUserRole').value;
 
         try {
+            // NOTE: createUserWithEmailAndPassword menggunakan instance auth utama,
+            // jadi ini tidak akan me-login-kan admin sebagai user baru.
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const newUser = userCredential.user;
 
             await set(ref(db, 'users/' + newUser.uid), {
                 name: name,
                 role: role,
-                online: false // Default offline
+                online: false, // Default offline
+                lastLogin: null
             });
             
             addUserStatus.textContent = `✔️ User ${name} (${role}) berhasil ditambahkan.`;
@@ -169,48 +176,27 @@
 
     function loadAllTrips() {
       const tripsRef = ref(db, 'trips');
-      
       onValue(tripsRef, (snapshot) => {
         tripList.innerHTML = '';
         if (!snapshot.exists()) {
           tripList.innerHTML = '<li>Belum ada data perjalanan.</li>';
           return;
         }
-        
         snapshot.forEach(child => {
           const tripId = child.key;
           const trip = child.val();
-
           const li = el('li');
           li.innerHTML = `
             <strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br>
             Sopir: ${trip.driverName || 'Belum Ditugaskan'} | Nopol: ${trip.nopol}<br>
-            Status: 
-          `;
+            Status: `;
           li.appendChild(badge(trip.status));
-
           if (trip.status === 'submitted') {
             const approveBtn = el('button', 'Setujui');
             const rejectBtn = el('button', 'Tolak', { class: 'danger' });
-
-            approveBtn.addEventListener('click', () => {
-              update(ref(db, 'trips/' + tripId), { 
-                status: 'approved', 
-                approvedAt: Date.now(), 
-                approvedBy: currentUser.uid 
-              });
-            });
-            
-            rejectBtn.addEventListener('click', () => {
-              update(ref(db, 'trips/' + tripId), { 
-                status: 'rejected', 
-                rejectedAt: Date.now(), 
-                rejectedBy: currentUser.uid 
-              });
-            });
-            
-            li.appendChild(approveBtn);
-            li.appendChild(rejectBtn);
+            approveBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid }));
+            rejectBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid }));
+            li.append(approveBtn, rejectBtn);
           }
           tripList.appendChild(li);
         });
@@ -222,62 +208,36 @@
 
     function loadAllUsers() {
       const usersRef = ref(db, 'users');
-      
       onValue(usersRef, (snapshot) => {
-        if (snapshot.exists()) {
-          allUsers = snapshot.val(); // Simpan semua user data
-          renderUsers();
-        } else {
-          userList.innerHTML = '<tr><td colspan="5">Belum ada user.</td></tr>';
-        }
+        allUsers = snapshot.val() || {};
+        renderUsers();
       }, (error) => {
         console.error("❌ Error load users:", error);
         userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
       });
-
-      // Event listeners untuk filtering
       filterRole.addEventListener('change', renderUsers);
       searchName.addEventListener('input', renderUsers);
     }
 
     function renderUsers() {
       userList.innerHTML = '';
-      
-      if (!allUsers || Object.keys(allUsers).length === 0) {
-        userList.innerHTML = '<tr><td colspan="5">Belum ada user.</td></tr>';
-        return;
-      }
-
       const selectedRole = filterRole.value;
       const keyword = searchName.value.toLowerCase();
       let found = false;
-
-      Object.entries(allUsers).forEach(([uid, userData]) => {
-        const u = userData || {};
-        
-        // Filter berdasarkan role
-        if (selectedRole !== 'all' && u.role !== selectedRole) {
-          return;
-        }
-        
-        // Filter berdasarkan nama
-        if (keyword && !(u.name || '').toLowerCase().includes(keyword)) {
-          return;
-        }
-        
-        found = true;
-
-        const tr = el('tr');
-        tr.innerHTML = `
+      Object.entries(allUsers).forEach(([uid, u]) => {
+        if ((selectedRole === 'all' || u.role === selectedRole) &&
+            (!keyword || (u.name || '').toLowerCase().includes(keyword))) {
+          found = true;
+          const tr = el('tr');
+          tr.innerHTML = `
             <td>${uid}</td>
             <td>${u.name || '-'}</td>
             <td>${u.role || '-'}</td>
             <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
-            <td style="color:${u.online ? 'green' : 'gray'}">${u.online ? '🟢 Online' : '⚪ Offline'}</td>
-        `;
-        userList.appendChild(tr);
+            <td style="color:${u.online ? 'green' : 'gray'}">${u.online ? '🟢 Online' : '⚪ Offline'}</td>`;
+          userList.appendChild(tr);
+        }
       });
-
       if (!found) {
         userList.innerHTML = '<tr><td colspan="5">Tidak ada user ditemukan.</td></tr>';
       }
@@ -296,28 +256,21 @@
           if (t.driverId) stats.driver[t.driverId] = (stats.driver[t.driverId] || 0) + 1;
           if (t.approvedBy) stats.admin++;
         });
-
         roleStats.innerHTML = `
           <p>📊 Total kontribusi (berdasarkan jumlah aksi):</p>
           <ul>
             <li>Admin (approve perjalanan): ${stats.admin}</li>
             <li>Koordinator (buat perjalanan): ${Object.keys(stats.koordinator).length} user</li>
             <li>Driver (menjalankan perjalanan): ${Object.keys(stats.driver).length} user</li>
-          </ul>
-        `;
+          </ul>`;
       });
     }
-
-    // Fungsi untuk menandai user offline saat tab ditutup
-    const handleBeforeUnload = () => {
-      if (auth.currentUser) {
-        update(ref(db, 'users/' + auth.currentUser.uid), { online: false });
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    logoutBtn.addEventListener('click', () => {
-        handleBeforeUnload(); // Tandai offline sebelum logout
+    
+    logoutBtn.addEventListener('click', async () => {
+        if (currentUser) {
+            // Atur status offline secara manual sebelum logout
+            await update(ref(db, 'users/' + currentUser.uid), { online: false });
+        }
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
     });
   </script>
