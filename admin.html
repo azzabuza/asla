@@ -15,9 +15,23 @@
       padding: 8px 12px;
       border: 1px solid #ddd;
       text-align: left;
+      vertical-align: middle; /* Menengahkan konten secara vertikal */
     }
     th {
       background: #f4f4f4;
+    }
+    /* Style tambahan untuk tombol hapus agar lebih kecil dan sesuai */
+    .delete-btn {
+        padding: 5px 10px;
+        font-size: 0.8em;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .delete-btn:hover {
+        background-color: #c82333;
     }
   </style>
 </head>
@@ -75,10 +89,11 @@
           <th>Role</th>
           <th>Last Login</th>
           <th>Status</th>
+          <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="userList">
-        <tr><td colspan="5">Memuat data...</td></tr>
+        <tr><td colspan="6">Memuat data...</td></tr>
       </tbody>
     </table>
 
@@ -87,18 +102,18 @@
   </div>
 
   <script type="module">
-    import { 
-      auth, 
-      onAuthStateChanged, 
+    import {
+      auth,
+      onAuthStateChanged,
       signOut,
-      db, 
-      ref, 
-      onValue, 
-      update, 
-      get, 
+      db,
+      ref,
+      onValue,
+      update,
+      get,
       set,
+      remove, // <-- DIIMPOR FUNGSI REMOVE
       onDisconnect,
-      // Impor tambahan untuk solusi admin
       firebaseConfig,
       initializeApp,
       deleteApp,
@@ -118,7 +133,7 @@
 
     let currentUser = null;
     let allUsers = {};
-    
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
@@ -130,7 +145,7 @@
           alert('Akses ditolak. Hanya untuk admin.');
           return window.location.href = 'index.html';
         }
-        
+
         await update(userRef, { lastLogin: Date.now(), online: true });
         const userStatusRef = ref(db, 'users/' + user.uid + '/online');
         onDisconnect(userStatusRef).set(false);
@@ -143,9 +158,6 @@
       }
     });
 
-    // ==========================================================
-    // BAGIAN YANG DIPERBARUI UNTUK MENAMBAH USER DENGAN AMAN
-    // ==========================================================
     addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         addUserStatus.textContent = 'Menambahkan user...';
@@ -160,15 +172,11 @@
         let tempApp;
 
         try {
-            // 1. Inisialisasi aplikasi Firebase sementara
             tempApp = initializeApp(firebaseConfig, tempAppName);
             const tempAuth = getAuth(tempApp);
-
-            // 2. Buat user menggunakan koneksi sementara (tidak akan logout admin)
             const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
             const newUser = userCredential.user;
 
-            // 3. Simpan data user ke database menggunakan koneksi utama
             await set(ref(db, 'users/' + newUser.uid), {
                 name: name,
                 role: role,
@@ -191,7 +199,6 @@
                 addUserStatus.textContent = 'Gagal menambah user: ' + error.message;
             }
         } finally {
-            // 4. Hapus aplikasi sementara untuk membersihkan memori
             if (tempApp) {
                 await deleteApp(tempApp);
             }
@@ -237,12 +244,15 @@
         renderUsers();
       }, (error) => {
         console.error("❌ Error load users:", error);
-        userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
+        userList.innerHTML = '<tr><td colspan="6">Error memuat data user.</td></tr>';
       });
       filterRole.addEventListener('change', renderUsers);
       searchName.addEventListener('input', renderUsers);
     }
 
+    // ==========================================================
+    // BAGIAN YANG DIPERBARUI UNTUK RENDER USER DAN HAPUS
+    // ==========================================================
     function renderUsers() {
       userList.innerHTML = '';
       const selectedRole = filterRole.value;
@@ -259,11 +269,36 @@
             <td>${u.role || '-'}</td>
             <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
             <td style="color:${u.online ? 'green' : 'gray'}">${u.online ? '🟢 Online' : '⚪ Offline'}</td>`;
+
+          // Buat cell untuk tombol Aksi
+          const actionCell = el('td');
+
+          // Tambahkan tombol hapus HANYA JIKA role bukan 'admin'
+          if (u.role !== 'admin') {
+            const deleteBtn = el('button', 'Hapus', { class: 'delete-btn' });
+            deleteBtn.onclick = async () => {
+              if (confirm(`Apakah Anda yakin ingin menghapus user: ${u.name}?`)) {
+                try {
+                  // Hapus data user dari Realtime Database
+                  await remove(ref(db, 'users/' + uid));
+                  alert('User berhasil dihapus.');
+                  // Note: Fungsi auth.deleteUser() memerlukan hak akses admin yang lebih tinggi
+                  // dan biasanya dijalankan dari backend, bukan client-side.
+                  // Kode ini hanya menghapus data dari database.
+                } catch (error) {
+                  alert('Gagal menghapus user: ' + error.message);
+                  console.error("Error deleting user:", error);
+                }
+              }
+            };
+            actionCell.appendChild(deleteBtn);
+          }
+          tr.appendChild(actionCell);
           userList.appendChild(tr);
         }
       });
       if (!found) {
-        userList.innerHTML = '<tr><td colspan="5">Tidak ada user ditemukan.</td></tr>';
+        userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
       }
     }
 
@@ -289,7 +324,7 @@
           </ul>`;
       });
     }
-    
+
     logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
             await update(ref(db, 'users/' + currentUser.uid), { online: false });
