@@ -19,6 +19,7 @@ import {
   orderByChild,
   equalTo,
   serverTimestamp,
+  onDisconnect,
 } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-database.js";
 
 const firebaseConfig = {
@@ -55,4 +56,5 @@ export {
   orderByChild,
   equalTo,
   serverTimestamp,
+  onDisconnect,
 };
