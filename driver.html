@@ -45,125 +45,125 @@
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo } from './firebase.js';
-    import { fmtDate, badge, el } from './utils.js';
+import { fmtDate, badge, el } from './utils.js';
 
-    const jobList = document.getElementById('jobList');
-    const tripIdInput = document.getElementById('tripId');
-    const arriveForm = document.getElementById('arriveForm');
-    const statusMsg = document.getElementById('statusMsg');
-    const logoutBtn = document.getElementById('logoutBtn');
+const jobList = document.getElementById('jobList');
+const tripIdInput = document.getElementById('tripId');
+const arriveForm = document.getElementById('arriveForm');
+const statusMsg = document.getElementById('statusMsg');
+const logoutBtn = document.getElementById('logoutBtn');
 
-    let currentUser = null;
+let currentUser = null;
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = 'index.html';
-      currentUser = user;
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = 'index.html';
+  currentUser = user;
 
-      const snap = await get(ref(db, 'users/' + currentUser.uid));
-      if (!snap.exists() || snap.val().role !== 'driver') {
-        alert('Akses ditolak. Hanya untuk driver.');
-        return window.location.href = 'index.html';
-      }
+  const snap = await get(ref(db, 'users/' + currentUser.uid));
+  if (!snap.exists() || snap.val().role !== 'driver') {
+    alert('Akses ditolak. Hanya untuk driver.');
+    return window.location.href = 'index.html';
+  }
 
-      loadDailyJobs();
-      startScanner();
+  loadDailyJobs();
+  startScanner();
+});
+
+function loadDailyJobs() {
+  const tripsRef = ref(db, 'trips');
+  // FIXED: Query yang benar untuk mengambil job berdasarkan driverId
+  const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
+
+  onValue(q, (snapshot) => {
+    jobList.innerHTML = '';
+    let hasJobs = false;
+
+    snapshot.forEach(child => {
+      const job = child.val();
+      // Filter tambahan untuk hanya menampilkan yang sudah disetujui atau sedang berjalan
+      if (job.status !== 'approved' && job.status !== 'arrived') return;
+
+      hasJobs = true;
+      const li = el('li');
+      li.innerHTML = `
+        <strong>${job.asal} → ${job.tujuan}</strong> (${fmtDate(job.tanggal)})<br>
+        Muatan: ${job.muatan}<br>
+        Nopol: ${job.nopol}<br>
+        Kode Resi: <code>${child.key}</code><br>
+        Status: 
+      `;
+      li.appendChild(badge(job.status));
+      jobList.appendChild(li);
     });
 
-    function loadDailyJobs() {
-      const tripsRef = ref(db, 'trips');
-      // FIXED: Query yang benar untuk mengambil job berdasarkan driverId
-      const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
+    if (!hasJobs) {
+      jobList.innerHTML = '<li>Tidak ada daily job untuk Anda hari ini.</li>';
+    }
+  });
+}
 
-      onValue(q, (snapshot) => {
-        jobList.innerHTML = '';
-        let hasJobs = false;
+arriveForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const tripId = tripIdInput.value.trim();
+  if (!tripId) return alert('Masukkan kode resi perjalanan.');
 
-        snapshot.forEach(child => {
-          const job = child.val();
-          // Filter tambahan untuk hanya menampilkan yang sudah disetujui atau sedang berjalan
-          if (job.status !== 'approved' && job.status !== 'arrived') return;
+  try {
+    const tripRef = ref(db, 'trips/' + tripId);
+    const tripSnap = await get(tripRef);
 
-          hasJobs = true;
-          const li = el('li');
-          li.innerHTML = `
-            <strong>${job.asal} → ${job.tujuan}</strong> (${fmtDate(job.tanggal)})<br>
-            Muatan: ${job.muatan}<br>
-            Nopol: ${job.nopol}<br>
-            Kode Resi: <code>${child.key}</code><br>
-            Status: 
-          `;
-          li.appendChild(badge(job.status));
-          jobList.appendChild(li);
-        });
-
-        if (!hasJobs) {
-          jobList.innerHTML = '<li>Tidak ada daily job untuk Anda hari ini.</li>';
-        }
-      });
+    if (!tripSnap.exists()) {
+      statusMsg.style.color = 'red';
+      statusMsg.textContent = '❌ Perjalanan dengan resi tersebut tidak ditemukan.';
+      return;
     }
 
-    arriveForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const tripId = tripIdInput.value.trim();
-      if (!tripId) return alert('Masukkan kode resi perjalanan.');
-
-      try {
-        const tripRef = ref(db, 'trips/' + tripId);
-        const tripSnap = await get(tripRef);
-
-        if (!tripSnap.exists()) {
-          statusMsg.style.color = 'red';
-          statusMsg.textContent = '❌ Perjalanan dengan resi tersebut tidak ditemukan.';
-          return;
-        }
-
-        // Pastikan driver yang konfirmasi adalah driver yang ditugaskan
-        if (tripSnap.val().driverId !== currentUser.uid) {
-            statusMsg.style.color = 'red';
-            statusMsg.textContent = '❌ Anda tidak ditugaskan untuk perjalanan ini.';
-            return;
-        }
-
-        await update(tripRef, {
-          status: 'arrived',
-          arrivedAt: Date.now(),
-        });
-
-        statusMsg.style.color = 'green';
-        statusMsg.textContent = "✔️ Perjalanan dengan resi " + tripId + " berhasil dikonfirmasi sampai tujuan.";
-        arriveForm.reset();
-        
-      } catch (err) {
+    // Pastikan driver yang konfirmasi adalah driver yang ditugaskan
+    if (tripSnap.val().driverId !== currentUser.uid) {
         statusMsg.style.color = 'red';
-        statusMsg.textContent = 'Gagal konfirmasi: ' + err.message;
-      }
-    });
-    
-    function startScanner() {
-        let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
-        
-        scanner.addListener('scan', function(content) {
-            tripIdInput.value = content;
-            statusMsg.style.color = 'blue';
-            statusMsg.textContent = '🔍 QR Code terdeteksi: ' + content;
-        });
-
-        Instascan.Camera.getCameras().then(function (cameras) {
-            if (cameras.length > 0) {
-                scanner.start(cameras[0]); // Default pakai kamera belakang
-            } else {
-                console.error('No cameras found.');
-                alert('Tidak ada kamera terdeteksi.');
-            }
-        }).catch(function (e) {
-            console.error(e);
-            alert('Error saat mengakses kamera: ' + e.message);
-        });
+        statusMsg.textContent = '❌ Anda tidak ditugaskan untuk perjalanan ini.';
+        return;
     }
 
-    logoutBtn.addEventListener('click', () => {
-        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    await update(tripRef, {
+      status: 'arrived',
+      arrivedAt: Date.now(),
     });
+
+    statusMsg.style.color = 'green';
+    statusMsg.textContent = "✔️ Perjalanan dengan resi " + tripId + " berhasil dikonfirmasi sampai tujuan.";
+    arriveForm.reset();
+    
+  } catch (err) {
+    statusMsg.style.color = 'red';
+    statusMsg.textContent = 'Gagal konfirmasi: ' + err.message;
+  }
+});
+
+function startScanner() {
+    let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
+    
+    scanner.addListener('scan', function(content) {
+        tripIdInput.value = content;
+        statusMsg.style.color = 'blue';
+        statusMsg.textContent = '🔍 QR Code terdeteksi: ' + content;
+    });
+
+    Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+            scanner.start(cameras[0]); // Default pakai kamera belakang
+        } else {
+            console.error('No cameras found.');
+            alert('Tidak ada kamera terdeteksi.');
+        }
+    }).catch(function (e) {
+        console.error(e);
+        alert('Error saat mengakses kamera: ' + e.message);
+    });
+}
+
+logoutBtn.addEventListener('click', () => {
+    signOut(auth).catch(err => console.error("Logout Gagal:", err));
+});
   </script>
 </body>
 </html>
