@@ -43,7 +43,22 @@
   </div>
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, get, push, set, onValue, query, orderByChild, equalTo } from './firebase.js';
+    import { 
+      auth, 
+      onAuthStateChanged, 
+      signOut, 
+      db, 
+      ref, 
+      get, 
+      push, 
+      set, 
+      onValue, 
+      query, 
+      orderByChild, 
+      equalTo,
+      update,       // Tambahkan update
+      onDisconnect  // Tambahkan onDisconnect
+    } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
     const tripForm = document.getElementById('tripForm');
@@ -56,12 +71,20 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
+      const userRef = ref(db, 'users/' + currentUser.uid);
 
-      const snap = await get(ref(db, 'users/' + currentUser.uid));
+      const snap = await get(userRef);
       if (!snap.exists() || snap.val().role !== 'koordinator') {
         alert('Akses ditolak. Hanya untuk koordinator.');
         return window.location.href = 'index.html';
       }
+      
+      // Atur status online dan last login
+      await update(userRef, { lastLogin: Date.now(), online: true });
+
+      // Gunakan onDisconnect untuk mengatur status offline saat koneksi terputus
+      const userStatusRef = ref(db, 'users/' + currentUser.uid + '/online');
+      onDisconnect(userStatusRef).set(false);
 
       loadMyTrips();
       loadDrivers(); 
@@ -70,19 +93,15 @@
     // Fungsi untuk memuat semua user dengan role 'driver' ke dropdown
     async function loadDrivers() {
         try {
-            console.log("Memuat daftar driver...");
             const usersRef = ref(db, 'users');
             const q = query(usersRef, orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
-
-            console.log("Snapshot driver:", snapshot.val());
             
             driverSelect.innerHTML = '<option value="">-- Pilih Sopir --</option>';
             
             if (snapshot.exists()) {
                 let driversFound = false;
                 snapshot.forEach(child => {
-                    console.log("Driver ditemukan:", child.key, child.val());
                     const driver = child.val();
                     if (driver.role === 'driver') {
                         driversFound = true;
@@ -92,17 +111,14 @@
                 });
                 
                 if (!driversFound) {
-                    console.log("Tidak ada driver ditemukan");
                     driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
                 }
             } else {
-                console.log("Tidak ada driver ditemukan di database");
                 driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
             }
         } catch (error) {
             console.error("Gagal memuat daftar sopir:", error);
             driverSelect.innerHTML = '<option value="">Error memuat driver</option>';
-            alert('Gagal memuat daftar driver: ' + error.message);
         }
     }
 
@@ -182,7 +198,11 @@
       });
     }
 
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
+        if (currentUser) {
+            // Atur status offline secara manual sebelum logout
+            await update(ref(db, 'users/' + currentUser.uid), { online: false });
+        }
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
     });
 
