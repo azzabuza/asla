@@ -1,5 +1,5 @@
 // firebase.js — modular wrapper for Firebase v9.6.5 (browser)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-app.js";
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-app.js";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -22,7 +22,8 @@ import {
   onDisconnect,
 } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-database.js";
 
-const firebaseConfig = {
+// DIUBAH: Sekarang menjadi variabel yang diekspor
+export const firebaseConfig = {
   apiKey: "AIzaSyBBzAN3ybPGr_GQEkCCEn2Sh-jB8mejfZI",
   authDomain: "docazza-3ab1a.firebaseapp.com",
   databaseURL:
@@ -57,4 +58,8 @@ export {
   equalTo,
   serverTimestamp,
   onDisconnect,
+  // TAMBAHAN EKSPOR untuk solusi admin
+  initializeApp,
+  deleteApp,
+  getAuth,
 };
