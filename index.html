@@ -20,52 +20,64 @@
   </div>
 
   <script type="module">
-    import { auth, signInWithEmailAndPassword, db, ref, get, set } from './firebase.js';
+  import { auth, signInWithEmailAndPassword, db, ref, get, set } from './firebase.js';
 
-    const loginForm = document.getElementById('loginForm');
-    const errorMsg = document.getElementById('errorMsg');
+  const loginForm = document.getElementById('loginForm');
+  const errorMsg = document.getElementById('errorMsg');
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorMsg.textContent = '';
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.textContent = '';
+    console.log("Login form submitted."); // LOG 1: Cek form submit
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
-      try {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        const user = cred.user;
+    try {
+      console.log("Attempting to sign in with email:", email); // LOG 2: Cek proses sign-in
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const user = cred.user;
+      console.log("Sign-in successful. User UID:", user.uid); // LOG 3: Cek UID setelah berhasil
 
-        const userRef = ref(db, 'users/' + user.uid);
-        let snap = await get(userRef);
+      const userRef = ref(db, 'users/' + user.uid);
+      console.log("Fetching user data from path:", 'users/' + user.uid); // LOG 4: Cek path database
+      let snap = await get(userRef);
 
-        // Jika user baru → set default role = driver
-        if (!snap.exists()) {
-          await set(userRef, {
-            name: email.split('@')[0],
-            role: 'driver'
-          });
-          snap = await get(userRef);
-        }
-
-        const role = snap.val().role;
-        console.log("Login sebagai:", role, "UID:", user.uid);
-
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'koordinator') {
-          window.location.href = 'koordinator.html';
-        } else if (role === 'driver') {
-          window.location.href = 'driver.html';
-        } else {
-          errorMsg.textContent = 'Role tidak dikenal: ' + role;
-        }
-
-      } catch (err) {
-        console.error('Login error:', err);
-        errorMsg.textContent = 'Login gagal. Periksa kembali email dan password Anda.';
+      // Jika user baru → set default role = driver
+      if (!snap.exists()) {
+        console.log("User does not exist in database. Creating new entry with role 'driver'."); // LOG 5: Info jika user baru
+        await set(userRef, {
+          name: email.split('@')[0],
+          role: 'driver'
+        });
+        snap = await get(userRef); // Ambil data lagi setelah dibuat
       }
-    });
-  </script>
+
+      const userData = snap.val();
+      console.log("User data from database:", userData); // LOG 6: Tampilkan data user
+
+      const role = userData ? userData.role : null;
+      console.log("Login sebagai:", role, "UID:", user.uid); // LOG 7: Tampilkan role
+
+      if (role === 'admin') {
+        console.log("Redirecting to admin.html");
+        window.location.href = 'admin.html';
+      } else if (role === 'koordinator') {
+        console.log("Redirecting to koordinator.html");
+        window.location.href = 'koordinator.html';
+      } else if (role === 'driver') {
+        console.log("Redirecting to driver.html");
+        window.location.href = 'driver.html';
+      } else {
+        console.error('Role tidak dikenal atau null:', role); // LOG 8: Error jika role tidak ada
+        errorMsg.textContent = 'Role tidak dikenal: ' + role;
+      }
+
+    } catch (err) {
+      console.error('Login error:', err); // LOG 9: Tangkap error login
+      errorMsg.textContent = 'Login gagal. Periksa kembali email dan password Anda.';
+    }
+  });
+</script>
 </body>
 </html>
