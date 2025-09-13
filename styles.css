@@ -64,7 +64,7 @@ hr { border: 0; height: 1px; background-color: #E0E0E0; margin: 1.5rem 0; }
 .sidebar-menu li a i { width: 20px; margin-right: 15px; text-align: center; }
 .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); }
 .main-content {
-    margin-left: 250px;
+    margin-left: 300px;
     padding: 2rem;
     width: calc(100% - 250px);
 }
