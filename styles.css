@@ -182,33 +182,39 @@ ul#tripList li:hover { transform: translateY(-3px); }
 .badge.danger { background-color: #dc3545; }
 
 /* === KINERJA PAGE === */
-.kinerja-detail-list { 
-    list-style-type: none; 
-    padding-left: 0;
-    max-height: 250px;
-    overflow-y: auto;
+/* === KINERJA PAGE (TABLE VERSION) === */
+.kinerja-table {
+    margin-top: 1rem;
+    width: 100%;
+    border-collapse: collapse;
 }
-.kinerja-detail-list li {
-    display: flex; justify-content: space-between; padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid #f0f0f0; font-size: 0.9rem;
+.kinerja-table th,
+.kinerja-table td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid #E0E0E0;
+    font-size: 0.9rem;
+    white-space: normal; /* Izinkan teks wrap */
 }
-.kinerja-detail-list li:last-child { border-bottom: none; }
-.kinerja-detail-list .user-name { font-weight: 500; }
-.kinerja-detail-list .action-time { color: #989898; font-size: 0.8rem; }
+.kinerja-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+}
+.kinerja-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.kinerja-table td:nth-child(2) { /* Kolom Aksi */
+    color: #595959;
+}
+.kinerja-table td:nth-child(3) { /* Kolom Waktu */
+    color: #989898;
+    white-space: nowrap;
+}
 .empty-state {
     color: #989898;
     font-style: italic;
     font-size: 0.9rem;
-}
-.kinerja-detail-list li > div {
-    display: flex;
-    flex-direction: column;
-}
-
-.action-desc {
-    font-size: 0.85rem;
-    color: #7f8c8d;
-    margin-top: 2px;
+    padding: 1rem 0;
 }
 
 /* === RESPONSIVE === */
