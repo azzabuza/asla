@@ -296,6 +296,7 @@ ul#tripList li:hover {
 .badge.info { background-color: var(--info); }
 .role-admin { background-color: var(--danger); }
 .role-driver { background-color: var(--info); }
+.role-super-admin { background-color: #9333ea; } /* Tambahan untuk Super Admin */
 
 
 /* === HALAMAN LOGIN SEDERHANA === */
