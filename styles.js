@@ -11,7 +11,7 @@ const pageHeaders = {
     addusers: 'Tambah Karyawan',
     addrutes: 'Tambah Rute',
     addvehicles: 'Tambah Nopol',
-    kinerja: 'Kinerja Role'
+    performance: 'Kinerja Role'
 };
 
 /**
