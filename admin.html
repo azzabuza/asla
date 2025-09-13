@@ -6,12 +6,38 @@
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Tambahan CSS untuk daftar kinerja yang lebih detail */
+    .kinerja-list {
+        list-style-type: none;
+        padding-left: 0;
+        max-height: 250px; /* Batasi tinggi agar tidak terlalu panjang */
+        overflow-y: auto; /* Tambahkan scroll jika konten melebihi batas */
+    }
+    .kinerja-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+     .kinerja-list li:last-child {
+        border-bottom: none;
+    }
+    .kinerja-list .user-name {
+        font-weight: 500;
+    }
+    .kinerja-list .action-time {
+        color: #989898;
+        font-size: 0.8rem;
+    }
+  </style>
 </head>
 <body>
   <div class="admin-wrapper">
     <nav class="sidebar">
       <div class="sidebar-header">
-        <h3>Auto SLA</h3>
+        <h3><i class="fas fa-truck"></i> SLA Trucking</h3>
       </div>
       <ul class="sidebar-menu">
         <li><a href="#monitoring"><i class="fas fa-chart-line"></i> Monitoring Perjalanan</a></li>
@@ -69,7 +95,7 @@
         </section>
 
         <section id="kinerja" class="card">
-            <h2 class="card-header"><i class="fas fa-star"></i> Kinerja Role</h2>
+            <h2 class="card-header"><i class="fas fa-star"></i> Kinerja Role & Aktivitas Terbaru</h2>
             <div id="roleStats" class="card-body">Memuat statistik...</div>
         </section>
       </div>
@@ -150,9 +176,10 @@
         await update(userRef, { lastLogin: Date.now(), online: true });
         const userStatusRef = ref(db, 'users/' + user.uid + '/online');
         onDisconnect(userStatusRef).set(false);
-
+        
+        // Memuat user dulu agar `allUsers` tersedia untuk `loadRoleStats`
+        await loadAllUsers(); 
         loadAllTrips();
-        loadAllUsers();
         loadRoleStats();
       } catch (e) {
         console.error("❌ Error cek admin:", e);
@@ -240,17 +267,22 @@
       });
     }
 
-    function loadAllUsers() {
-      const usersRef = ref(db, 'users');
-      onValue(usersRef, (snapshot) => {
-        allUsers = snapshot.val() || {};
-        renderUsers();
-      }, (error) => {
-        console.error("❌ Error load users:", error);
-        userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
+    // Mengubah fungsi menjadi async untuk memastikan `allUsers` terisi sebelum fungsi lain berjalan
+    async function loadAllUsers() {
+      return new Promise((resolve, reject) => {
+        const usersRef = ref(db, 'users');
+        onValue(usersRef, (snapshot) => {
+          allUsers = snapshot.val() || {};
+          renderUsers();
+          resolve(); // Selesaikan promise setelah data dimuat
+        }, (error) => {
+          console.error("❌ Error load users:", error);
+          userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
+          reject(error); // Tolak promise jika ada error
+        });
+        filterRole.addEventListener('change', renderUsers);
+        searchName.addEventListener('input', renderUsers);
       });
-      filterRole.addEventListener('change', renderUsers);
-      searchName.addEventListener('input', renderUsers);
     }
 
     function renderUsers() {
@@ -279,26 +311,70 @@
       }
     }
 
+    // ==========================================================
+    // FUNGSI YANG DIPERBARUI
+    // ==========================================================
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
-        if (!snapshot.exists()) {
-          roleStats.textContent = "Belum ada data perjalanan.";
+        if (!snapshot.exists() || !Object.keys(allUsers).length) {
+          roleStats.textContent = "Belum ada data perjalanan atau data user belum termuat.";
           return;
         }
-        let stats = { koordinator: {}, driver: {}, admin: 0 };
+
+        let activities = { admin: [], koordinator: [], driver: [] };
+
         snapshot.forEach(child => {
           const t = child.val();
-          if (t.koorId) stats.koordinator[t.koorId] = (stats.koordinator[t.koorId] || 0) + 1;
-          if (t.driverId) stats.driver[t.driverId] = (stats.driver[t.driverId] || 0) + 1;
-          if (t.approvedBy) stats.admin++;
+          // Aktivitas Admin (Menyetujui Perjalanan)
+          if (t.approvedBy && t.approvedAt) {
+            activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: "Menyetujui trip" });
+          }
+          // Aktivitas Koordinator (Membuat Perjalanan)
+          if (t.koorId && t.createdAt) {
+            activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: "Membuat trip" });
+          }
+          // Aktivitas Driver (Tiba di Tujuan)
+          if (t.driverId && t.arrivedAt) {
+            activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: "Menyelesaikan trip" });
+          }
         });
+
+        // Fungsi untuk membuat daftar HTML dari aktivitas
+        const createActivityList = (role, title) => {
+          let listHtml = `<h4>${title} (${activities[role].length} Aksi)</h4>`;
+          if (activities[role].length === 0) {
+            listHtml += `<p style="font-size:0.9rem; color:#989898;">Belum ada aktivitas.</p>`;
+            return listHtml;
+          }
+          
+          // Urutkan berdasarkan waktu terbaru, lalu ambil 5 teratas
+          const sortedActivities = activities[role]
+            .sort((a, b) => b.time - a.time)
+            .slice(0, 5); 
+
+          listHtml += '<ul class="kinerja-list">';
+          for (const act of sortedActivities) {
+            const userName = allUsers[act.userId]?.name || 'User tidak dikenal';
+            const actionTime = new Date(act.time).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            listHtml += `
+              <li>
+                <span class="user-name">${userName}</span>
+                <span class="action-time">${actionTime}</span>
+              </li>
+            `;
+          }
+          listHtml += '</ul>';
+          return listHtml;
+        };
+        
+        // Gabungkan semua daftar menjadi satu output
         roleStats.innerHTML = `
-          <p>📊 Total kontribusi (berdasarkan jumlah aksi):</p>
-          <ul class="stats-list">
-            <li><strong>Admin</strong> (approve)<span>${stats.admin} Aksi</span></li>
-            <li><strong>Koordinator</strong> (buat trip)<span>${Object.keys(stats.koordinator).length} User Aktif</span></li>
-            <li><strong>Driver</strong> (menjalankan trip)<span>${Object.keys(stats.driver).length} User Aktif</span></li>
-          </ul>`;
+          ${createActivityList('admin', 'Aktivitas Admin')}
+          <hr style="margin: 1rem 0;">
+          ${createActivityList('koordinator', 'Aktivitas Koordinator')}
+          <hr style="margin: 1rem 0;">
+          ${createActivityList('driver', 'Aktivitas Driver')}
+        `;
       });
     }
     
