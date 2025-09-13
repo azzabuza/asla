@@ -83,7 +83,7 @@
       <div id="modalBody" class="modal-body"></div>
     </div>
   </div>
-<script src="styles.js"></script>
+
   <script type="module">
     // Impor dari Firebase dan helper
     import { 
@@ -160,26 +160,68 @@
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
 
+    /**
+     * ==========================================================
+     * FUNGSI loadAllTrips YANG DIPERBARUI
+     * ==========================================================
+     */
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
-            if (!snapshot.exists()) { elements.tripList.innerHTML = '<li>Belum ada perjalanan.</li>'; return; }
+            if (!snapshot.exists()) { 
+                elements.tripList.innerHTML = '<li>Belum ada data perjalanan.</li>'; 
+                return; 
+            }
             snapshot.forEach(child => {
-                const tripId = child.key, trip = child.val(), li = el('li');
-                li.innerHTML = `<div><strong>${trip.asal}→${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br><small>Sopir: ${trip.driverName||'N/A'}</small></div><div class="trip-actions"></div>`;
-                const actions = li.querySelector('.trip-actions');
-                actions.appendChild(badge(trip.status));
+                const tripId = child.key;
+                const trip = child.val();
+                const li = el('li');
+                const tripInfo = `${trip.asal} → ${trip.tujuan} (${fmtDate(trip.tanggal)})`;
+
+                li.innerHTML = `<div><strong>${tripInfo}</strong><br><small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small></div><div class="trip-actions"></div>`;
+                
+                const actionsContainer = li.querySelector('.trip-actions');
+                actionsContainer.appendChild(badge(trip.status));
+
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                     const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
                     approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
                     rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
-                    actions.append(approveBtn, rejectBtn);
+                    actionsContainer.append(approveBtn, rejectBtn);
                 }
+                
+                // Menambahkan tombol hapus untuk setiap perjalanan
+                const deleteBtn = el('button', 'Hapus', { 
+                    class: 'btn-sm btn-delete-trip',
+                    'data-trip-id': tripId,
+                    'data-trip-info': tripInfo
+                });
+                actionsContainer.appendChild(deleteBtn);
+
                 elements.tripList.appendChild(li);
             });
         });
     }
+    
+    /**
+     * ==========================================================
+     * EVENT LISTENER BARU UNTUK HAPUS PERJALANAN
+     * ==========================================================
+     */
+    elements.tripList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('btn-delete-trip')) {
+            const { tripId, tripInfo } = e.target.dataset;
+            if (confirm(`Anda yakin ingin menghapus perjalanan:\n${tripInfo}?`)) {
+                try {
+                    await set(ref(db, `trips/${tripId}`), null);
+                    alert(`Perjalanan berhasil dihapus.`);
+                } catch (error) {
+                    alert(`Gagal menghapus perjalanan: ${error.message}`);
+                }
+            }
+        }
+    });
 
     async function loadAllUsers() {
         return new Promise((resolve) => {
