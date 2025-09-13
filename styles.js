@@ -7,6 +7,10 @@ const pageHeaders = {
     monitoring: 'Monitoring Perjalanan',
     users: 'Manajemen Karyawan',
     routes: 'Manajemen Rute',
+    vehicles: 'Manajemen Nopol',
+    addusers: 'Tambah Karyawan',
+    addrutes: 'Tambah Rute',
+    addvehicles: 'Tambah Nopol',
     kinerja: 'Kinerja Role'
 };
 
