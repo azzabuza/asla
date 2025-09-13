@@ -125,7 +125,10 @@
 
         if (userData.role === 'super admin') {
             const adminOption = el('option', 'Admin', { value: 'admin' });
-            elements.newUserRole.appendChild(adminOption);
+            // Cek agar tidak duplikat
+            if (!elements.newUserRole.querySelector('option[value="admin"]')) {
+              elements.newUserRole.appendChild(adminOption);
+            }
         }
 
         await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
