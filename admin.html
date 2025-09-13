@@ -217,7 +217,7 @@
 
     /**
      * ==========================================================
-     * FUNGSI loadRoleStats YANG DIPERBARUI DENGAN DESKRIPSI AKSI
+     * FUNGSI loadRoleStats YANG DIPERBARUI DENGAN TABEL
      * ==========================================================
      */
     function loadRoleStats() {
@@ -231,56 +231,35 @@
         snapshot.forEach(child => {
             const t = child.val();
             const tripInfo = `${t.asal} ke ${t.tujuan}`;
-
-            // Logika untuk Admin
-            if (t.approvedBy && t.approvedAt) {
-                activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui: ${tripInfo}` });
-            }
-            if (t.rejectedBy && t.rejectedAt) {
-                activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak: ${tripInfo}` });
-            }
-            
-            // Logika untuk Koordinator
-            if (t.koorId && t.createdAt) {
-                activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip: ${tripInfo}` });
-            }
-
-            // Logika untuk Driver
-            if (t.driverId && t.arrivedAt) {
-                activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan: ${tripInfo}` });
-            }
+            if (t.approvedBy && t.approvedAt) activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui: ${tripInfo}` });
+            if (t.rejectedBy && t.rejectedAt) activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak: ${tripInfo}` });
+            if (t.koorId && t.createdAt) activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip: ${tripInfo}` });
+            if (t.driverId && t.arrivedAt) activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan: ${tripInfo}` });
         });
 
-        const createActivityList = (role, title) => {
-          let listHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`;
+        const createActivityTable = (role, title) => {
+          let tableHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`;
           if (activities[role].length === 0) {
-            return listHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
+            return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
           }
           
-          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15); // Tampilkan lebih banyak
-          listHtml += '<ul class="kinerja-detail-list">';
+          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
+          tableHtml += `<div class="table-responsive"><table class="kinerja-table"><thead><tr><th>Nama User</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
           sortedActivities.forEach(act => {
             const userName = allUsers[act.userId]?.name || 'User Dihapus';
             const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-            listHtml += `
-                <li>
-                    <div>
-                        <span class="user-name">${userName}</span>
-                        <span class="action-desc">${act.action}</span>
-                    </div>
-                    <span class="action-time">${actionTime}</span>
-                </li>`;
+            tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`;
           });
-          listHtml += '</ul>';
-          return listHtml;
+          tableHtml += '</tbody></table></div>';
+          return tableHtml;
         };
         
         elements.roleStats.innerHTML = `
-          ${createActivityList('admin', 'Aktivitas Admin')}
+          ${createActivityTable('admin', 'Aktivitas Admin')}
           <hr>
-          ${createActivityList('koordinator', 'Aktivitas Koordinator')}
+          ${createActivityTable('koordinator', 'Aktivitas Koordinator')}
           <hr>
-          ${createActivityList('driver', 'Aktivitas Driver')}
+          ${createActivityTable('driver', 'Aktivitas Driver')}
         `;
       });
     }
