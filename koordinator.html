@@ -15,9 +15,9 @@
       <div class="sidebar-form-container">
         <form id="tripForm">
           <div class="form-group">
-            <label for="driverSelect">Pilih Sopir</label>
+            <label for="driverSelect">Pilih Driver</label>
             <select id="driverSelect" required>
-              <option value="">Memuat daftar sopir...</option>
+              <option value="">Memuat daftar driver...</option>
             </select>
           </div>
           <div class="form-group">
@@ -71,7 +71,7 @@
                 <thead>
                   <tr>
                     <th>Rute</th>
-                    <th>Sopir</th>
+                    <th>Driver</th>
                     <th>No. Polisi</th>
                     <th>Tanggal</th>
                     <th>Status</th>
@@ -195,7 +195,7 @@
             const q = query(usersRef, orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
             
-            driverSelect.innerHTML = '<option value="">-- Pilih Sopir --</option>';
+            driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>';
             
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
@@ -204,10 +204,10 @@
                     driverSelect.appendChild(option);
                 });
             } else {
-                driverSelect.innerHTML = '<option value="">Tidak ada sopir</option>';
+                driverSelect.innerHTML = '<option value="">Tidak ada driver</option>';
             }
         } catch (error) {
-            console.error("Gagal memuat daftar sopir:", error);
+            console.error("Gagal memuat daftar driver:", error);
             driverSelect.innerHTML = '<option value="">Error</option>';
         }
     }
@@ -222,7 +222,7 @@
       const driverName = selectedDriverOption.text;
 
       if (!driverId) {
-        alert('Silakan pilih sopir terlebih dahulu.');
+        alert('Silakan pilih driver terlebih dahulu.');
         return;
       }
 
@@ -285,7 +285,7 @@
           
           tr.innerHTML = `
             <td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
-            <td data-label="Sopir">${tripData.driverName || '-'}</td>
+            <td data-label="Driver">${tripData.driverName || '-'}</td>
             <td data-label="No. Polisi">${tripData.nopol}</td>
             <td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>
           `;
