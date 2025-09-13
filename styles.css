@@ -3,20 +3,34 @@
 
 /* === VARIABLE DEFINITIONS === */
 :root {
-  --background-primary: #121828; /* Deep blue-gray */
-  --background-secondary: #1a2235; /* Slightly lighter blue-gray */
+  /* Colors */
+  --background-primary: #121828;
+  --background-secondary: #1a2235;
   --background-tertiary: #242f48;
-  --text-primary: #e0e5f5; /* Light, soft white */
-  --text-secondary: #a0aec0; /* Muted gray */
-  --accent-primary: #f59e0b; /* Amber/Gold for highlights */
+  --text-primary: #e0e5f5;
+  --text-secondary: #a0aec0;
+  --accent-primary: #f59e0b;
   --accent-primary-hover: #f5b041;
-  --success: #10b981; /* Green */
-  --danger: #ef4444;  /* Red */
-  --warning: #f97316; /* Orange */
-  --info: #3b82f6;   /* Blue */
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f97316;
+  --info: #3b82f6;
   --border-color: #313d5f;
   --shadow-color: rgba(0, 0, 0, 0.25);
   --font-family-sans: "Inter", "Poppins", sans-serif;
+
+  /* Spacing System for Consistency */
+  --space-xxs: 0.25rem; /* 4px */
+  --space-xs:  0.5rem;  /* 8px */
+  --space-sm:  0.75rem; /* 12px */
+  --space-md:  1.25rem; /* 20px */
+  --space-lg:  1.75rem; /* 28px */
+  --space-xl:  2.5rem;  /* 40px */
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 /* === BASIC & RESET === */
@@ -36,26 +50,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-h1, h2, h3, h4 {
-  color: var(--text-primary);
-  font-weight: 600;
-}
+h1, h2, h3, h4 { color: var(--text-primary); font-weight: 600; }
 ul { list-style: none; }
 a { text-decoration: none; color: var(--accent-primary); transition: color 0.2s ease; }
 a:hover { color: var(--accent-primary-hover); }
 button { cursor: pointer; border: none; font-family: inherit; }
-hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem 0; }
+hr { border: 0; height: 1px; background-color: var(--border-color); margin: var(--space-lg) 0; }
 
-/* === ADMIN & KOORDINATOR LAYOUT === */
-.content-wrapper {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-}
+/* === LAYOUT: ADMIN & KOORDINATOR === */
+.content-wrapper { display: flex; width: 100%; min-height: 100vh; }
 .sidebar {
   width: 320px;
   background-color: var(--background-secondary);
-  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -66,25 +72,18 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   border-right: 1px solid var(--border-color);
 }
 .sidebar-header {
-  padding: 1.75rem 1.5rem;
+  padding: var(--space-lg);
   text-align: center;
   border-bottom: 1px solid var(--border-color);
 }
-.sidebar-header h3 {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-.sidebar-menu {
-  flex-grow: 1;
-  padding-top: 1.5rem;
-}
+.sidebar-menu { flex-grow: 1; padding-top: var(--space-md); }
 .sidebar-menu li a {
   display: block;
-  padding: 0.9rem 1.5rem;
-  margin: 0.25rem 1rem;
+  padding: var(--space-sm) var(--space-lg);
+  margin: var(--space-xxs) var(--space-md);
   color: var(--text-secondary);
   transition: all 0.2s ease-in-out;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-weight: 500;
 }
 .sidebar-menu li a:hover {
@@ -98,61 +97,47 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
 }
 .sidebar-footer {
-  padding: 1.5rem;
+  padding: var(--space-lg);
   border-top: 1px solid var(--border-color);
   margin-top: auto;
 }
 .main-content {
   margin-left: 320px;
-  padding: 2.5rem;
+  padding: var(--space-xl);
   width: calc(100% - 320px);
 }
-.main-header {
-  margin-bottom: 2.5rem;
-}
-.main-header h1 {
-  font-size: 2.25rem;
-  font-weight: 700;
-}
-.main-header p {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-}
+.main-header { margin-bottom: var(--space-xl); }
+.main-header h1 { font-size: 2.25rem; font-weight: 700; }
+.main-header p { color: var(--text-secondary); font-size: 1.1rem; margin-top: var(--space-xs); }
 
-/* === CARD & PAGE COMPONENT === */
+/* === COMPONENT: CARD & PAGE === */
 .page { display: none; }
-.page.active {
-  display: block;
-  animation: fadeIn 0.4s ease-in-out;
-}
+.page.active { display: block; animation: fadeIn 0.4s ease-in-out; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .card {
   background-color: var(--background-secondary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 10px 30px var(--shadow-color);
-  margin-bottom: 2.5rem;
-  overflow: hidden;
+  margin-bottom: var(--space-xl);
   border: 1px solid var(--border-color);
 }
 .card-header {
   font-size: 1.25rem;
-  padding: 1.5rem;
+  padding: var(--space-md) var(--space-lg);
   border-bottom: 1px solid var(--border-color);
   font-weight: 600;
 }
-.card-body {
-  padding: 1.5rem;
-}
+.card-body { padding: var(--space-lg); }
 
-/* === TOMBOL (BUTTONS) === */
+/* === COMPONENT: BUTTONS === */
 button, .button {
   background: linear-gradient(90deg, var(--accent-primary), var(--warning));
   color: var(--background-primary);
-  padding: 0.8rem 1.75rem;
-  border-radius: 6px;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -167,7 +152,6 @@ button:hover, .button:hover {
   background: transparent;
   border: 1px solid var(--danger);
   color: var(--danger);
-  text-align: center;
   box-shadow: none;
 }
 .logout-button:hover {
@@ -176,36 +160,37 @@ button:hover, .button:hover {
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
 }
 .btn-sm {
-  padding: 0.4rem 1rem;
+  padding: var(--space-xs) var(--space-sm);
   font-size: .875rem;
   width: auto;
-  margin: 0; /* Menghapus margin agar bisa diatur oleh 'gap' */
 }
-.btn-sm.success { background: var(--success); box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2); color: var(--text-primary);}
-.btn-sm.danger { background: var(--danger); box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2); color: var(--text-primary); }
-.btn-sm.info { background: var(--info); box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2); color: var(--text-primary); }
-
+.btn-sm.success { background: var(--success); color: var(--text-primary); }
+.btn-sm.danger { background: var(--danger); color: var(--text-primary); }
+.btn-sm.info { background: var(--info); color: var(--text-primary); }
 .delete-user-btn, .btn-delete-trip {
-  background: var(--danger); color: white; padding: 0.4rem 0.8rem; font-size: 0.8rem;
-  border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;
+  background: var(--danger);
+  color: white;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
   width: auto;
 }
 .delete-user-btn:hover, .btn-delete-trip:hover { background-color: #c82333; transform: scale(1.05); }
-.delete-user-btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+.delete-user-btn:disabled { background-color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* === FORMULIR & TABEL (UMUM) === */
+/* === COMPONENT: FORM & TABLE === */
 .form-group { display: flex; flex-direction: column; }
 label {
   font-weight: 500;
   color: var(--text-secondary);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-xs);
   font-size: 0.9rem;
 }
 input, select {
   width: 100%;
-  padding: 0.8rem 1.2rem;
+  padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background-color: var(--background-primary);
   color: var(--text-primary);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -216,10 +201,16 @@ input:focus, select:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
-.form-status { margin-top: 1rem; font-weight: 500; text-align: center; }
+.form-status { margin-top: var(--space-md); font-weight: 500; text-align: center; }
+.sidebar-form-container {
+  padding: 0 var(--space-lg);
+  overflow-y: auto;
+  flex-grow: 1;
+}
+#tripForm { display: flex; flex-direction: column; gap: var(--space-md); padding: var(--space-md) 0; }
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 1rem 1.2rem; text-align: left; white-space: nowrap; }
+th, td { padding: var(--space-sm) var(--space-md); text-align: left; white-space: nowrap; }
 th {
   background: var(--background-tertiary);
   font-weight: 600;
@@ -232,32 +223,18 @@ tbody tr { border-bottom: 1px solid var(--border-color); }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: var(--background-tertiary); }
 
-/* === KHUSUS FORM DI SIDEBAR KOORDINATOR === */
-.sidebar-form-container {
-  padding: 0 1.5rem;
-  overflow-y: auto;
-  flex-grow: 1;
-}
-#tripForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding-top: 1.5rem;
-}
-
-
-/* === LISTS, BADGES & STATUS === */
+/* === COMPONENT: LISTS, BADGES & STATUS === */
 ul#tripList li {
   background-color: var(--background-secondary);
   border: 1px solid var(--border-color);
-  padding: 1.25rem 1.75rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Memastikan bisa wrap di layar kecil */
-  gap: 1rem; /* Jarak antar grup konten dan grup aksi */
+  flex-wrap: wrap;
+  gap: var(--space-md); /* Jarak antara grup info dan grup aksi */
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
 }
@@ -266,29 +243,25 @@ ul#tripList li:hover {
   box-shadow: 0 8px 25px var(--shadow-color);
   border-left-color: var(--accent-primary);
 }
-
-/* === PERBAIKAN UNTUK TOMBOL BERHIMPITAN === */
+/* === PERBAIKAN FINAL UNTUK TOMBOL BERHIMPITAN === */
 .trip-actions {
   display: flex;
   align-items: center;
-  flex-wrap: wrap; /* Tombol bisa turun ke bawah jika tidak cukup ruang */
-  gap: 0.75rem; /* Jarak antar tombol dan badge */
-  justify-content: flex-end; /* Rata kanan */
+  flex-wrap: wrap; /* Izinkan tombol turun ke baris baru jika perlu */
+  gap: var(--space-sm); /* Jarak konsisten antar tombol dan badge */
+  justify-content: flex-end; /* Dorong ke kanan */
 }
-
 .text-secondary { color: var(--text-secondary); }
 .status-online { color: var(--success); }
 .status-offline { color: var(--text-secondary); }
-.status-online i, .status-offline i { font-size: 0.7em; vertical-align: middle; }
 .badge, .role-badge {
   display: inline-block;
-  padding: 0.3rem 0.9rem;
+  padding: var(--space-xxs) var(--space-sm);
   border-radius: 999px;
   font-size: .8rem;
   font-weight: 600;
   text-transform: capitalize;
   color: var(--background-primary);
-  line-height: 1.5;
 }
 .badge.success, .role-koordinator { background-color: var(--success); }
 .badge.warn { background-color: var(--warning); }
@@ -297,45 +270,40 @@ ul#tripList li:hover {
 .role-admin { background-color: var(--danger); }
 .role-driver { background-color: var(--info); }
 
-
-/* === HALAMAN LOGIN SEDERHANA === */
+/* === OTHER COMPONENTS === */
 .login-container {
     max-width: 450px;
-    margin: 5rem auto;
-    padding: 3rem;
+    margin: var(--space-xl) auto;
+    padding: var(--space-xl);
     background-color: var(--background-secondary);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px var(--shadow-color);
 }
 .login-container h2 {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-lg);
     font-size: 1.75rem;
 }
 .empty-state {
   color: var(--text-secondary);
   font-style: italic;
-  font-size: 1rem;
-  padding: 2rem 0;
+  padding: var(--space-lg) 0;
   text-align: center;
   background-color: transparent !important;
   border: none !important;
 }
 
-
 /* === RESPONSIVE DESIGN === */
 @media (max-width: 992px) {
   .sidebar { transform: translateX(-320px); position: absolute; transition: transform 0.3s ease; }
-  .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
+  .main-content { margin-left: 0; width: 100%; padding: var(--space-lg); }
   .sidebar.active { transform: translateX(0); }
 }
 @media (max-width: 576px) {
   body { font-size: 14px; }
   .main-header h1 { font-size: 1.8rem; }
+  .main-content { padding: var(--space-md); }
   ul#tripList li { flex-direction: column; align-items: flex-start; }
-  .main-content { padding: 1rem; }
-  .login-container { margin: 2rem 1rem; padding: 2rem; }
+  .trip-actions { justify-content: flex-start; width: 100%; margin-top: var(--space-sm); }
   .sidebar { width: 100%; }
-  .trip-actions { justify-content: flex-start; width: 100%; margin-top: 0.5rem; }
 }
