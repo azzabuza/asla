@@ -11,7 +11,7 @@
   <div class="admin-wrapper">
     <nav class="sidebar">
       <div class="sidebar-header">
-        <h3>Auto Service Level Agreement (ASLA)</h3>
+        <h3><i class="fas fa-truck"></i> SLA Trucking</h3>
       </div>
       <ul class="sidebar-menu">
         <li><a href="#monitoring" class="nav-link active"><i class="fas fa-chart-line"></i> Monitoring Perjalanan</a></li>
@@ -70,18 +70,12 @@
 
       <div id="page-kinerja" class="page">
         <section class="card">
+          <h2 class="card-header"><i class="fas fa-star"></i> Aktivitas Terbaru Berdasarkan Role</h2>
           <div id="roleStats" class="card-body">Memuat statistik...</div>
         </section>
       </div>
 
     </main>
-  </div>
-
-  <div id="activityModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header"><h3 id="modalTitle">Detail Aktivitas</h3><span class="close-button">&times;</span></div>
-      <div id="modalBody" class="modal-body"></div>
-    </div>
   </div>
 
   <script type="module">
@@ -92,8 +86,8 @@
       createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
-    // Impor dari file UI JavaScript baru
-    import { setupNavigation, setupModal, renderUsersTable, renderRoleSummary, showActivityDetails } from './styles.js';
+    // Impor dari file UI JavaScript
+    import { setupNavigation, renderUsersTable } from './styles.js';
 
     // Konstanta Elemen
     const elements = {
@@ -108,20 +102,14 @@
         logoutBtn: document.getElementById('logoutBtn'),
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
-        modal: document.getElementById('activityModal'),
-        modalTitle: document.getElementById('modalTitle'),
-        modalBody: document.getElementById('modalBody'),
-        closeModalBtn: document.querySelector('.close-button')
     };
 
     // Variabel Global
     let currentUser = null;
     let allUsers = {};
-    let allActivities = { admin: [], koordinator: [], driver: [] };
 
     // Inisialisasi UI dari styles.js
     setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
-    setupModal(elements.modal, elements.closeModalBtn);
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -160,65 +148,38 @@
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
 
-    /**
-     * ==========================================================
-     * FUNGSI loadAllTrips YANG DIPERBARUI
-     * ==========================================================
-     */
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
-            if (!snapshot.exists()) { 
-                elements.tripList.innerHTML = '<li>Belum ada data perjalanan.</li>'; 
-                return; 
-            }
+            if (!snapshot.exists()) { elements.tripList.innerHTML = '<li>Belum ada data perjalanan.</li>'; return; }
             snapshot.forEach(child => {
-                const tripId = child.key;
-                const trip = child.val();
-                const li = el('li');
+                const tripId = child.key, trip = child.val(), li = el('li');
                 const tripInfo = `${trip.asal} → ${trip.tujuan} (${fmtDate(trip.tanggal)})`;
-
-                li.innerHTML = `<div><strong>${tripInfo}</strong><br><small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small></div><div class="trip-actions"></div>`;
-                
-                const actionsContainer = li.querySelector('.trip-actions');
-                actionsContainer.appendChild(badge(trip.status));
-
+                li.innerHTML = `<div><strong>${tripInfo}</strong><br><small>Sopir: ${trip.driverName||'N/A'}</small></div><div class="trip-actions"></div>`;
+                const actions = li.querySelector('.trip-actions');
+                actions.appendChild(badge(trip.status));
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                     const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
                     approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
                     rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
-                    actionsContainer.append(approveBtn, rejectBtn);
+                    actions.append(approveBtn, rejectBtn);
                 }
-                
-                // Menambahkan tombol hapus untuk setiap perjalanan
-                const deleteBtn = el('button', 'Hapus', { 
-                    class: 'btn-sm btn-delete-trip',
-                    'data-trip-id': tripId,
-                    'data-trip-info': tripInfo
-                });
-                actionsContainer.appendChild(deleteBtn);
-
+                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
+                actions.appendChild(deleteBtn);
                 elements.tripList.appendChild(li);
             });
         });
     }
     
-    /**
-     * ==========================================================
-     * EVENT LISTENER BARU UNTUK HAPUS PERJALANAN
-     * ==========================================================
-     */
     elements.tripList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('btn-delete-trip')) {
             const { tripId, tripInfo } = e.target.dataset;
-            if (confirm(`Anda yakin ingin menghapus perjalanan:\n${tripInfo}?`)) {
+            if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) {
                 try {
                     await set(ref(db, `trips/${tripId}`), null);
                     alert(`Perjalanan berhasil dihapus.`);
-                } catch (error) {
-                    alert(`Gagal menghapus perjalanan: ${error.message}`);
-                }
+                } catch (error) { alert(`Gagal: ${error.message}`); }
             }
         }
     });
@@ -254,28 +215,52 @@
         }
     });
 
+    /**
+     * ==========================================================
+     * FUNGSI loadRoleStats YANG DIPERBARUI (TANPA MODAL)
+     * ==========================================================
+     */
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
-        allActivities = { admin: [], koordinator: [], driver: [] };
-        if (snapshot.exists()) {
-            snapshot.forEach(child => {
-                const t = child.val();
-                if (t.approvedBy) allActivities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
-                if (t.koorId) allActivities.koordinator.push({ userId: t.koorId, time: t.createdAt });
-                if (t.driverId && t.arrivedAt) allActivities.driver.push({ userId: t.driverId, time: t.arrivedAt });
-            });
+        if (!snapshot.exists() || !Object.keys(allUsers).length) {
+          elements.roleStats.textContent = "Belum ada data untuk ditampilkan.";
+          return;
         }
-        renderRoleSummary(elements.roleStats, allActivities);
+
+        let activities = { admin: [], koordinator: [], driver: [] };
+        snapshot.forEach(child => {
+            const t = child.val();
+            if (t.approvedBy && t.approvedAt) activities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
+            if (t.koorId && t.createdAt) activities.koordinator.push({ userId: t.koorId, time: t.createdAt });
+            if (t.driverId && t.arrivedAt) activities.driver.push({ userId: t.driverId, time: t.arrivedAt });
+        });
+
+        const createActivityList = (role, title) => {
+          let listHtml = `<h4>${title} (${activities[role].length} Aksi)</h4>`;
+          if (activities[role].length === 0) {
+            return listHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
+          }
+          
+          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 10); 
+          listHtml += '<ul class="kinerja-detail-list">';
+          sortedActivities.forEach(act => {
+            const userName = allUsers[act.userId]?.name || 'User Dihapus';
+            const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+            listHtml += `<li><span class="user-name">${userName}</span><span class="action-time">${actionTime}</span></li>`;
+          });
+          listHtml += '</ul>';
+          return listHtml;
+        };
+        
+        elements.roleStats.innerHTML = `
+          ${createActivityList('admin', 'Aktivitas Admin')}
+          <hr>
+          ${createActivityList('koordinator', 'Aktivitas Koordinator')}
+          <hr>
+          ${createActivityList('driver', 'Aktivitas Driver')}
+        `;
       });
     }
-
-    elements.roleStats.addEventListener('click', (e) => {
-        const link = e.target.closest('a[data-role]');
-        if (link) { 
-            e.preventDefault(); 
-            showActivityDetails(link.dataset.role, allActivities, allUsers, elements.modal, elements.modalTitle, elements.modalBody); 
-        }
-    });
 
     elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
