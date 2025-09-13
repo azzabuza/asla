@@ -55,7 +55,7 @@
           <div class="card-body">
             <div class="table-controls">
               <div><label>Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
-              <div><label>Cari Nama: </label><input type="text" id="searchName" placeholder="Ketik nama user..." /></div>
+              <div><label>Cari Nama: </label><input type="text" id="searchName" placeholder="Ketik nama karyawan..." /></div>
             </div>
             <div class="table-responsive">
               <table>
@@ -243,7 +243,7 @@
           }
           
           const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
-          tableHtml += `<div class="table-responsive"><table class="kinerja-table"><thead><tr><th>Nama User</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+          tableHtml += `<div class="table-responsive"><table class="kinerja-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
           sortedActivities.forEach(act => {
             const userName = allUsers[act.userId]?.name || 'User Dihapus';
             const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
