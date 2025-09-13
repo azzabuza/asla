@@ -1,14 +1,5 @@
-/* === FONT DARI GOOGLE === */
+/* FONT */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-
-/* === VARIABLE CSS (NON-WARNA) === */
-:root {
-    --body-font: 'Poppins', sans-serif;
-    --normal-font-size: 1rem;
-    --small-font-size: .875rem;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --border-radius: 0.75rem;
-}
 /* BASIC */
 * {
   box-sizing: border-box;
@@ -17,6 +8,7 @@
 }
 html {
   scroll-behavior: smooth;
+  font-size: 10px;
 }
 body {
   box-sizing: border-box;
@@ -88,8 +80,8 @@ hr { border: 0; height: 1px; background-color: #E0E0E0; margin: 1.5rem 0; }
 @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
 .card {
     background-color: #FFFFFF;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
     overflow: hidden;
 }
@@ -111,7 +103,7 @@ button {
     color: white;
     padding: 0.7rem 1.5rem;
     border-radius: 0.25rem;
-    font-size: var(--normal-font-size);
+    font-size: 1rem;
     font-weight: 500;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
@@ -124,7 +116,7 @@ button:hover { background-color: #2F73D9; transform: translateY(-2px); }
     text-align: center;
 }
 .logout-button:hover { background-color: #dc3545; color: white; }
-.btn-sm { padding: 0.3rem 0.8rem; font-size: var(--small-font-size); margin-left: 0.5rem; }
+.btn-sm { padding: 0.3rem 0.8rem; font-size: .875rem; margin-left: 0.5rem; }
 .btn-sm.success { background-color: #28a745; }
 .btn-sm.danger { background-color: #dc3545; }
 .delete-user-btn {
@@ -161,7 +153,7 @@ table { width: 100%; border-collapse: collapse; }
 th, td { padding: 0.8rem 1rem; text-align: left; white-space: nowrap; }
 th {
     background: #f9fafb; font-weight: 600; text-transform: uppercase;
-    font-size: var(--small-font-size); color: #989898; border-bottom: 2px solid #E0E0E0;
+    font-size: .875rem; color: #989898; border-bottom: 2px solid #E0E0E0;
 }
 tbody tr { border-bottom: 1px solid #E0E0E0; }
 tbody tr:hover { background-color: #f9f9f9; }
@@ -177,7 +169,7 @@ ul#tripList li:hover { transform: translateY(-3px); }
 .status-offline { color: #989898; }
 .status-online .fa-circle, .status-offline .fa-circle { font-size: 0.7em; vertical-align: middle; }
 .role-badge {
-    padding: 0.2rem 0.6rem; border-radius: 99px; font-size: var(--small-font-size);
+    padding: 0.2rem 0.6rem; border-radius: 99px; font-size: .875rem;
     font-weight: 600; color: white; text-transform: capitalize;
 }
 .role-admin { background-color: #dc3545; }
@@ -185,7 +177,7 @@ ul#tripList li:hover { transform: translateY(-3px); }
 .role-driver { background-color: #17a2b8; }
 .badge {
     display: inline-block; padding: 0.4rem 0.8rem; border-radius: 999px;
-    font-size: var(--small-font-size); font-weight: 600;
+    font-size: .875rem; font-weight: 600;
     text-transform: capitalize; color: white;
 }
 .badge.success { background-color: #28a745; }
