@@ -14,8 +14,10 @@
       </div>
       <ul class="sidebar-menu">
         <li><a href="#monitoring" class="nav-link active">Monitoring Perjalanan</a></li>
+        <li><a href="#addusers" class="nav-link">Tambah Karyawan</a></li>
         <li><a href="#users" class="nav-link">Manajemen Karyawan</a></li>
         <li><a href="#routes" class="nav-link">Manajemen Rute</a></li>
+        <li><a href="#vehicles" class="nav-link">Manajemen Nopol</a></li>
         <li><a href="#kinerja" class="nav-link">Kinerja Role</a></li>
       </ul>
       <div class="sidebar-footer">
@@ -52,9 +54,9 @@
           </div>
         </section>
       </div>
-      
-    <div id="page-users" class="page">
-      <section class="card">
+
+      <div id="page-addusers" class="page">
+          <section class="card">
               <h2 class="card-header">Tambah Karyawan Baru</h2>
               <div class="card-body">
                   <form id="addUserForm">
@@ -67,6 +69,9 @@
                   <p id="addUserStatus" class="form-status"></p>
               </div>
           </section>
+        </div>
+      
+    <div id="page-users" class="page">
         <section class="card">
           <h2 class="card-header">Daftar Semua Karyawan</h2>
           <div class="card-body">
@@ -123,6 +128,45 @@
         </section>
       </div>
 
+      <div id="page-vehicles" class="page">
+        <section class="card">
+          <h2 class="card-header">Tambah Nopol Baru</h2>
+          <div class="card-body">
+            <form id="addVehicleForm">
+              <div class="form-group">
+                <label for="vehicleNopol">No. Polisi</label>
+                <input type="text" id="vehicleNopol" required>
+              </div>
+              <div class="form-group">
+                <label for="vehicleType">Tipe/Keterangan Kendaraan</label>
+                <input type="text" id="vehicleType" placeholder="Contoh: Tronton, Box, dll." required>
+              </div>
+              <button type="submit">Tambah Nopol</button>
+            </form>
+            <p id="addVehicleStatus" class="form-status"></p>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="card-header">Daftar Nopol Tersimpan</h2>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No. Polisi</th>
+                    <th>Tipe/Keterangan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="vehicleList">
+                  <tr><td colspan="3">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <div id="page-kinerja" class="page">
         <section class="card">
           <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
@@ -158,6 +202,9 @@
         addRouteForm: document.getElementById('addRouteForm'),
         addRouteStatus: document.getElementById('addRouteStatus'),
         routeList: document.getElementById('routeList'),
+        addVehicleForm: document.getElementById('addVehicleForm'),
+        addVehicleStatus: document.getElementById('addVehicleStatus'),
+        vehicleList: document.getElementById('vehicleList'),
     };
 
     let currentUser = null;
@@ -188,9 +235,53 @@
         await loadAllUsers(); 
         loadAllTrips();
         loadRoutes();
+        loadVehicles();
         loadRoleStats();
       } catch (e) { console.error("Error cek admin:", e); }
     });
+
+    elements.addVehicleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nopol = document.getElementById('vehicleNopol').value.toUpperCase();
+      const type = document.getElementById('vehicleType').value;
+      elements.addVehicleStatus.textContent = 'Menambahkan...';
+      try {
+        await push(ref(db, 'vehicles'), { nopol, type });
+        elements.addVehicleStatus.textContent = '✔️ Nopol berhasil ditambahkan.';
+        elements.addVehicleForm.reset();
+        setTimeout(() => elements.addVehicleStatus.textContent = '', 3000);
+      } catch (error) {
+        elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
+      }
+    });
+
+    function loadVehicles() {
+      onValue(ref(db, 'vehicles'), (snapshot) => {
+        elements.vehicleList.innerHTML = '';
+        if (!snapshot.exists()) {
+          elements.vehicleList.innerHTML = '<tr><td colspan="3">Belum ada nopol tersimpan.</td></tr>';
+          return;
+        }
+        snapshot.forEach(child => {
+          const vehicleId = child.key;
+          const vehicle = child.val();
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${vehicle.nopol}</td>
+            <td>${vehicle.type}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
+              await set(ref(db, `vehicles/${vehicleId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.vehicleList.appendChild(tr);
+        });
+      });
+    }
 
     elements.addRouteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
