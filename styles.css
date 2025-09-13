@@ -200,7 +200,16 @@ ul#tripList li:hover { transform: translateY(-3px); }
     font-style: italic;
     font-size: 0.9rem;
 }
+.kinerja-detail-list li > div {
+    display: flex;
+    flex-direction: column;
+}
 
+.action-desc {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-top: 2px;
+}
 
 /* === RESPONSIVE === */
 @media (max-width: 992px) {
