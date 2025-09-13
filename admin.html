@@ -7,141 +7,154 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Tambahan CSS untuk daftar kinerja yang lebih detail */
-    .kinerja-list {
-        list-style-type: none;
-        padding-left: 0;
-        max-height: 250px; /* Batasi tinggi agar tidak terlalu panjang */
-        overflow-y: auto; /* Tambahkan scroll jika konten melebihi batas */
+    /* CSS untuk Modal (Popup) */
+    .modal {
+        display: none; /* Sembunyi secara default */
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s;
     }
-    .kinerja-list li {
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 0.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s;
+    }
+    .modal-header {
+        padding: 1rem 1.5rem;
+        background-color: #3685FB;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+    .modal-header h3 { color: white; }
+    .modal-body { padding: 1.5rem; }
+    .close-button {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .close-button:hover { color: #ddd; }
+
+    /* Keyframes untuk animasi modal */
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+
+    /* CSS untuk daftar kinerja yang ringkas */
+    .kinerja-summary-list { list-style-type: none; padding-left: 0; }
+    .kinerja-summary-list li a {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+    .kinerja-summary-list li a:hover { background-color: #f9f9f9; }
+    .kinerja-summary-list li span { font-weight: 600; color: #3685FB; }
+    .kinerja-summary-list li:last-child a { border-bottom: none; }
+    
+    /* CSS untuk detail di dalam modal */
+    .kinerja-detail-list { list-style-type: none; padding-left: 0; }
+    .kinerja-detail-list li {
         display: flex;
         justify-content: space-between;
         padding: 0.75rem 0.5rem;
         border-bottom: 1px solid #f0f0f0;
         font-size: 0.9rem;
     }
-     .kinerja-list li:last-child {
-        border-bottom: none;
-    }
-    .kinerja-list .user-name {
-        font-weight: 500;
-    }
-    .kinerja-list .action-time {
-        color: #989898;
-        font-size: 0.8rem;
-    }
+    .kinerja-detail-list li:last-child { border-bottom: none; }
+    .kinerja-detail-list .user-name { font-weight: 500; }
+    .kinerja-detail-list .action-time { color: #989898; font-size: 0.8rem; }
   </style>
 </head>
 <body>
   <div class="admin-wrapper">
     <nav class="sidebar">
-      <div class="sidebar-header">
-        <h3><i class="fas fa-truck"></i> SLA Trucking</h3>
-      </div>
-      <ul class="sidebar-menu">
-        <li><a href="#monitoring"><i class="fas fa-chart-line"></i> Monitoring Perjalanan</a></li>
-        <li><a href="#users"><i class="fas fa-users"></i> Manajemen User</a></li>
-        <li><a href="#kinerja"><i class="fas fa-star"></i> Kinerja Role</a></li>
-      </ul>
-      <div class="sidebar-footer">
-        <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
-      </div>
-    </nav>
+        </nav>
 
     <main class="main-content">
-      <header class="main-header">
-        <h1>Dashboard Admin</h1>
-        <p>Selamat datang, Admin! Kelola semua aspek operasional dari sini.</p>
-      </header>
-      
-      <section id="monitoring" class="card">
-        <h2 class="card-header">
-          <i class="fas fa-chart-line"></i> Monitoring Perjalanan
-        </h2>
-        <div class="card-body">
-          <ul id="tripList"><li>Memuat data...</li></ul>
-        </div>
-      </section>
-
-      <div class="content-grid">
-        <section id="tambah-user" class="card">
-          <h2 class="card-header"><i class="fas fa-user-plus"></i> Tambah User Baru</h2>
-          <div class="card-body">
-            <form id="addUserForm">
-              <div class="form-group">
-                <label for="newUserName">Nama</label>
-                <input type="text" id="newUserName" autocomplete="off" required>
-              </div>
-              <div class="form-group">
-                <label for="newUserEmail">Email</label>
-                <input type="email" id="newUserEmail" autocomplete="off" required>
-              </div>
-              <div class="form-group">
-                <label for="newUserPassword">Password</label>
-                <input type="password" id="newUserPassword" autocomplete="new-password" required>
-              </div>
-              <div class="form-group">
-                <label for="newUserRole">Role</label>
-                <select id="newUserRole" required>
-                  <option value="koordinator">Koordinator</option>
-                  <option value="driver">Driver</option>
-                </select>
-              </div>
-              <button type="submit">Tambah User</button>
-            </form>
-            <p id="addUserStatus" class="form-status"></p>
-          </div>
+        <header class="main-header">
+            <h1>Dashboard Admin</h1>
+            <p>Selamat datang, Admin! Kelola semua aspek operasional dari sini.</p>
+        </header>
+        
+        <section id="monitoring" class="card">
+            <h2 class="card-header"><i class="fas fa-chart-line"></i> Monitoring Perjalanan</h2>
+            <div class="card-body"><ul id="tripList"><li>Memuat data...</li></ul></div>
         </section>
 
-        <section id="kinerja" class="card">
-            <h2 class="card-header"><i class="fas fa-star"></i> Kinerja Role & Aktivitas Terbaru</h2>
-            <div id="roleStats" class="card-body">Memuat statistik...</div>
-        </section>
-      </div>
-
-      <section id="users" class="card">
-        <h2 class="card-header"><i class="fas fa-users"></i> Daftar Semua User</h2>
-        <div class="card-body">
-          <div class="table-controls">
-            <div>
-              <label><i class="fas fa-filter"></i> Filter Role: </label>
-              <select id="filterRole">
-                <option value="all">Semua</option>
-                <option value="admin">Admin</option>
-                <option value="koordinator">Koordinator</option>
-                <option value="driver">Driver</option>
-              </select>
-            </div>
-            <div>
-              <label><i class="fas fa-search"></i> Cari Nama: </label>
-              <input type="text" id="searchName" placeholder="Ketik nama user..." />
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>UID</th>
-                  <th>Nama</th>
-                  <th>Role</th>
-                  <th>Login Terakhir</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="userList">
-                <tr><td colspan="5">Memuat data...</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="content-grid">
+            <section id="tambah-user" class="card">
+                <h2 class="card-header"><i class="fas fa-user-plus"></i> Tambah User Baru</h2>
+                <div class="card-body">
+                    <form id="addUserForm">
+                        <div class="form-group"><label for="newUserName">Nama</label><input type="text" id="newUserName" autocomplete="off" required></div>
+                        <div class="form-group"><label for="newUserEmail">Email</label><input type="email" id="newUserEmail" autocomplete="off" required></div>
+                        <div class="form-group"><label for="newUserPassword">Password</label><input type="password" id="newUserPassword" autocomplete="new-password" required></div>
+                        <div class="form-group"><label for="newUserRole">Role</label><select id="newUserRole" required><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+                        <button type="submit">Tambah User</button>
+                    </form>
+                    <p id="addUserStatus" class="form-status"></p>
+                </div>
+            </section>
+            
+            <section id="kinerja" class="card">
+                <h2 class="card-header"><i class="fas fa-star"></i> Kinerja Role</h2>
+                <div id="roleStats" class="card-body">Memuat statistik...</div>
+            </section>
         </div>
-      </section>
 
+        <section id="users" class="card">
+            <h2 class="card-header"><i class="fas fa-users"></i> Daftar Semua User</h2>
+            <div class="card-body">
+                <div class="table-controls">
+                    <div><label><i class="fas fa-filter"></i> Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+                    <div><label><i class="fas fa-search"></i> Cari Nama: </label><input type="text" id="searchName" placeholder="Ketik nama user..." /></div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>UID</th><th>Nama</th><th>Role</th><th>Login Terakhir</th><th>Status</th></tr></thead>
+                        <tbody id="userList"><tr><td colspan="5">Memuat data...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
   </div>
 
+  <div id="activityModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Detail Aktivitas</h3>
+        <span class="close-button">&times;</span>
+      </div>
+      <div id="modalBody" class="modal-body">
+        </div>
+    </div>
+  </div>
+
+
   <script type="module">
-    // Fungsionalitas JavaScript tidak diubah sama sekali
+    // Impor modul tidak berubah
     import { 
       auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set,
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
@@ -149,6 +162,7 @@
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
+    // Deklarasi konstanta tidak berubah
     const tripList = document.getElementById('tripList');
     const userList = document.getElementById('userList');
     const roleStats = document.getElementById('roleStats');
@@ -157,10 +171,18 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const addUserForm = document.getElementById('addUserForm');
     const addUserStatus = document.getElementById('addUserStatus');
+    // Tambahan konstanta untuk modal
+    const modal = document.getElementById('activityModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const closeModalBtn = document.querySelector('.close-button');
+
 
     let currentUser = null;
     let allUsers = {};
-    
+    let allActivities = { admin: [], koordinator: [], driver: [] }; // Simpan data aktivitas di scope lebih luas
+
+    // Fungsi onAuthStateChanged, addUserForm, loadAllTrips, loadAllUsers, renderUsers tidak berubah
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
@@ -177,7 +199,6 @@
         const userStatusRef = ref(db, 'users/' + user.uid + '/online');
         onDisconnect(userStatusRef).set(false);
         
-        // Memuat user dulu agar `allUsers` tersedia untuk `loadRoleStats`
         await loadAllUsers(); 
         loadAllTrips();
         loadRoleStats();
@@ -190,29 +211,21 @@
         e.preventDefault();
         addUserStatus.textContent = 'Menambahkan user...';
         addUserStatus.style.color = 'blue';
-
         const name = document.getElementById('newUserName').value;
         const email = document.getElementById('newUserEmail').value;
         const password = document.getElementById('newUserPassword').value;
         const role = document.getElementById('newUserRole').value;
-
         const tempAppName = 'temp-user-creation-app-' + Date.now();
         let tempApp;
-
         try {
             tempApp = initializeApp(firebaseConfig, tempAppName);
             const tempAuth = getAuth(tempApp);
             const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
             const newUser = userCredential.user;
-
-            await set(ref(db, 'users/' + newUser.uid), {
-                name: name, role: role, online: false, lastLogin: null
-            });
-
+            await set(ref(db, 'users/' + newUser.uid), { name: name, role: role, online: false, lastLogin: null });
             addUserStatus.style.color = 'green';
             addUserStatus.textContent = `✔️ User ${name} (${role}) berhasil ditambahkan.`;
             addUserForm.reset();
-
         } catch (error) {
             console.error("❌ Gagal menambah user:", error);
             addUserStatus.style.color = 'red';
@@ -229,155 +242,142 @@
     });
 
     function loadAllTrips() {
-      const tripsRef = ref(db, 'trips');
-      onValue(tripsRef, (snapshot) => {
-        tripList.innerHTML = '';
-        if (!snapshot.exists()) {
-          tripList.innerHTML = '<li>Belum ada data perjalanan.</li>';
-          return;
-        }
-        snapshot.forEach(child => {
-          const tripId = child.key;
-          const trip = child.val();
-          const li = el('li');
-          li.innerHTML = `
-            <div>
-              <strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br>
-              <small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small>
-            </div>
-            <div class="trip-actions">
-              <span style="margin-right: 10px;">Status: </span>
-            </div>
-          `;
-          const statusContainer = li.querySelector('.trip-actions');
-          statusContainer.appendChild(badge(trip.status));
-
-          if (trip.status === 'submitted') {
-            const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
-            const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
-            approveBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid }));
-            rejectBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid }));
-            statusContainer.append(approveBtn, rejectBtn);
-          }
-          tripList.appendChild(li);
+        const tripsRef = ref(db, 'trips');
+        onValue(tripsRef, (snapshot) => {
+            tripList.innerHTML = '';
+            if (!snapshot.exists()) {
+                tripList.innerHTML = '<li>Belum ada data perjalanan.</li>';
+                return;
+            }
+            snapshot.forEach(child => {
+                const tripId = child.key;
+                const trip = child.val();
+                const li = el('li');
+                li.innerHTML = `<div><strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br><small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small></div><div class="trip-actions"><span style="margin-right: 10px;">Status: </span></div>`;
+                const statusContainer = li.querySelector('.trip-actions');
+                statusContainer.appendChild(badge(trip.status));
+                if (trip.status === 'submitted') {
+                    const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
+                    const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
+                    approveBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid }));
+                    rejectBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid }));
+                    statusContainer.append(approveBtn, rejectBtn);
+                }
+                tripList.appendChild(li);
+            });
         });
-      }, (error) => {
-        console.error("❌ Error load trips:", error);
-        tripList.innerHTML = '<li>Error memuat data perjalanan.</li>';
-      });
     }
 
-    // Mengubah fungsi menjadi async untuk memastikan `allUsers` terisi sebelum fungsi lain berjalan
     async function loadAllUsers() {
-      return new Promise((resolve, reject) => {
-        const usersRef = ref(db, 'users');
-        onValue(usersRef, (snapshot) => {
-          allUsers = snapshot.val() || {};
-          renderUsers();
-          resolve(); // Selesaikan promise setelah data dimuat
-        }, (error) => {
-          console.error("❌ Error load users:", error);
-          userList.innerHTML = '<tr><td colspan="5">Error memuat data user.</td></tr>';
-          reject(error); // Tolak promise jika ada error
+        return new Promise((resolve, reject) => {
+            const usersRef = ref(db, 'users');
+            onValue(usersRef, (snapshot) => {
+                allUsers = snapshot.val() || {};
+                renderUsers();
+                resolve();
+            }, (error) => {
+                console.error("❌ Error load users:", error);
+                reject(error);
+            });
+            filterRole.addEventListener('change', renderUsers);
+            searchName.addEventListener('input', renderUsers);
         });
-        filterRole.addEventListener('change', renderUsers);
-        searchName.addEventListener('input', renderUsers);
-      });
     }
 
     function renderUsers() {
-      userList.innerHTML = '';
-      const selectedRole = filterRole.value;
-      const keyword = searchName.value.toLowerCase();
-      let found = false;
-      Object.entries(allUsers).forEach(([uid, u]) => {
-        if ((selectedRole === 'all' || u.role === selectedRole) &&
-            (!keyword || (u.name || '').toLowerCase().includes(keyword))) {
-          found = true;
-          const tr = el('tr');
-          tr.innerHTML = `
-            <td data-label="UID"><small>${uid}</small></td>
-            <td data-label="Nama">${u.name || '-'}</td>
-            <td data-label="Role"><span class="role-badge role-${u.role}">${u.role || '-'}</span></td>
-            <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
-            <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}">
-              <i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}
-            </td>`;
-          userList.appendChild(tr);
-        }
-      });
-      if (!found) {
-        userList.innerHTML = '<tr><td colspan="5">Tidak ada user ditemukan.</td></tr>';
-      }
+        userList.innerHTML = '';
+        const selectedRole = filterRole.value;
+        const keyword = searchName.value.toLowerCase();
+        let found = false;
+        Object.entries(allUsers).forEach(([uid, u]) => {
+            if ((selectedRole === 'all' || u.role === selectedRole) && (!keyword || (u.name || '').toLowerCase().includes(keyword))) {
+                found = true;
+                const tr = el('tr');
+                tr.innerHTML = `<td data-label="UID"><small>${uid}</small></td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${u.role}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>`;
+                userList.appendChild(tr);
+            }
+        });
+        if (!found) userList.innerHTML = '<tr><td colspan="5">Tidak ada user ditemukan.</td></tr>';
     }
 
     // ==========================================================
-    // FUNGSI YANG DIPERBARUI
+    // FUNGSI KINERJA ROLE & MODAL YANG DIPERBARUI
     // ==========================================================
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
-        if (!snapshot.exists() || !Object.keys(allUsers).length) {
-          roleStats.textContent = "Belum ada data perjalanan atau data user belum termuat.";
-          return;
+        // 1. Kumpulkan semua data aktivitas (logika ini tidak berubah)
+        allActivities = { admin: [], koordinator: [], driver: [] };
+        if (snapshot.exists() && Object.keys(allUsers).length) {
+            snapshot.forEach(child => {
+                const t = child.val();
+                if (t.approvedBy && t.approvedAt) allActivities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
+                if (t.koorId && t.createdAt) allActivities.koordinator.push({ userId: t.koorId, time: t.createdAt });
+                if (t.driverId && t.arrivedAt) allActivities.driver.push({ userId: t.driverId, time: t.arrivedAt });
+            });
         }
 
-        let activities = { admin: [], koordinator: [], driver: [] };
-
-        snapshot.forEach(child => {
-          const t = child.val();
-          // Aktivitas Admin (Menyetujui Perjalanan)
-          if (t.approvedBy && t.approvedAt) {
-            activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: "Menyetujui trip" });
-          }
-          // Aktivitas Koordinator (Membuat Perjalanan)
-          if (t.koorId && t.createdAt) {
-            activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: "Membuat trip" });
-          }
-          // Aktivitas Driver (Tiba di Tujuan)
-          if (t.driverId && t.arrivedAt) {
-            activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: "Menyelesaikan trip" });
-          }
-        });
-
-        // Fungsi untuk membuat daftar HTML dari aktivitas
-        const createActivityList = (role, title) => {
-          let listHtml = `<h4>${title} (${activities[role].length} Aksi)</h4>`;
-          if (activities[role].length === 0) {
-            listHtml += `<p style="font-size:0.9rem; color:#989898;">Belum ada aktivitas.</p>`;
-            return listHtml;
-          }
-          
-          // Urutkan berdasarkan waktu terbaru, lalu ambil 5 teratas
-          const sortedActivities = activities[role]
-            .sort((a, b) => b.time - a.time)
-            .slice(0, 5); 
-
-          listHtml += '<ul class="kinerja-list">';
-          for (const act of sortedActivities) {
-            const userName = allUsers[act.userId]?.name || 'User tidak dikenal';
-            const actionTime = new Date(act.time).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            listHtml += `
-              <li>
-                <span class="user-name">${userName}</span>
-                <span class="action-time">${actionTime}</span>
-              </li>
-            `;
-          }
-          listHtml += '</ul>';
-          return listHtml;
-        };
-        
-        // Gabungkan semua daftar menjadi satu output
+        // 2. Tampilkan ringkasan di halaman utama
         roleStats.innerHTML = `
-          ${createActivityList('admin', 'Aktivitas Admin')}
-          <hr style="margin: 1rem 0;">
-          ${createActivityList('koordinator', 'Aktivitas Koordinator')}
-          <hr style="margin: 1rem 0;">
-          ${createActivityList('driver', 'Aktivitas Driver')}
+          <ul class="kinerja-summary-list" id="kinerjaSummaryList">
+            <li><a href="#" data-role="admin">Aktivitas Admin <span>(${allActivities.admin.length} Aksi)</span></a></li>
+            <li><a href="#" data-role="koordinator">Aktivitas Koordinator <span>(${allActivities.koordinator.length} Aksi)</span></a></li>
+            <li><a href="#" data-role="driver">Aktivitas Driver <span>(${allActivities.driver.length} Aksi)</span></a></li>
+          </ul>
         `;
       });
     }
+
+    // Fungsi untuk membuka modal dan menampilkan detail
+    function showActivityDetails(role) {
+        const roleTitles = {
+            admin: 'Detail Aktivitas Admin',
+            koordinator: 'Detail Aktivitas Koordinator',
+            driver: 'Detail Aktivitas Driver'
+        };
+        modalTitle.textContent = roleTitles[role] || 'Detail Aktivitas';
+
+        let detailHtml = '';
+        const activities = allActivities[role];
+
+        if (!activities || activities.length === 0) {
+            detailHtml = '<p>Belum ada aktivitas untuk role ini.</p>';
+        } else {
+            const sortedActivities = [...activities]
+                .sort((a, b) => b.time - a.time);
+            
+            detailHtml = '<ul class="kinerja-detail-list">';
+            for (const act of sortedActivities) {
+                const userName = allUsers[act.userId]?.name || 'User tidak dikenal';
+                const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                detailHtml += `<li><span class="user-name">${userName}</span><span class="action-time">${actionTime}</span></li>`;
+            }
+            detailHtml += '</ul>';
+        }
+        
+        modalBody.innerHTML = detailHtml;
+        modal.style.display = "block"; // Tampilkan modal
+    }
+
+    // Event listener untuk daftar ringkasan
+    roleStats.addEventListener('click', function(e) {
+        // Cek apakah yang diklik adalah link di dalam list
+        const link = e.target.closest('a');
+        if (link && link.dataset.role) {
+            e.preventDefault();
+            const role = link.dataset.role;
+            showActivityDetails(role);
+        }
+    });
+
+    // Event listener untuk menutup modal
+    closeModalBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => {
+        if (e.target == modal) {
+            modal.style.display = "none";
+        }
+    }
     
+    // Fungsi logout tidak berubah
     logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
             await update(ref(db, 'users/' + currentUser.uid), { online: false });
