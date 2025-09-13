@@ -103,6 +103,7 @@
         logoutBtn: document.getElementById('logoutBtn'),
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
+        newUserRole: document.getElementById('newUserRole'),
     };
 
     // Variabel Global
@@ -117,9 +118,16 @@
       currentUser = user;
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
-        if (!snap.exists() || snap.val().role !== 'admin') {
+        const userData = snap.val();
+        if (!snap.exists() || (userData.role !== 'admin' && userData.role !== 'super admin')) {
           alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
+
+        if (userData.role === 'super admin') {
+            const adminOption = el('option', 'Admin', { value: 'admin' });
+            elements.newUserRole.appendChild(adminOption);
+        }
+
         await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
