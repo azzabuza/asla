@@ -57,8 +57,25 @@
       
       <div class="page active">
         <section class="card">
+          <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
           <div class="card-body">
-            <ul id="tripList"><li>Memuat data...</li></ul>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rute</th>
+                    <th>Sopir</th>
+                    <th>No. Polisi</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi Cetak</th>
+                  </tr>
+                </thead>
+                <tbody id="tripList">
+                  <tr><td colspan="6">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </div>
@@ -163,13 +180,13 @@
         await set(push(ref(db, 'trips')), data);
         tripForm.reset();
         statusMsg.textContent = '✔️ Data berhasil dikirim.';
-        setTimeout(() => statusMsg.textContent = '', 3000); // Hapus pesan setelah 3 detik
+        setTimeout(() => statusMsg.textContent = '', 3000);
       } catch(err) {
         statusMsg.style.color = 'var(--danger)';
         statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
       }
     });
-
+    
     function loadMyTrips() {
       const tripsRef = ref(db, 'trips');
       const q = query(tripsRef, orderByChild('koorId'), equalTo(currentUser.uid));
@@ -177,35 +194,44 @@
       onValue(q, (snapshot) => {
         tripList.innerHTML = '';
         if (!snapshot.exists()) {
-            tripList.innerHTML = '<li class="empty-state">Belum ada data perjalanan yang Anda buat.</li>';
+            // Memperbarui colspan menjadi 6
+            tripList.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
             return;
         }
 
         snapshot.forEach(childSnapshot => {
           const tripData = childSnapshot.val();
-          const li = el('li');
-          
-          let content = `
-            <div>
-              <strong>${tripData.asal} → ${tripData.tujuan}</strong> 
-              <span class="text-secondary">(${fmtDate(tripData.tanggal)})</span><br>
-              <small>Sopir: ${tripData.driverName || '-'} | Nopol: ${tripData.nopol}</small>
-            </div>
-            <div class="trip-actions"></div>
-          `;
-          li.innerHTML = content;
-          
-          const actions = li.querySelector('.trip-actions');
-          actions.appendChild(badge(tripData.status));
+          const tr = el('tr');
+
+          const actionsCell = el('td');
+          const actionsContainer = el('div', '', { class: 'trip-actions' });
+          actionsContainer.style.justifyContent = 'flex-start';
 
           if (tripData.status === 'approved') {
             const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
             const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
             sjButton.onclick = () => window.open('surat-jalan.html?id=' + childSnapshot.key);
             invButton.onclick = () => window.open('invoice.html?id=' + childSnapshot.key);
-            actions.append(sjButton, invButton);
+            actionsContainer.append(sjButton, invButton);
+          } else {
+            actionsContainer.textContent = '-';
           }
-          tripList.appendChild(li);
+          actionsCell.appendChild(actionsContainer);
+
+          const statusCell = el('td');
+          statusCell.appendChild(badge(tripData.status));
+          
+          // ### PERUBAHAN 2: Memisahkan sel Sopir dan No. Polisi ###
+          tr.innerHTML = `
+            <td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
+            <td data-label="Sopir">${tripData.driverName || '-'}</td>
+            <td data-label="No. Polisi">${tripData.nopol}</td>
+            <td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>
+          `;
+          tr.appendChild(statusCell);
+          tr.appendChild(actionsCell);
+          
+          tripList.appendChild(tr);
         });
       });
     }
