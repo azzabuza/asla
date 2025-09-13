@@ -45,7 +45,6 @@ export function renderUsersTable(userListBody, allUsers, filters, currentUser) {
             const isCurrentUser = (uid === currentUser.uid);
             const deleteButton = isCurrentUser
                 ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
-                // Perbaikan kecil: pastikan nama tidak null saat dimasukkan ke dataset
                 : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
             
             tr.innerHTML = `
