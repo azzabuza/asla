@@ -16,6 +16,7 @@
         <li><a href="#monitoring" class="nav-link active">Monitoring Perjalanan</a></li>
         <li><a href="#addusers" class="nav-link">Tambah Karyawan</a></li>
         <li><a href="#users" class="nav-link">Manajemen Karyawan</a></li>
+        <li><a href="#routes" class="nav-link">Manajemen Rute</a></li>
         <li><a href="#kinerja" class="nav-link">Kinerja Role</a></li>
       </ul>
       <div class="sidebar-footer">
@@ -87,6 +88,45 @@
         </section>
       </div>
 
+      <div id="page-routes" class="page">
+        <section class="card">
+          <h2 class="card-header">Tambah Rute Baru</h2>
+          <div class="card-body">
+            <form id="addRouteForm">
+              <div class="form-group">
+                <label for="routeCode">Kode Rute (Contoh: BDG)</label>
+                <input type="text" id="routeCode" required>
+              </div>
+              <div class="form-group">
+                <label for="routeAddress">Alamat/Nama Lokasi (Contoh: Bandung)</label>
+                <input type="text" id="routeAddress" required>
+              </div>
+              <button type="submit">Tambah Rute</button>
+            </form>
+            <p id="addRouteStatus" class="form-status"></p>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="card-header">Daftar Rute Tersimpan</h2>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Alamat/Lokasi</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="routeList">
+                  <tr><td colspan="3">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <div id="page-kinerja" class="page">
         <section class="card">
           <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
@@ -98,22 +138,19 @@
   </div>
 
   <script type="module">
-    // Impor dari Firebase dan helper
     import { 
-      auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set,
+      auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push,
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
       createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
-    // Impor dari file UI JavaScript
     import { setupNavigation, renderUsersTable } from './styles.js';
 
-    // Konstanta Elemen
     const elements = {
         pageTitle: document.getElementById('pageTitle'),
         navLinks: document.querySelectorAll('.nav-link'),
         pages: document.querySelectorAll('.page'),
-        tripList: document.getElementById('tripList'), // Sekarang ini adalah <tbody>
+        tripList: document.getElementById('tripList'),
         userList: document.getElementById('userList'),
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
@@ -122,13 +159,14 @@
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
         newUserRole: document.getElementById('newUserRole'),
+        addRouteForm: document.getElementById('addRouteForm'),
+        addRouteStatus: document.getElementById('addRouteStatus'),
+        routeList: document.getElementById('routeList'),
     };
 
-    // Variabel Global
     let currentUser = null;
     let allUsers = {};
 
-    // Inisialisasi UI dari styles.js
     setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
 
     onAuthStateChanged(auth, async (user) => {
@@ -153,10 +191,66 @@
         
         await loadAllUsers(); 
         loadAllTrips();
+        loadRoutes();
         loadRoleStats();
       } catch (e) { console.error("Error cek admin:", e); }
     });
 
+    elements.addRouteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('routeCode').value.toUpperCase();
+      const address = document.getElementById('routeAddress').value;
+      elements.addRouteStatus.textContent = 'Menambahkan...';
+      try {
+        await push(ref(db, 'routes'), { code, address });
+        elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.';
+        elements.addRouteForm.reset();
+        setTimeout(() => elements.addRouteStatus.textContent = '', 3000);
+      } catch (error) {
+        elements.addRouteStatus.textContent = 'Gagal: ' + error.message;
+      }
+    });
+
+    function loadRoutes() {
+      onValue(ref(db, 'routes'), (snapshot) => {
+        elements.routeList.innerHTML = '';
+        if (!snapshot.exists()) {
+          elements.routeList.innerHTML = '<tr><td colspan="3">Belum ada rute tersimpan.</td></tr>';
+          return;
+        }
+        snapshot.forEach(child => {
+          const routeId = child.key;
+          const route = child.val();
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${route.code}</td>
+            <td>${route.address}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
+              await set(ref(db, `routes/${routeId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.routeList.appendChild(tr);
+        });
+      });
+    }
+
+    elements.userList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-user-btn')) {
+            const { uid, name } = e.target.dataset;
+            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
+                try {
+                    await set(ref(db, `users/${uid}`), null);
+                    alert(`Data user ${name} berhasil dihapus.`);
+                } catch (error) { alert(`Gagal: ${error.message}`); }
+            }
+        }
+    });
+    
     elements.addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         elements.addUserStatus.textContent = 'Menambahkan...';
@@ -253,18 +347,6 @@
             name: elements.searchName.value
         }, currentUser);
     }
-
-    elements.userList.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('delete-user-btn')) {
-            const { uid, name } = e.target.dataset;
-            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
-                try {
-                    await set(ref(db, `users/${uid}`), null);
-                    alert(`Data user ${name} berhasil dihapus.`);
-                } catch (error) { alert(`Gagal: ${error.message}`); }
-            }
-        }
-    });
 
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
