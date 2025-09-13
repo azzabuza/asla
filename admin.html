@@ -31,6 +31,7 @@
       
       <div id="page-monitoring" class="page active">
         <section class="card">
+          <h2 class="card-header">Daftar Perjalanan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table id="tripTable">
@@ -176,7 +177,6 @@
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
     
-    // ### FUNGSI DIPERBAIKI DI SINI ###
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
@@ -191,13 +191,10 @@
 
                 const tripInfo = `${trip.asal} → ${trip.tujuan}`;
                 
-                // Buat sel untuk kolom Aksi
                 const actionsCell = el('td', '', {'data-label': 'Aksi'});
                 const actionsContainer = el('div', '', { class: 'trip-actions' });
                 actionsContainer.style.justifyContent = 'flex-start';
                 
-                // --- BARIS YANG MENYEBABKAN MASALAH DIHAPUS DARI SINI ---
-
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                     const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
@@ -210,11 +207,9 @@
                 actionsContainer.appendChild(deleteBtn);
                 actionsCell.appendChild(actionsContainer);
 
-                // Buat sel untuk kolom Status
                 const statusCell = el('td', '', {'data-label': 'Status'});
                 statusCell.appendChild(badge(trip.status));
 
-                // Isi <tr> dengan semua sel <td>
                 tr.innerHTML = `
                     <td data-label="Rute">${tripInfo}</td>
                     <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
