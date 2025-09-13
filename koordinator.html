@@ -22,7 +22,9 @@
           </div>
           <div class="form-group">
             <label for="nopol">No. Polisi</label>
-            <input id="nopol" type="text" required>
+            <select id="nopol" required>
+              <option value="">Memuat nopol...</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="asal">Asal</label>
@@ -112,6 +114,7 @@
     const statusMsg = document.getElementById('statusMsg');
     const asalSelect = document.getElementById('asal');
     const tujuanSelect = document.getElementById('tujuan');
+    const nopolSelect = document.getElementById('nopol');
     let currentUser = null;
 
     onAuthStateChanged(auth, async (user) => {
@@ -131,7 +134,31 @@
       loadMyTrips();
       loadDrivers(); 
       loadRoutes();
+      loadVehicles();
     });
+
+    async function loadVehicles() {
+      try {
+        const vehiclesRef = ref(db, 'vehicles');
+        const snapshot = await get(vehiclesRef);
+        
+        nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
+
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const vehicle = child.val();
+            const optionText = `${vehicle.nopol} (${vehicle.type})`;
+            const option = el('option', optionText, { value: vehicle.nopol });
+            nopolSelect.appendChild(option);
+          });
+        } else {
+          nopolSelect.innerHTML = '<option value="">Belum ada nopol</option>';
+        }
+      } catch (error) {
+        console.error("Gagal memuat nopol:", error);
+        nopolSelect.innerHTML = '<option value="">Error</option>';
+      }
+    }
 
     async function loadRoutes() {
       try {
