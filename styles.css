@@ -121,7 +121,14 @@ button:hover { background-color: #2F73D9; transform: translateY(-2px); }
 }
 .delete-user-btn:hover { background-color: #c82333; }
 .delete-user-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+/* === Gaya Tambahan untuk Tombol Hapus Perjalanan === */
+.btn-delete-trip {
+    background-color: #6c757d; /* Warna abu-abu netral */
+}
 
+.btn-delete-trip:hover {
+    background-color: #5a6268;
+}
 /* === FORMULIR & TABEL === */
 form { display: flex; flex-direction: column; gap: 1rem; }
 .form-group { display: flex; flex-direction: column; }
