@@ -176,7 +176,7 @@
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
     
-    // ### PERUBAHAN 2: Memperbarui fungsi loadAllTrips untuk membuat <tr> ###
+    // ### FUNGSI DIPERBAIKI DI SINI ###
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
@@ -187,17 +187,16 @@
             snapshot.forEach(child => {
                 const tripId = child.key;
                 const trip = child.val();
-                const tr = el('tr'); // Buat elemen <tr>
+                const tr = el('tr');
 
-                // Kolom untuk informasi perjalanan
                 const tripInfo = `${trip.asal} → ${trip.tujuan}`;
                 
-                // Buat sel aksi
-                const actionsCell = el('td');
+                // Buat sel untuk kolom Aksi
+                const actionsCell = el('td', '', {'data-label': 'Aksi'});
                 const actionsContainer = el('div', '', { class: 'trip-actions' });
-                actionsContainer.style.justifyContent = 'flex-start'; // Agar rata kiri
+                actionsContainer.style.justifyContent = 'flex-start';
                 
-                actionsContainer.appendChild(badge(trip.status));
+                // --- BARIS YANG MENYEBABKAN MASALAH DIHAPUS DARI SINI ---
 
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
@@ -211,15 +210,16 @@
                 actionsContainer.appendChild(deleteBtn);
                 actionsCell.appendChild(actionsContainer);
 
+                // Buat sel untuk kolom Status
+                const statusCell = el('td', '', {'data-label': 'Status'});
+                statusCell.appendChild(badge(trip.status));
+
                 // Isi <tr> dengan semua sel <td>
                 tr.innerHTML = `
                     <td data-label="Rute">${tripInfo}</td>
                     <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
                     <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
                 `;
-                // Masukkan sel status dan aksi secara terpisah untuk menangani elemen
-                const statusCell = el('td');
-                statusCell.appendChild(badge(trip.status));
                 tr.appendChild(statusCell);
                 tr.appendChild(actionsCell);
 
