@@ -5,7 +5,7 @@
 
 const pageHeaders = {
     monitoring: 'Monitoring Perjalanan',
-    users: 'Manajemen User',
+    users: 'Manajemen Karyawan',
     kinerja: 'Kinerja Role'
 };
 
