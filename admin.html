@@ -6,59 +6,6 @@
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* CSS Tambahan untuk halaman dan modal */
-    .page {
-        display: none; /* Sembunyikan semua halaman secara default */
-    }
-    .page.active {
-        display: block; /* Tampilkan hanya halaman yang aktif */
-        animation: fadeIn 0.5s;
-    }
-    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
-    
-    /* CSS untuk Modal (Popup) */
-    .modal {
-        display: none; position: fixed; z-index: 1001; left: 0; top: 0;
-        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-        background-color: #fefefe; margin: 10% auto; padding: 0; border: 1px solid #888;
-        width: 80%; max-width: 600px; border-radius: 0.5rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s;
-    }
-    .modal-header {
-        padding: 1rem 1.5rem; background-color: #3685FB; color: white;
-        display: flex; justify-content: space-between; align-items: center;
-        border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;
-    }
-    .modal-header h3 { color: white; }
-    .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
-    .close-button {
-        color: white; font-size: 28px; font-weight: bold; cursor: pointer;
-        transition: color 0.2s;
-    }
-    .close-button:hover { color: #ddd; }
-    @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
-    .kinerja-summary-list { list-style-type: none; padding-left: 0; }
-    .kinerja-summary-list li a {
-        display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #f0f0f0;
-        text-decoration: none; color: #2c3e50; font-weight: 500; transition: background-color 0.2s;
-    }
-    .kinerja-summary-list li a:hover { background-color: #f9f9f9; }
-    .kinerja-summary-list li span { font-weight: 600; color: #3685FB; }
-    .kinerja-detail-list { list-style-type: none; padding-left: 0; }
-    .kinerja-detail-list li {
-        display: flex; justify-content: space-between; padding: 0.75rem 0.5rem;
-        border-bottom: 1px solid #f0f0f0; font-size: 0.9rem;
-    }
-    .delete-user-btn {
-        background-color: #dc3545; color: white; padding: 0.3rem 0.7rem; font-size: 0.8rem;
-        border-radius: 0.25rem; border: none; cursor: pointer; transition: background-color 0.2s;
-    }
-    .delete-user-btn:hover { background-color: #c82333; }
-    .delete-user-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-  </style>
 </head>
 <body>
   <div class="admin-wrapper">
@@ -79,7 +26,7 @@
     <main class="main-content">
       <header class="main-header">
         <h1 id="pageTitle">Monitoring Perjalanan</h1>
-        <p id="pageDescription">Selamat datang, Admin! Kelola semua aspek operasional dari sini.</p>
+        <p>Selamat datang, Admin! Kelola semua aspek operasional dari sini.</p>
       </header>
       
       <div id="page-monitoring" class="page active">
@@ -89,8 +36,8 @@
       </div>
 
       <div id="page-users" class="page">
-
-          <section id="tambah-user" class="card">
+        <div class="content-grid">
+          <section class="card">
               <h2 class="card-header"><i class="fas fa-user-plus"></i> Tambah User Baru</h2>
               <div class="card-body">
                   <form id="addUserForm">
@@ -103,7 +50,7 @@
                   <p id="addUserStatus" class="form-status"></p>
               </div>
           </section>
- 
+        </div>
         <section class="card">
           <h2 class="card-header"><i class="fas fa-users"></i> Daftar Semua User</h2>
           <div class="card-body">
@@ -138,82 +85,64 @@
   </div>
 
   <script type="module">
+    // Impor dari Firebase dan helper
     import { 
       auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set,
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
       createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
+    // Impor dari file UI JavaScript baru
+    import { setupNavigation, setupModal, renderUsersTable, renderRoleSummary, showActivityDetails } from './styles.js';
 
     // Konstanta Elemen
-    const pageTitle = document.getElementById('pageTitle');
-    const navLinks = document.querySelectorAll('.nav-link');
-    const pages = document.querySelectorAll('.page');
-    const tripList = document.getElementById('tripList');
-    const userList = document.getElementById('userList');
-    const roleStats = document.getElementById('roleStats');
-    const filterRole = document.getElementById('filterRole');
-    const searchName = document.getElementById('searchName');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const addUserForm = document.getElementById('addUserForm');
-    const addUserStatus = document.getElementById('addUserStatus');
-    const modal = document.getElementById('activityModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const closeModalBtn = document.querySelector('.close-button');
+    const elements = {
+        pageTitle: document.getElementById('pageTitle'),
+        navLinks: document.querySelectorAll('.nav-link'),
+        pages: document.querySelectorAll('.page'),
+        tripList: document.getElementById('tripList'),
+        userList: document.getElementById('userList'),
+        roleStats: document.getElementById('roleStats'),
+        filterRole: document.getElementById('filterRole'),
+        searchName: document.getElementById('searchName'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        addUserForm: document.getElementById('addUserForm'),
+        addUserStatus: document.getElementById('addUserStatus'),
+        modal: document.getElementById('activityModal'),
+        modalTitle: document.getElementById('modalTitle'),
+        modalBody: document.getElementById('modalBody'),
+        closeModalBtn: document.querySelector('.close-button')
+    };
 
     // Variabel Global
     let currentUser = null;
     let allUsers = {};
     let allActivities = { admin: [], koordinator: [], driver: [] };
 
-    // ===============================================
-    // LOGIKA NAVIGASI SPA (Single Page Application)
-    // ===============================================
-    const pageHeaders = {
-        monitoring: 'Monitoring Perjalanan',
-        users: 'Manajemen User',
-        kinerja: 'Kinerja Role'
-    };
+    // Inisialisasi UI dari styles.js
+    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
+    setupModal(elements.modal, elements.closeModalBtn);
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href').substring(1); // Ambil nama dari href (cth: "monitoring")
-
-            // Sembunyikan semua halaman dan hapus status aktif link
-            pages.forEach(page => page.classList.remove('active'));
-            navLinks.forEach(nav => nav.classList.remove('active'));
-
-            // Tampilkan halaman target dan set link aktif
-            document.getElementById(`page-${targetId}`).classList.add('active');
-            link.classList.add('active');
-            
-            // Perbarui judul halaman
-            pageTitle.textContent = pageHeaders[targetId] || 'Dashboard';
-        });
-    });
-
-    // ... sisa kode JavaScript tidak berubah ...
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
-      const userRef = ref(db, 'users/' + user.uid);
       try {
-        const snap = await get(userRef);
+        const snap = await get(ref(db, `users/${user.uid}`));
         if (!snap.exists() || snap.val().role !== 'admin') {
-          alert('Akses ditolak. Hanya untuk admin.'); return window.location.href = 'index.html';
+          alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
-        await update(userRef, { lastLogin: Date.now(), online: true });
-        onDisconnect(ref(db, 'users/' + user.uid + '/online')).set(false);
+        await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
+        onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+        
         await loadAllUsers(); 
         loadAllTrips();
         loadRoleStats();
-      } catch (e) { console.error("❌ Error cek admin:", e); }
+      } catch (e) { console.error("Error cek admin:", e); }
     });
-    addUserForm.addEventListener('submit', async (e) => {
+
+    elements.addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        addUserStatus.textContent = 'Menambahkan user...';
+        elements.addUserStatus.textContent = 'Menambahkan...';
         const name = document.getElementById('newUserName').value;
         const email = document.getElementById('newUserEmail').value;
         const password = document.getElementById('newUserPassword').value;
@@ -222,115 +151,93 @@
         let tempApp;
         try {
             tempApp = initializeApp(firebaseConfig, tempAppName);
-            const userCredential = await createUserWithEmailAndPassword(getAuth(tempApp), email, password);
-            await set(ref(db, 'users/' + userCredential.user.uid), { name, role, online: false, lastLogin: null });
-            addUserStatus.style.color = 'green';
-            addUserStatus.textContent = `✔️ User ${name} (${role}) berhasil ditambahkan.`;
-            addUserForm.reset();
+            const cred = await createUserWithEmailAndPassword(getAuth(tempApp), email, password);
+            await set(ref(db, `users/${cred.user.uid}`), { name, role, online: false, lastLogin: null });
+            elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
+            elements.addUserForm.reset();
         } catch (error) {
-            addUserStatus.style.color = 'red';
-            addUserStatus.textContent = 'Gagal: ' + error.message;
+            elements.addUserStatus.textContent = 'Gagal: ' + error.message;
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
+
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
-            tripList.innerHTML = '';
-            if (!snapshot.exists()) { tripList.innerHTML = '<li>Belum ada data perjalanan.</li>'; return; }
+            elements.tripList.innerHTML = '';
+            if (!snapshot.exists()) { elements.tripList.innerHTML = '<li>Belum ada perjalanan.</li>'; return; }
             snapshot.forEach(child => {
                 const tripId = child.key, trip = child.val(), li = el('li');
-                li.innerHTML = `<div><strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br><small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small></div><div class="trip-actions"><span style="margin-right: 10px;">Status: </span></div>`;
-                const statusContainer = li.querySelector('.trip-actions');
-                statusContainer.appendChild(badge(trip.status));
+                li.innerHTML = `<div><strong>${trip.asal}→${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br><small>Sopir: ${trip.driverName||'N/A'}</small></div><div class="trip-actions"></div>`;
+                const actions = li.querySelector('.trip-actions');
+                actions.appendChild(badge(trip.status));
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                     const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
                     approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
                     rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
-                    statusContainer.append(approveBtn, rejectBtn);
+                    actions.append(approveBtn, rejectBtn);
                 }
-                tripList.appendChild(li);
+                elements.tripList.appendChild(li);
             });
         });
     }
+
     async function loadAllUsers() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             onValue(ref(db, 'users'), (snapshot) => {
                 allUsers = snapshot.val() || {};
                 renderUsers();
                 resolve();
-            }, (error) => { reject(error); });
-            filterRole.onchange = renderUsers;
-            searchName.oninput = renderUsers;
+            });
+            elements.filterRole.onchange = renderUsers;
+            elements.searchName.oninput = renderUsers;
         });
     }
+    
     function renderUsers() {
-        userList.innerHTML = '';
-        const selectedRole = filterRole.value;
-        const keyword = searchName.value.toLowerCase();
-        let found = false;
-        Object.entries(allUsers).forEach(([uid, u]) => {
-            if ((selectedRole === 'all' || u.role === selectedRole) && (!keyword || (u.name || '').toLowerCase().includes(keyword))) {
-                found = true;
-                const tr = el('tr');
-                const deleteButton = uid === currentUser.uid ? `<button class="delete-user-btn" disabled>Hapus</button>` : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || ''}">Hapus</button>`;
-                tr.innerHTML = `<td data-label="UID"><small>${uid}</small></td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${u.role}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td><td data-label="Aksi">${deleteButton}</td>`;
-                userList.appendChild(tr);
-            }
-        });
-        if (!found) userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
+        renderUsersTable(elements.userList, allUsers, {
+            role: elements.filterRole.value,
+            name: elements.searchName.value
+        }, currentUser);
     }
-    userList.addEventListener('click', async (e) => {
+
+    elements.userList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-user-btn')) {
             const { uid, name } = e.target.dataset;
-            if (confirm(`Anda yakin ingin menghapus data user: ${name}?`)) {
+            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
                 try {
-                    await set(ref(db, 'users/' + uid), null);
+                    await set(ref(db, `users/${uid}`), null);
                     alert(`Data user ${name} berhasil dihapus.`);
-                } catch (error) { alert(`Gagal menghapus data: ${error.message}`); }
+                } catch (error) { alert(`Gagal: ${error.message}`); }
             }
         }
     });
+
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
         allActivities = { admin: [], koordinator: [], driver: [] };
-        if (snapshot.exists() && Object.keys(allUsers).length) {
+        if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const t = child.val();
-                if (t.approvedBy && t.approvedAt) allActivities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
-                if (t.koorId && t.createdAt) allActivities.koordinator.push({ userId: t.koorId, time: t.createdAt });
+                if (t.approvedBy) allActivities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
+                if (t.koorId) allActivities.koordinator.push({ userId: t.koorId, time: t.createdAt });
                 if (t.driverId && t.arrivedAt) allActivities.driver.push({ userId: t.driverId, time: t.arrivedAt });
             });
         }
-        roleStats.innerHTML = `<ul class="kinerja-summary-list"><li><a href="#" data-role="admin">Aktivitas Admin <span>(${allActivities.admin.length} Aksi)</span></a></li><li><a href="#" data-role="koordinator">Aktivitas Koordinator <span>(${allActivities.koordinator.length} Aksi)</span></a></li><li><a href="#" data-role="driver">Aktivitas Driver <span>(${allActivities.driver.length} Aksi)</span></a></li></ul>`;
+        renderRoleSummary(elements.roleStats, allActivities);
       });
     }
-    function showActivityDetails(role) {
-        const roleTitles = { admin: 'Aktivitas Admin', koordinator: 'Aktivitas Koordinator', driver: 'Aktivitas Driver' };
-        modalTitle.textContent = roleTitles[role] || 'Detail Aktivitas';
-        let detailHtml = '<ul class="kinerja-detail-list">';
-        const activities = allActivities[role] ? [...allActivities[role]].sort((a, b) => b.time - a.time) : [];
-        if (activities.length === 0) {
-            detailHtml = '<p>Belum ada aktivitas.</p>';
-        } else {
-            activities.forEach(act => {
-                const userName = allUsers[act.userId]?.name || 'User Dihapus';
-                const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-                detailHtml += `<li><span class="user-name">${userName}</span><span class="action-time">${actionTime}</span></li>`;
-            });
-            detailHtml += '</ul>';
-        }
-        modalBody.innerHTML = detailHtml;
-        modal.style.display = "block";
-    }
-    roleStats.addEventListener('click', (e) => {
+
+    elements.roleStats.addEventListener('click', (e) => {
         const link = e.target.closest('a[data-role]');
-        if (link) { e.preventDefault(); showActivityDetails(link.dataset.role); }
+        if (link) { 
+            e.preventDefault(); 
+            showActivityDetails(link.dataset.role, allActivities, allUsers, elements.modal, elements.modalTitle, elements.modalBody); 
+        }
     });
-    closeModalBtn.onclick = () => modal.style.display = "none";
-    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
-    logoutBtn.addEventListener('click', async () => {
-        if (currentUser) await update(ref(db, 'users/' + currentUser.uid), { online: false });
-        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+
+    elements.logoutBtn.addEventListener('click', async () => {
+        if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
+        signOut(auth);
     });
   </script>
 </body>
