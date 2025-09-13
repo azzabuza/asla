@@ -48,10 +48,14 @@ export function renderUsersTable(userListBody, allUsers, filters, currentUser) {
                 ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
                 : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
             
+            // ### PERBAIKAN DI SINI ###
+            // Mengganti spasi di nama peran menjadi tanda hubung untuk nama class CSS
+            const roleClass = (u.role || '').replace(' ', '-');
+
             tr.innerHTML = `
                 <td data-label="UID"><small>${uid}</small></td>
                 <td data-label="Nama">${u.name || '-'}</td>
-                <td data-label="Role"><span class="role-badge role-${u.role}">${u.role || '-'}</span></td>
+                <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
                 <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
                 <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
                 <td data-label="Aksi">${deleteButton}</td>`;
