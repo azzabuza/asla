@@ -63,7 +63,7 @@
       const role = userData ? userData.role : null;
       console.log("Login sebagai:", role, "UID:", user.uid); // LOG 7: Tampilkan role
 
-      if (role === 'admin') {
+      if (role === 'admin' || role === 'super admin') {
         console.log("Redirecting to admin.html");
         window.location.href = 'admin.html';
       } else if (role === 'koordinator') {
