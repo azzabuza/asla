@@ -31,7 +31,24 @@
       
       <div id="page-monitoring" class="page active">
         <section class="card">
-          <div class="card-body"><ul id="tripList"><li>Memuat data...</li></ul></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="tripTable">
+                <thead>
+                  <tr>
+                    <th>Rute Perjalanan</th>
+                    <th>Sopir</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tripList">
+                  <tr><td colspan="5">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -95,7 +112,7 @@
         pageTitle: document.getElementById('pageTitle'),
         navLinks: document.querySelectorAll('.nav-link'),
         pages: document.querySelectorAll('.page'),
-        tripList: document.getElementById('tripList'),
+        tripList: document.getElementById('tripList'), // Sekarang ini adalah <tbody>
         userList: document.getElementById('userList'),
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
@@ -125,7 +142,6 @@
 
         if (userData.role === 'super admin') {
             const adminOption = el('option', 'Admin', { value: 'admin' });
-            // Cek agar tidak duplikat
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
             }
@@ -159,27 +175,55 @@
             elements.addUserStatus.textContent = 'Gagal: ' + error.message;
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
-
+    
+    // ### PERUBAHAN 2: Memperbarui fungsi loadAllTrips untuk membuat <tr> ###
     function loadAllTrips() {
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
-            if (!snapshot.exists()) { elements.tripList.innerHTML = '<li>Belum ada data perjalanan.</li>'; return; }
+            if (!snapshot.exists()) {
+                elements.tripList.innerHTML = '<tr><td colspan="5">Belum ada data perjalanan.</td></tr>';
+                return;
+            }
             snapshot.forEach(child => {
-                const tripId = child.key, trip = child.val(), li = el('li');
-                const tripInfo = `${trip.asal} → ${trip.tujuan} (${fmtDate(trip.tanggal)})`;
-                li.innerHTML = `<div><strong>${tripInfo}</strong><br><small>Sopir: ${trip.driverName||'N/A'}</small></div><div class="trip-actions"></div>`;
-                const actions = li.querySelector('.trip-actions');
-                actions.appendChild(badge(trip.status));
+                const tripId = child.key;
+                const trip = child.val();
+                const tr = el('tr'); // Buat elemen <tr>
+
+                // Kolom untuk informasi perjalanan
+                const tripInfo = `${trip.asal} → ${trip.tujuan}`;
+                
+                // Buat sel aksi
+                const actionsCell = el('td');
+                const actionsContainer = el('div', '', { class: 'trip-actions' });
+                actionsContainer.style.justifyContent = 'flex-start'; // Agar rata kiri
+                
+                actionsContainer.appendChild(badge(trip.status));
+
                 if (trip.status === 'submitted') {
                     const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                     const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
                     approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
                     rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
-                    actions.append(approveBtn, rejectBtn);
+                    actionsContainer.append(approveBtn, rejectBtn);
                 }
+
                 const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
-                actions.appendChild(deleteBtn);
-                elements.tripList.appendChild(li);
+                actionsContainer.appendChild(deleteBtn);
+                actionsCell.appendChild(actionsContainer);
+
+                // Isi <tr> dengan semua sel <td>
+                tr.innerHTML = `
+                    <td data-label="Rute">${tripInfo}</td>
+                    <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
+                    <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
+                `;
+                // Masukkan sel status dan aksi secara terpisah untuk menangani elemen
+                const statusCell = el('td');
+                statusCell.appendChild(badge(trip.status));
+                tr.appendChild(statusCell);
+                tr.appendChild(actionsCell);
+
+                elements.tripList.appendChild(tr);
             });
         });
     }
@@ -227,11 +271,6 @@
         }
     });
 
-    /**
-     * ==========================================================
-     * FUNGSI loadRoleStats YANG DIPERBARUI DENGAN TABEL
-     * ==========================================================
-     */
     function loadRoleStats() {
       onValue(ref(db, 'trips'), (snapshot) => {
         if (!snapshot.exists() || !Object.keys(allUsers).length) {
