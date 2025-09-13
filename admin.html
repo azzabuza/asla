@@ -217,7 +217,7 @@
 
     /**
      * ==========================================================
-     * FUNGSI loadRoleStats YANG DIPERBARUI (TANPA MODAL)
+     * FUNGSI loadRoleStats YANG DIPERBARUI DENGAN DESKRIPSI AKSI
      * ==========================================================
      */
     function loadRoleStats() {
@@ -230,23 +230,46 @@
         let activities = { admin: [], koordinator: [], driver: [] };
         snapshot.forEach(child => {
             const t = child.val();
-            if (t.approvedBy && t.approvedAt) activities.admin.push({ userId: t.approvedBy, time: t.approvedAt });
-            if (t.koorId && t.createdAt) activities.koordinator.push({ userId: t.koorId, time: t.createdAt });
-            if (t.driverId && t.arrivedAt) activities.driver.push({ userId: t.driverId, time: t.arrivedAt });
+            const tripInfo = `${t.asal} ke ${t.tujuan}`;
+
+            // Logika untuk Admin
+            if (t.approvedBy && t.approvedAt) {
+                activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui: ${tripInfo}` });
+            }
+            if (t.rejectedBy && t.rejectedAt) {
+                activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak: ${tripInfo}` });
+            }
+            
+            // Logika untuk Koordinator
+            if (t.koorId && t.createdAt) {
+                activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip: ${tripInfo}` });
+            }
+
+            // Logika untuk Driver
+            if (t.driverId && t.arrivedAt) {
+                activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan: ${tripInfo}` });
+            }
         });
 
         const createActivityList = (role, title) => {
-          let listHtml = `<h4>${title} (${activities[role].length} Aksi)</h4>`;
+          let listHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`;
           if (activities[role].length === 0) {
             return listHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
           }
           
-          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 10); 
+          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15); // Tampilkan lebih banyak
           listHtml += '<ul class="kinerja-detail-list">';
           sortedActivities.forEach(act => {
             const userName = allUsers[act.userId]?.name || 'User Dihapus';
             const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-            listHtml += `<li><span class="user-name">${userName}</span><span class="action-time">${actionTime}</span></li>`;
+            listHtml += `
+                <li>
+                    <div>
+                        <span class="user-name">${userName}</span>
+                        <span class="action-desc">${act.action}</span>
+                    </div>
+                    <span class="action-time">${actionTime}</span>
+                </li>`;
           });
           listHtml += '</ul>';
           return listHtml;
