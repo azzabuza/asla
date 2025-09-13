@@ -1,26 +1,8 @@
 /* === FONT DARI GOOGLE === */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* === VARIABLE CSS === */
+/* === VARIABLE CSS (NON-WARNA) === */
 :root {
-    --primary-color: #3685FB;
-    --primary-color-dark: #2F73D9;
-    --primary-color-light: #EBF2FC;
-    --sidebar-bg: #2c3e50;
-    --sidebar-text: #ecf0f1;
-    --sidebar-text-hover: #ffffff;
-    --content-bg: #F4F7F6;
-    --card-bg: #FFFFFF;
-    --title-color: #2c3e50;
-    --text-color: #595959;
-    --border-color: #E0E0E0;
-
-    /* Status Warna */
-    --success-color: #28a745;
-    --warning-color: #f39c12;
-    --danger-color: #dc3545;
-    --info-color: #17a2b8;
-
     /* Font & Tipografi */
     --body-font: 'Poppins', sans-serif;
     --normal-font-size: 1rem;
@@ -45,13 +27,13 @@ html {
 body {
     font-family: var(--body-font);
     font-size: var(--normal-font-size);
-    background-color: var(--content-bg);
-    color: var(--text-color);
+    background-color: #F4F7F6;
+    color: #595959;
     line-height: 1.6;
 }
 
 h1, h2, h3 {
-    color: var(--title-color);
+    color: #2c3e50;
     font-weight: 600;
 }
 
@@ -66,8 +48,8 @@ button { cursor: pointer; border: none; }
 
 .sidebar {
     width: 250px;
-    background-color: var(--sidebar-bg);
-    color: var(--sidebar-text);
+    background-color: #2c3e50;
+    color: #ecf0f1;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -90,12 +72,12 @@ button { cursor: pointer; border: none; }
 .sidebar-menu li a {
     display: block;
     padding: 1rem 1.5rem;
-    color: var(--sidebar-text);
+    color: #ecf0f1;
     transition: background-color 0.3s, color 0.3s;
 }
 .sidebar-menu li a:hover {
-    background-color: var(--primary-color);
-    color: var(--sidebar-text-hover);
+    background-color: #3685FB;
+    color: #ffffff;
 }
 .sidebar-menu li a i {
     width: 20px;
@@ -122,7 +104,7 @@ button { cursor: pointer; border: none; }
 
 /* === CARD COMPONENT === */
 .card {
-    background-color: var(--card-bg);
+    background-color: #FFFFFF;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     margin-bottom: 2rem;
@@ -132,9 +114,9 @@ button { cursor: pointer; border: none; }
 .card-header {
     font-size: 1.2rem;
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #E0E0E0;
 }
-.card-header i { margin-right: 10px; color: var(--primary-color); }
+.card-header i { margin-right: 10px; color: #3685FB; }
 
 .card-body {
     padding: 1.5rem;
@@ -148,7 +130,7 @@ button { cursor: pointer; border: none; }
 
 /* === TOMBOL (BUTTONS) === */
 button {
-    background-color: var(--primary-color);
+    background-color: #3685FB;
     color: white;
     padding: 0.7rem 1.5rem;
     border-radius: 0.25rem;
@@ -157,18 +139,18 @@ button {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 button:hover {
-    background-color: var(--primary-color-dark);
+    background-color: #2F73D9;
     transform: translateY(-2px);
 }
 .logout-button {
     background-color: transparent;
-    border: 1px solid var(--danger-color);
-    color: var(--danger-color);
+    border: 1px solid #dc3545;
+    color: #dc3545;
     width: 100%;
     text-align: center;
 }
 .logout-button:hover {
-    background-color: var(--danger-color);
+    background-color: #dc3545;
     color: white;
 }
 button.danger { background-color: #6c757d; }
@@ -180,14 +162,14 @@ button.danger:hover { background-color: #5a6268; }
     font-size: var(--small-font-size);
     margin-left: 0.5rem;
 }
-.btn-sm.success { background-color: var(--success-color); }
-.btn-sm.danger { background-color: var(--danger-color); }
+.btn-sm.success { background-color: #28a745; }
+.btn-sm.danger { background-color: #dc3545; }
 
 
 /* === FORMULIR (FORMS) === */
 form { display: flex; flex-direction: column; gap: 1rem; }
 .form-group { display: flex; flex-direction: column; }
-label { font-weight: 500; color: var(--title-color); margin-bottom: 0.25rem; }
+label { font-weight: 500; color: #2c3e50; margin-bottom: 0.25rem; }
 
 input[type="text"],
 input[type="email"],
@@ -196,13 +178,13 @@ input[type="date"],
 select {
     width: 100%;
     padding: 0.7rem 1rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid #E0E0E0;
     border-radius: 0.25rem;
     background-color: #fff;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 input:focus, select:focus {
-    border-color: var(--primary-color);
+    border-color: #3685FB;
     outline: none;
     box-shadow: 0 0 0 3px rgba(54, 133, 251, 0.2);
 }
@@ -211,7 +193,7 @@ input:focus, select:focus {
 /* === DAFTAR (LISTS) === */
 ul#tripList li {
     background-color: #fdfdfd;
-    border: 1px solid var(--border-color);
+    border: 1px solid #E0E0E0;
     padding: 1rem 1.5rem;
     margin-bottom: 1rem;
     border-radius: 0.5rem;
@@ -230,7 +212,7 @@ ul#tripList li strong { font-weight: 600; }
     border-bottom: 1px solid #f0f0f0;
 }
 .stats-list li:last-child { border-bottom: none; }
-.stats-list li span { font-weight: 600; color: var(--primary-color); }
+.stats-list li span { font-weight: 600; color: #3685FB; }
 
 
 /* === TABEL (TABLES) === */
@@ -261,13 +243,13 @@ th {
     text-transform: uppercase;
     font-size: var(--small-font-size);
     color: #989898;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 2px solid #E0E0E0;
 }
-tbody tr { border-bottom: 1px solid var(--border-color); }
+tbody tr { border-bottom: 1px solid #E0E0E0; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #f9f9f9; }
 
-.status-online { color: var(--success-color); }
+.status-online { color: #28a745; }
 .status-offline { color: #989898; }
 .status-online .fa-circle, .status-offline .fa-circle { font-size: 0.7em; vertical-align: middle; }
 
@@ -279,9 +261,9 @@ tbody tr:hover { background-color: #f9f9f9; }
     color: white;
     text-transform: capitalize;
 }
-.role-admin { background-color: var(--danger-color); }
-.role-koordinator { background-color: var(--warning-color); }
-.role-driver { background-color: var(--info-color); }
+.role-admin { background-color: #dc3545; }
+.role-koordinator { background-color: #f39c12; }
+.role-driver { background-color: #17a2b8; }
 
 
 /* === BADGES === */
@@ -294,10 +276,10 @@ tbody tr:hover { background-color: #f9f9f9; }
     text-transform: capitalize;
     color: white;
 }
-.badge.success { background-color: var(--success-color); }
-.badge.warn { background-color: var(--warning-color); }
-.badge.danger { background-color: var(--danger-color); }
-.badge.arrived { background-color: var(--info-color); }
+.badge.success { background-color: #28a745; }
+.badge.warn { background-color: #f39c12; }
+.badge.danger { background-color: #dc3545; }
+.badge.arrived { background-color: #17a2b8; }
 
 
 /* === DESAIN RESPONSIVE === */
