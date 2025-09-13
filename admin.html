@@ -5,104 +5,120 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background: #f4f4f4;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-        <h1>Panel Admin</h1>
-        <button id="logoutBtn" class="logout-button">Logout</button>
-    </div>
+  <div class="admin-wrapper">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="fas fa-truck"></i> SLA Trucking</h3>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#monitoring"><i class="fas fa-chart-line"></i> Monitoring Perjalanan</a></li>
+        <li><a href="#users"><i class="fas fa-users"></i> Manajemen User</a></li>
+        <li><a href="#kinerja"><i class="fas fa-star"></i> Kinerja Role</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </nav>
 
-    <h2>Monitoring Perjalanan</h2>
-    <ul id="tripList"><li>Memuat data...</li></ul>
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Dashboard Admin</h1>
+        <p>Selamat datang, Admin! Kelola semua aspek operasional dari sini.</p>
+      </header>
+      
+      <section id="monitoring" class="card">
+        <h2 class="card-header">
+          <i class="fas fa-chart-line"></i> Monitoring Perjalanan
+        </h2>
+        <div class="card-body">
+          <ul id="tripList"><li>Memuat data...</li></ul>
+        </div>
+      </section>
 
-    <h2>Tambah User Baru</h2>
-    <form id="addUserForm">
-      <label for="newUserName">Nama</label>
-      <input type="text" id="newUserName" autocomplete="off" required>
+      <div class="content-grid">
+        <section id="tambah-user" class="card">
+          <h2 class="card-header"><i class="fas fa-user-plus"></i> Tambah User Baru</h2>
+          <div class="card-body">
+            <form id="addUserForm">
+              <div class="form-group">
+                <label for="newUserName">Nama</label>
+                <input type="text" id="newUserName" autocomplete="off" required>
+              </div>
+              <div class="form-group">
+                <label for="newUserEmail">Email</label>
+                <input type="email" id="newUserEmail" autocomplete="off" required>
+              </div>
+              <div class="form-group">
+                <label for="newUserPassword">Password</label>
+                <input type="password" id="newUserPassword" autocomplete="new-password" required>
+              </div>
+              <div class="form-group">
+                <label for="newUserRole">Role</label>
+                <select id="newUserRole" required>
+                  <option value="koordinator">Koordinator</option>
+                  <option value="driver">Driver</option>
+                </select>
+              </div>
+              <button type="submit">Tambah User</button>
+            </form>
+            <p id="addUserStatus" class="form-status"></p>
+          </div>
+        </section>
 
-      <label for="newUserEmail">Email</label>
-      <input type="email" id="newUserEmail" autocomplete="off" required>
+        <section id="kinerja" class="card">
+            <h2 class="card-header"><i class="fas fa-star"></i> Kinerja Role</h2>
+            <div id="roleStats" class="card-body">Memuat statistik...</div>
+        </section>
+      </div>
 
-      <label for="newUserPassword">Password</label>
-      <input type="password" id="newUserPassword" autocomplete="new-password" required>
+      <section id="users" class="card">
+        <h2 class="card-header"><i class="fas fa-users"></i> Daftar Semua User</h2>
+        <div class="card-body">
+          <div class="table-controls">
+            <div>
+              <label><i class="fas fa-filter"></i> Filter Role: </label>
+              <select id="filterRole">
+                <option value="all">Semua</option>
+                <option value="admin">Admin</option>
+                <option value="koordinator">Koordinator</option>
+                <option value="driver">Driver</option>
+              </select>
+            </div>
+            <div>
+              <label><i class="fas fa-search"></i> Cari Nama: </label>
+              <input type="text" id="searchName" placeholder="Ketik nama user..." />
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>UID</th>
+                  <th>Nama</th>
+                  <th>Role</th>
+                  <th>Login Terakhir</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="userList">
+                <tr><td colspan="5">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-      <label for="newUserRole">Role</label>
-      <select id="newUserRole" required>
-        <option value="koordinator">Koordinator</option>
-        <option value="driver">Driver</option>
-      </select>
-
-      <button type="submit">Tambah User</button>
-    </form>
-    <p id="addUserStatus" style="margin-top:10px;"></p>
-
-    <h2>Daftar Semua User</h2>
-
-    <div style="margin-bottom:10px;">
-      <label>Filter Role: </label>
-      <select id="filterRole">
-        <option value="all">Semua</option>
-        <option value="admin">Admin</option>
-        <option value="koordinator">Koordinator</option>
-        <option value="driver">Driver</option>
-      </select>
-
-      <label style="margin-left:20px;">Cari Nama: </label>
-      <input type="text" id="searchName" placeholder="Ketik nama user..." />
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>UID</th>
-          <th>Nama</th>
-          <th>Role</th>
-          <th>Last Login</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="userList">
-        <tr><td colspan="5">Memuat data...</td></tr>
-      </tbody>
-    </table>
-
-    <h2>Kinerja Role</h2>
-    <div id="roleStats">Memuat statistik...</div>
+    </main>
   </div>
 
   <script type="module">
+    // Fungsionalitas JavaScript tidak diubah sama sekali
     import { 
-      auth, 
-      onAuthStateChanged, 
-      signOut,
-      db, 
-      ref, 
-      onValue, 
-      update, 
-      get, 
-      set,
-      onDisconnect,
-      // Impor tambahan untuk solusi admin
-      firebaseConfig,
-      initializeApp,
-      deleteApp,
-      getAuth,
+      auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set,
+      onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
       createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
@@ -143,9 +159,6 @@
       }
     });
 
-    // ==========================================================
-    // BAGIAN YANG DIPERBARUI UNTUK MENAMBAH USER DENGAN AMAN
-    // ==========================================================
     addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         addUserStatus.textContent = 'Menambahkan user...';
@@ -160,20 +173,13 @@
         let tempApp;
 
         try {
-            // 1. Inisialisasi aplikasi Firebase sementara
             tempApp = initializeApp(firebaseConfig, tempAppName);
             const tempAuth = getAuth(tempApp);
-
-            // 2. Buat user menggunakan koneksi sementara (tidak akan logout admin)
             const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
             const newUser = userCredential.user;
 
-            // 3. Simpan data user ke database menggunakan koneksi utama
             await set(ref(db, 'users/' + newUser.uid), {
-                name: name,
-                role: role,
-                online: false,
-                lastLogin: null
+                name: name, role: role, online: false, lastLogin: null
             });
 
             addUserStatus.style.color = 'green';
@@ -191,10 +197,7 @@
                 addUserStatus.textContent = 'Gagal menambah user: ' + error.message;
             }
         } finally {
-            // 4. Hapus aplikasi sementara untuk membersihkan memori
-            if (tempApp) {
-                await deleteApp(tempApp);
-            }
+            if (tempApp) await deleteApp(tempApp);
         }
     });
 
@@ -211,16 +214,23 @@
           const trip = child.val();
           const li = el('li');
           li.innerHTML = `
-            <strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br>
-            Sopir: ${trip.driverName || 'Belum Ditugaskan'} | Nopol: ${trip.nopol}<br>
-            Status: `;
-          li.appendChild(badge(trip.status));
+            <div>
+              <strong>${trip.asal} → ${trip.tujuan}</strong> (${fmtDate(trip.tanggal)})<br>
+              <small>Sopir: ${trip.driverName || 'N/A'} | Nopol: ${trip.nopol}</small>
+            </div>
+            <div class="trip-actions">
+              <span style="margin-right: 10px;">Status: </span>
+            </div>
+          `;
+          const statusContainer = li.querySelector('.trip-actions');
+          statusContainer.appendChild(badge(trip.status));
+
           if (trip.status === 'submitted') {
-            const approveBtn = el('button', 'Setujui');
-            const rejectBtn = el('button', 'Tolak', { class: 'danger' });
+            const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
+            const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
             approveBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid }));
             rejectBtn.addEventListener('click', () => update(ref(db, 'trips/' + tripId), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid }));
-            li.append(approveBtn, rejectBtn);
+            statusContainer.append(approveBtn, rejectBtn);
           }
           tripList.appendChild(li);
         });
@@ -254,11 +264,13 @@
           found = true;
           const tr = el('tr');
           tr.innerHTML = `
-            <td>${uid}</td>
-            <td>${u.name || '-'}</td>
-            <td>${u.role || '-'}</td>
-            <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
-            <td style="color:${u.online ? 'green' : 'gray'}">${u.online ? '🟢 Online' : '⚪ Offline'}</td>`;
+            <td data-label="UID"><small>${uid}</small></td>
+            <td data-label="Nama">${u.name || '-'}</td>
+            <td data-label="Role"><span class="role-badge role-${u.role}">${u.role || '-'}</span></td>
+            <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+            <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}">
+              <i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}
+            </td>`;
           userList.appendChild(tr);
         }
       });
@@ -282,10 +294,10 @@
         });
         roleStats.innerHTML = `
           <p>📊 Total kontribusi (berdasarkan jumlah aksi):</p>
-          <ul>
-            <li>Admin (approve perjalanan): ${stats.admin}</li>
-            <li>Koordinator (buat perjalanan): ${Object.keys(stats.koordinator).length} user</li>
-            <li>Driver (menjalankan perjalanan): ${Object.keys(stats.driver).length} user</li>
+          <ul class="stats-list">
+            <li><strong>Admin</strong> (approve)<span>${stats.admin} Aksi</span></li>
+            <li><strong>Koordinator</strong> (buat trip)<span>${Object.keys(stats.koordinator).length} User Aktif</span></li>
+            <li><strong>Driver</strong> (menjalankan trip)<span>${Object.keys(stats.driver).length} User Aktif</span></li>
           </ul>`;
       });
     }
