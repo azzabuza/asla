@@ -63,7 +63,10 @@ button { cursor: pointer; border: none; }
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
 }
-.sidebar-header h3 i { margin-right: 10px; }
+.sidebar-header h3 i {
+    color: #ecf0f1;
+    margin-right: 10px;
+}
 
 .sidebar-menu {
     flex-grow: 1;
