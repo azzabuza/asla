@@ -7,39 +7,62 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Panel Koordinator</h1>
-      <button id="logoutBtn" class="logout-button">Logout</button>
-    </div>
+  <div class="content-wrapper">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h3>Input Perjalanan Baru</h3>
+      </div>
+      <div class="sidebar-form-container">
+        <form id="tripForm">
+          <div class="form-group">
+            <label for="driverSelect">Pilih Sopir</label>
+            <select id="driverSelect" required>
+              <option value="">Memuat daftar sopir...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nopol">No. Polisi</label>
+            <input id="nopol" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="asal">Asal</label>
+            <input id="asal" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="tujuan">Tujuan</label>
+            <input id="tujuan" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="muatan">Muatan</label>
+            <input id="muatan" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="tanggal">Tanggal Keberangkatan</label>
+            <input id="tanggal" type="date" required>
+          </div>
+          <button type="submit">Kirim Data Perjalanan</button>
+          <p id="statusMsg" class="form-status"></p>
+        </form>
+      </div>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-button">Logout</button>
+      </div>
+    </nav>
 
-    <form id="tripForm">
-      <label for="driverSelect">Pilih Sopir</label>
-      <select id="driverSelect" required>
-        <option value="">Memuat daftar sopir...</option>
-      </select>
-
-      <label for="nopol">No. Polisi</label>
-      <input id="nopol" type="text" required>
-
-      <label for="asal">Asal</label>
-      <input id="asal" type="text" required>
-
-      <label for="tujuan">Tujuan</label>
-      <input id="tujuan" type="text" required>
-
-      <label for="muatan">Muatan</label>
-      <input id="muatan" type="text" required>
-
-      <label for="tanggal">Tanggal Keberangkatan</label>
-      <input id="tanggal" type="date" required>
-
-      <button type="submit">Kirim Data Perjalanan</button>
-    </form>
-    <p id="statusMsg" style="color:green; margin-top:10px;"></p>
-
-    <h2>Status Perjalanan Saya</h2>
-    <ul id="tripList"><li>Memuat data...</li></ul>
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Status Perjalanan Saya</h1>
+        <p>Pantau semua perjalanan yang telah Anda buat di sini.</p>
+      </header>
+      
+      <div class="page active">
+        <section class="card">
+          <div class="card-body">
+            <ul id="tripList"><li>Memuat data...</li></ul>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 
   <script type="module">
@@ -56,8 +79,8 @@
       query, 
       orderByChild, 
       equalTo,
-      update,       // Tambahkan update
-      onDisconnect  // Tambahkan onDisconnect
+      update,
+      onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
@@ -79,18 +102,13 @@
         return window.location.href = 'index.html';
       }
       
-      // Atur status online dan last login
       await update(userRef, { lastLogin: Date.now(), online: true });
-
-      // Gunakan onDisconnect untuk mengatur status offline saat koneksi terputus
-      const userStatusRef = ref(db, 'users/' + currentUser.uid + '/online');
-      onDisconnect(userStatusRef).set(false);
+      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
 
       loadMyTrips();
       loadDrivers(); 
     });
 
-    // Fungsi untuk memuat semua user dengan role 'driver' ke dropdown
     async function loadDrivers() {
         try {
             const usersRef = ref(db, 'users');
@@ -100,31 +118,23 @@
             driverSelect.innerHTML = '<option value="">-- Pilih Sopir --</option>';
             
             if (snapshot.exists()) {
-                let driversFound = false;
                 snapshot.forEach(child => {
                     const driver = child.val();
-                    if (driver.role === 'driver') {
-                        driversFound = true;
-                        const option = el('option', driver.name, { value: child.key });
-                        driverSelect.appendChild(option);
-                    }
+                    const option = el('option', driver.name, { value: child.key });
+                    driverSelect.appendChild(option);
                 });
-                
-                if (!driversFound) {
-                    driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
-                }
             } else {
-                driverSelect.innerHTML = '<option value="">Tidak ada sopir tersedia</option>';
+                driverSelect.innerHTML = '<option value="">Tidak ada sopir</option>';
             }
         } catch (error) {
             console.error("Gagal memuat daftar sopir:", error);
-            driverSelect.innerHTML = '<option value="">Error memuat driver</option>';
+            driverSelect.innerHTML = '<option value="">Error</option>';
         }
     }
 
     tripForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusMsg.textContent = '';
+      statusMsg.textContent = 'Mengirim...';
       if (!currentUser) return alert('Anda belum login.');
 
       const selectedDriverOption = driverSelect.options[driverSelect.selectedIndex];
@@ -152,9 +162,10 @@
       try {
         await set(push(ref(db, 'trips')), data);
         tripForm.reset();
-        statusMsg.textContent = '✔️ Data perjalanan berhasil dikirim dan sedang menunggu persetujuan admin.';
+        statusMsg.textContent = '✔️ Data berhasil dikirim.';
+        setTimeout(() => statusMsg.textContent = '', 3000); // Hapus pesan setelah 3 detik
       } catch(err) {
-        statusMsg.style.color = 'red';
+        statusMsg.style.color = 'var(--danger)';
         statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
       }
     });
@@ -165,42 +176,42 @@
 
       onValue(q, (snapshot) => {
         tripList.innerHTML = '';
-        let hasTrips = false;
+        if (!snapshot.exists()) {
+            tripList.innerHTML = '<li class="empty-state">Belum ada data perjalanan yang Anda buat.</li>';
+            return;
+        }
 
         snapshot.forEach(childSnapshot => {
           const tripData = childSnapshot.val();
-          hasTrips = true;
-
           const li = el('li');
-          const statusBadge = badge(tripData.status);
           
           let content = `
-            <strong>${tripData.asal} → ${tripData.tujuan}</strong> 
-            (${fmtDate(tripData.tanggal)})<br>
-            Sopir: ${tripData.driverName || '-'} | Status: 
+            <div>
+              <strong>${tripData.asal} → ${tripData.tujuan}</strong> 
+              <span class="text-secondary">(${fmtDate(tripData.tanggal)})</span><br>
+              <small>Sopir: ${tripData.driverName || '-'} | Nopol: ${tripData.nopol}</small>
+            </div>
+            <div class="trip-actions"></div>
           `;
           li.innerHTML = content;
-          li.appendChild(statusBadge);
+          
+          const actions = li.querySelector('.trip-actions');
+          actions.appendChild(badge(tripData.status));
 
           if (tripData.status === 'approved') {
-            const sjButton = el('button', 'Surat Jalan');
-            const invButton = el('button', 'Invoice');
+            const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
+            const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
             sjButton.onclick = () => window.open('surat-jalan.html?id=' + childSnapshot.key);
             invButton.onclick = () => window.open('invoice.html?id=' + childSnapshot.key);
-            li.append(sjButton, invButton);
+            actions.append(sjButton, invButton);
           }
           tripList.appendChild(li);
         });
-
-        if (!hasTrips) {
-          tripList.innerHTML = '<li>Belum ada data perjalanan yang Anda buat.</li>';
-        }
       });
     }
 
     logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
-            // Atur status offline secara manual sebelum logout
             await update(ref(db, 'users/' + currentUser.uid), { online: false });
         }
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
