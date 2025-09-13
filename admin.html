@@ -20,7 +20,7 @@
         <li><a href="#addusers" class="nav-link">Tambah Karyawan</a></li>
         <li><a href="#addrutes" class="nav-link">Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link">Tambah Nopol</a></li>
-        <li><a href="#kinerja" class="nav-link">Kinerja Role</a></li>
+        <li><a href="#performance" class="nav-link">Kinerja Role</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Logout</button>
@@ -176,7 +176,7 @@
         </section>
         </div>
 
-      <div id="page-kinerja" class="page">
+      <div id="page-performance" class="page">
         <section class="card">
           <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
           <div id="roleStats" class="card-body">Memuat statistik...</div>
@@ -468,7 +468,7 @@
           }
           
           const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
-          tableHtml += `<div class="table-responsive"><table class="kinerja-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+          tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
           sortedActivities.forEach(act => {
             const userName = allUsers[act.userId]?.name || 'User Dihapus';
             const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
