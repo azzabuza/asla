@@ -14,6 +14,11 @@
       "name": "Abah",
       "online": false,
       "role": "driver"
+    },
+    "6LSRP5DhXnbpgGpT84Fq0MmckzQ2": {
+      "name": "Super Admin",
+      "online": false,
+      "role": "super admin"
     }
   }
 }
