@@ -53,7 +53,7 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   min-height: 100vh;
 }
 .sidebar {
-  width: 320px; /* Lebar sidebar ditambah untuk form */
+  width: 320px;
   background-color: var(--background-secondary);
   color: var(--text-primary);
   display: flex;
@@ -100,10 +100,10 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
 .sidebar-footer {
   padding: 1.5rem;
   border-top: 1px solid var(--border-color);
-  margin-top: auto; /* Mendorong footer ke bawah */
+  margin-top: auto;
 }
 .main-content {
-  margin-left: 320px; /* Disesuaikan dengan lebar sidebar */
+  margin-left: 320px;
   padding: 2.5rem;
   width: calc(100% - 320px);
 }
@@ -178,8 +178,8 @@ button:hover, .button:hover {
 .btn-sm {
   padding: 0.4rem 1rem;
   font-size: .875rem;
-  margin-left: 0.5rem;
   width: auto;
+  margin: 0; /* Menghapus margin agar bisa diatur oleh 'gap' */
 }
 .btn-sm.success { background: var(--success); box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2); color: var(--text-primary);}
 .btn-sm.danger { background: var(--danger); box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2); color: var(--text-primary); }
@@ -235,13 +235,13 @@ tbody tr:hover { background-color: var(--background-tertiary); }
 /* === KHUSUS FORM DI SIDEBAR KOORDINATOR === */
 .sidebar-form-container {
   padding: 0 1.5rem;
-  overflow-y: auto; /* Agar bisa di-scroll jika form panjang */
+  overflow-y: auto;
   flex-grow: 1;
 }
 #tripForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Jarak antar form-group */
+  gap: 1rem;
   padding-top: 1.5rem;
 }
 
@@ -256,6 +256,8 @@ ul#tripList li {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Memastikan bisa wrap di layar kecil */
+  gap: 1rem; /* Jarak antar grup konten dan grup aksi */
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
 }
@@ -264,11 +266,16 @@ ul#tripList li:hover {
   box-shadow: 0 8px 25px var(--shadow-color);
   border-left-color: var(--accent-primary);
 }
+
+/* === PERBAIKAN UNTUK TOMBOL BERHIMPITAN === */
 .trip-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap; /* Tombol bisa turun ke bawah jika tidak cukup ruang */
+  gap: 0.75rem; /* Jarak antar tombol dan badge */
+  justify-content: flex-end; /* Rata kanan */
 }
+
 .text-secondary { color: var(--text-secondary); }
 .status-online { color: var(--success); }
 .status-offline { color: var(--text-secondary); }
@@ -326,8 +333,9 @@ ul#tripList li:hover {
 @media (max-width: 576px) {
   body { font-size: 14px; }
   .main-header h1 { font-size: 1.8rem; }
-  ul#tripList li { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  ul#tripList li { flex-direction: column; align-items: flex-start; }
   .main-content { padding: 1rem; }
   .login-container { margin: 2rem 1rem; padding: 2rem; }
   .sidebar { width: 100%; }
+  .trip-actions { justify-content: flex-start; width: 100%; margin-top: 0.5rem; }
 }
