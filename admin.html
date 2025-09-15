@@ -44,13 +44,14 @@
                   <tr>
                     <th>Rute Perjalanan</th>
                     <th>Sopir</th>
+                    <th>Muatan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="tripList">
-                  <tr><td colspan="5">Memuat data...</td></tr>
+                  <tr><td colspan="6">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -371,7 +372,7 @@
         onValue(ref(db, 'trips'), (snapshot) => {
             elements.tripList.innerHTML = '';
             if (!snapshot.exists()) {
-                elements.tripList.innerHTML = '<tr><td colspan="5">Belum ada data perjalanan.</td></tr>';
+                elements.tripList.innerHTML = '<tr><td colspan="6">Belum ada data perjalanan.</td></tr>';
                 return;
             }
             snapshot.forEach(child => {
@@ -403,11 +404,12 @@
                 tr.innerHTML = `
                     <td data-label="Rute">${tripInfo}</td>
                     <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
+                    <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
                     <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
                 `;
                 tr.appendChild(statusCell);
                 tr.appendChild(actionsCell);
-
+                
                 elements.tripList.appendChild(tr);
             });
         });
