@@ -744,7 +744,7 @@
           }
           
           const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
-          tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+          tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
           sortedActivities.forEach(act => {
             const userName = allUsers[act.userId]?.name || 'User Dihapus';
             const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
