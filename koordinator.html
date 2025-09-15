@@ -84,6 +84,11 @@
                 </tbody>
               </table>
             </div>
+            <div id="koor-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevKoorBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="koorPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextKoorBtn" class="btn-sm info">Berikutnya</button>
+            </div>
           </div>
         </section>
       </div>
@@ -117,7 +122,15 @@
     const asalSelect = document.getElementById('asal');
     const tujuanSelect = document.getElementById('tujuan');
     const nopolSelect = document.getElementById('nopol');
+    const koorPaginationControls = document.getElementById('koor-pagination-controls');
+    const prevKoorBtn = document.getElementById('prevKoorBtn');
+    const nextKoorBtn = document.getElementById('nextKoorBtn');
+    const koorPageInfo = document.getElementById('koorPageInfo');
+    
     let currentUser = null;
+    let allMyTrips = [];
+    let currentKoorPage = 1;
+    const rowsPerPage = 10;
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -250,20 +263,33 @@
         statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
       }
     });
-    
-    function loadMyTrips() {
-      const tripsRef = ref(db, 'trips');
-      const q = query(tripsRef, orderByChild('koorId'), equalTo(currentUser.uid));
 
-      onValue(q, (snapshot) => {
-        tripList.innerHTML = '';
-        if (!snapshot.exists()) {
-            tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
-            return;
-        }
+    // --- PAGINATION LOGIC ---
+    function displayMyTrips(page) {
+      tripList.innerHTML = '';
+      currentKoorPage = page;
+      
+      const start = (currentKoorPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedTrips = allMyTrips.slice(start, end);
+      
+      if (paginatedTrips.length === 0 && allMyTrips.length > 0) {
+        currentKoorPage = Math.ceil(allMyTrips.length / rowsPerPage);
+        return displayMyTrips(currentKoorPage);
+      }
 
-        snapshot.forEach(childSnapshot => {
-          const tripData = childSnapshot.val();
+      if (allMyTrips.length > rowsPerPage) {
+        koorPaginationControls.style.display = 'block';
+      } else {
+        koorPaginationControls.style.display = 'none';
+      }
+
+      if (paginatedTrips.length === 0) {
+        tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
+      } else {
+        paginatedTrips.forEach(tripEntry => {
+          const tripId = tripEntry.id;
+          const tripData = tripEntry.data;
           const tr = el('tr');
 
           const actionsCell = el('td');
@@ -273,8 +299,8 @@
           if (tripData.status === 'approved') {
             const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
             const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
-            sjButton.onclick = () => window.open('surat-jalan.html?id=' + childSnapshot.key);
-            invButton.onclick = () => window.open('invoice.html?id=' + childSnapshot.key);
+            sjButton.onclick = () => window.open('surat-jalan.html?id=' + tripId);
+            invButton.onclick = () => window.open('invoice.html?id=' + tripId);
             actionsContainer.append(sjButton, invButton);
           } else {
             actionsContainer.textContent = '-';
@@ -296,8 +322,43 @@
           
           tripList.appendChild(tr);
         });
+      }
+      
+      const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
+      koorPageInfo.textContent = `Halaman ${currentKoorPage} dari ${totalPages}`;
+      prevKoorBtn.disabled = currentKoorPage === 1;
+      nextKoorBtn.disabled = currentKoorPage === totalPages;
+    }
+    
+    prevKoorBtn.addEventListener('click', () => {
+      if (currentKoorPage > 1) {
+        displayMyTrips(currentKoorPage - 1);
+      }
+    });
+
+    nextKoorBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
+      if (currentKoorPage < totalPages) {
+        displayMyTrips(currentKoorPage + 1);
+      }
+    });
+
+    function loadMyTrips() {
+      const tripsRef = ref(db, 'trips');
+      const q = query(tripsRef, orderByChild('koorId'), equalTo(currentUser.uid));
+
+      onValue(q, (snapshot) => {
+        allMyTrips = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allMyTrips.push({ id: child.key, data: child.val() });
+          });
+        }
+        allMyTrips.reverse();
+        displayMyTrips(currentKoorPage);
       });
     }
+    // --- END PAGINATION LOGIC ---
 
     logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
