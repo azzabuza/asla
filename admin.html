@@ -201,7 +201,8 @@
       <div id="page-performance" class="page">
         <section class="card">
           <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
-          <div id="roleStats" class="card-body">Memuat statistik...</div>
+          <div id="roleStats" class="card-body">
+            </div>
         </section>
       </div>
 
@@ -251,7 +252,7 @@
         vehiclePaginationControls: document.getElementById('vehicle-pagination-controls'),
         prevVehicleBtn: document.getElementById('prevVehicleBtn'),
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
-        vehiclePageInfo: document.getElementById('vehiclePageInfo')
+        vehiclePageInfo: document.getElementById('vehiclePageInfo'),
     };
 
     let currentUser = null;
@@ -264,6 +265,13 @@
     let currentRoutePage = 1;
     let currentVehiclePage = 1;
     const rowsPerPage = 10;
+    
+    let allAdminActivities = [];
+    let allKoorActivities = [];
+    let allDriverActivities = [];
+    let currentAdminPage = 1;
+    let currentKoorPage = 1;
+    let currentDriverPage = 1;
 
     setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
 
@@ -633,6 +641,160 @@
     }
     // --- END VEHICLE PAGINATION LOGIC ---
 
+    function loadRoleStats() {
+      onValue(ref(db, 'trips'), (snapshot) => {
+        let activities = { admin: [], koordinator: [], driver: [] };
+        if (snapshot.exists() && Object.keys(allUsers).length) {
+          snapshot.forEach(child => {
+              const t = child.val();
+              const tripId = child.key;
+              const tripInfo = `${t.asal} ke ${t.tujuan}`;
+              if (t.approvedBy && t.approvedAt) {
+                const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
+                activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${koorName}`, tripId: tripId });
+              }
+              if (t.rejectedBy && t.rejectedAt) {
+                const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
+                activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${koorName}`, tripId: tripId });
+              }
+              if (t.koorId && t.createdAt) {
+                const driverName = t.driverName || 'Driver Tidak Dikenal';
+                activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
+              }
+              if (t.driverId && t.arrivedAt) {
+                activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}`, tripId: tripId });
+              }
+          });
+        }
+        allAdminActivities = activities.admin.sort((a, b) => b.time - a.time);
+        allKoorActivities = activities.koordinator.sort((a, b) => b.time - a.time);
+        allDriverActivities = activities.driver.sort((a, b) => b.time - a.time);
+        
+        displayAdminActivities(1);
+        displayKoorActivities(1);
+        displayDriverActivities(1);
+      });
+    }
+
+    function displayAdminActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allAdminActivities.slice(start, end);
+      const totalPages = Math.ceil(allAdminActivities.length / rowsPerPage);
+      
+      let html = createActivityTable('admin', 'Aktivitas Admin', paginatedActivities);
+      html += createPaginationControls('admin', page, totalPages);
+      
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.admin-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('admin', displayAdminActivities, totalPages);
+      }
+    }
+
+    function displayKoorActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allKoorActivities.slice(start, end);
+      const totalPages = Math.ceil(allKoorActivities.length / rowsPerPage);
+
+      let html = createActivityTable('koordinator', 'Aktivitas Koordinator', paginatedActivities);
+      html += createPaginationControls('koordinator', page, totalPages);
+      
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.koordinator-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('koordinator', displayKoorActivities, totalPages);
+      }
+    }
+
+    function displayDriverActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allDriverActivities.slice(start, end);
+      const totalPages = Math.ceil(allDriverActivities.length / rowsPerPage);
+
+      let html = createActivityTable('driver', 'Aktivitas Driver', paginatedActivities);
+      html += createPaginationControls('driver', page, totalPages);
+
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.driver-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('driver', displayDriverActivities, totalPages);
+      }
+    }
+
+    function createActivityTable(role, title, activities) {
+      let tableHtml = `<div class="${role}-table-container"><h4>${title} (${activities.length} Total Aksi)</h4>`;
+      if (activities.length === 0) {
+        return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p></div>`;
+      }
+      
+      tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+      activities.forEach(act => {
+        const userName = allUsers[act.userId]?.name || 'User Dihapus';
+        const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`;
+      });
+      tableHtml += '</tbody></table></div></div>';
+      return tableHtml;
+    }
+
+    function createPaginationControls(role, currentPage, totalPages) {
+        if (totalPages <= 1) return '';
+        return `
+            <div id="${role}-pagination-controls" style="margin-top:1rem; text-align:center;">
+                <button class="btn-sm info" data-role="${role}" data-direction="prev" ${currentPage === 1 ? 'disabled' : ''}>Sebelumnya</button>
+                <span style="margin: 0 1rem; font-weight: 500;">Halaman ${currentPage} dari ${totalPages}</span>
+                <button class="btn-sm info" data-role="${role}" data-direction="next" ${currentPage === totalPages ? 'disabled' : ''}>Berikutnya</button>
+            </div>
+        `;
+    }
+
+    function attachPaginationListeners(role, displayFunction, totalPages) {
+      const prevBtn = document.querySelector(`#${role}-pagination-controls [data-direction="prev"]`);
+      const nextBtn = document.querySelector(`#${role}-pagination-controls [data-direction="next"]`);
+
+      if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (role === 'admin') currentAdminPage--;
+            else if (role === 'koordinator') currentKoorPage--;
+            else if (role === 'driver') currentDriverPage--;
+            displayFunction(eval(`current${role.charAt(0).toUpperCase() + role.slice(1)}Page`));
+        };
+      }
+      
+      if (nextBtn) {
+        nextBtn.onclick = () => {
+            if (role === 'admin') currentAdminPage++;
+            else if (role === 'koordinator') currentKoorPage++;
+            else if (role === 'driver') currentDriverPage++;
+            displayFunction(eval(`current${role.charAt(0).toUpperCase() + role.slice(1)}Page`));
+        };
+      }
+    }
+    
     elements.addVehicleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const nopol = document.getElementById('vehicleNopol').value.toUpperCase();
@@ -648,6 +810,79 @@
       }
     });
 
+    function loadVehicles() {
+      onValue(ref(db, 'vehicles'), (snapshot) => {
+        allVehicles = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allVehicles.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayVehicles(1);
+      });
+    }
+
+    function displayVehicles(page) {
+      elements.vehicleList.innerHTML = '';
+      currentVehiclePage = page;
+      
+      const start = (currentVehiclePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedVehicles = allVehicles.slice(start, end);
+
+      if (paginatedVehicles.length === 0 && allVehicles.length > 0) {
+        currentVehiclePage = Math.ceil(allVehicles.length / rowsPerPage);
+        return displayVehicles(currentVehiclePage);
+      }
+
+      if (allVehicles.length > rowsPerPage) {
+        elements.vehiclePaginationControls.style.display = 'block';
+      } else {
+        elements.vehiclePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedVehicles.length === 0) {
+        elements.vehicleList.innerHTML = '<tr><td colspan="3">Belum ada nopol tersimpan.</td></tr>';
+      } else {
+        paginatedVehicles.forEach(vehicleEntry => {
+          const vehicleId = vehicleEntry.id;
+          const vehicle = vehicleEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${vehicle.nopol}</td>
+            <td>${vehicle.type}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
+              await set(ref(db, `vehicles/${vehicleId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.vehicleList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages}`;
+      elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
+      elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
+    }
+
+    elements.prevVehicleBtn.addEventListener('click', () => {
+      if (currentVehiclePage > 1) {
+        displayVehicles(currentVehiclePage - 1);
+      }
+    });
+
+    elements.nextVehicleBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      if (currentVehiclePage < totalPages) {
+        displayVehicles(currentVehiclePage + 1);
+      }
+    });
+
     elements.addRouteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const code = document.getElementById('routeCode').value.toUpperCase();
@@ -660,6 +895,79 @@
         setTimeout(() => elements.addRouteStatus.textContent = '', 3000);
       } catch (error) {
         elements.addRouteStatus.textContent = 'Gagal: ' + error.message;
+      }
+    });
+
+    function loadRoutes() {
+      onValue(ref(db, 'routes'), (snapshot) => {
+        allRoutes = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allRoutes.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayRoutes(1);
+      });
+    }
+
+    function displayRoutes(page) {
+      elements.routeList.innerHTML = '';
+      currentRoutePage = page;
+
+      const start = (currentRoutePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedRoutes = allRoutes.slice(start, end);
+      
+      if (paginatedRoutes.length === 0 && allRoutes.length > 0) {
+        currentRoutePage = Math.ceil(allRoutes.length / rowsPerPage);
+        return displayRoutes(currentRoutePage);
+      }
+
+      if (allRoutes.length > rowsPerPage) {
+        elements.routePaginationControls.style.display = 'block';
+      } else {
+        elements.routePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedRoutes.length === 0) {
+        elements.routeList.innerHTML = '<tr><td colspan="3">Belum ada rute tersimpan.</td></tr>';
+      } else {
+        paginatedRoutes.forEach(routeEntry => {
+          const routeId = routeEntry.id;
+          const route = routeEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${route.code}</td>
+            <td>${route.address}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
+              await set(ref(db, `routes/${routeId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.routeList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
+      elements.prevRouteBtn.disabled = currentRoutePage === 1;
+      elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
+    }
+
+    elements.prevRouteBtn.addEventListener('click', () => {
+      if (currentRoutePage > 1) {
+        displayRoutes(currentRoutePage - 1);
+      }
+    });
+
+    elements.nextRouteBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      if (currentRoutePage < totalPages) {
+        displayRoutes(currentRoutePage + 1);
       }
     });
 
@@ -707,67 +1015,75 @@
         }
     });
 
-    function loadRoleStats() {
-      onValue(ref(db, 'trips'), (snapshot) => {
-        if (!snapshot.exists() || !Object.keys(allUsers).length) {
-          elements.roleStats.textContent = "Belum ada data untuk ditampilkan.";
-          return;
-        }
-
-        let activities = { admin: [], koordinator: [], driver: [] };
-        snapshot.forEach(child => {
-            const t = child.val();
-            const tripId = child.key;
-            const tripInfo = `${t.asal} ke ${t.tujuan}`;
-
-            if (t.approvedBy && t.approvedAt) {
-              const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
-              activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${koorName}`, tripId: tripId });
-            }
-            if (t.rejectedBy && t.rejectedAt) {
-              const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
-              activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${koorName}`, tripId: tripId });
-            }
-            if (t.koorId && t.createdAt) {
-              const driverName = t.driverName || 'Driver Tidak Dikenal';
-              activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
-            }
-            if (t.driverId && t.arrivedAt) {
-              activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}`, tripId: tripId });
-            }
-        });
-
-        const createActivityTable = (role, title) => {
-          let tableHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`;
-          if (activities[role].length === 0) {
-            return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
-          }
-          
-          const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
-          tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
-          sortedActivities.forEach(act => {
-            const userName = allUsers[act.userId]?.name || 'User Dihapus';
-            const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-            tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`;
-          });
-          tableHtml += '</tbody></table></div>';
-          return tableHtml;
-        };
-        
-        elements.roleStats.innerHTML = `
-          ${createActivityTable('admin', 'Aktivitas Admin')}
-          <hr>
-          ${createActivityTable('koordinator', 'Aktivitas Koordinator')}
-          <hr>
-          ${createActivityTable('driver', 'Aktivitas Driver')}
-        `;
-      });
-    }
-
     elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
         signOut(auth);
     });
+
+    function loadAllUsers() {
+        return new Promise((resolve) => {
+            onValue(ref(db, 'users'), (snapshot) => {
+                allUsers = snapshot.val() || {};
+                displayUsers(1);
+                resolve();
+            });
+            elements.filterRole.onchange = () => displayUsers(1);
+            elements.searchName.oninput = () => displayUsers(1);
+        });
+    }
+
+    function displayUsers(page) {
+      elements.userList.innerHTML = '';
+      currentUserPage = page;
+      const filteredUsers = Object.entries(allUsers).filter(([uid, u]) => {
+        const nameMatch = !elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase());
+        const roleMatch = elements.filterRole.value === 'all' || u.role === elements.filterRole.value;
+        return nameMatch && roleMatch;
+      });
+      
+      const start = (currentUserPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedUsers = filteredUsers.slice(start, end);
+      
+      if (paginatedUsers.length === 0 && filteredUsers.length > 0) {
+        currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage);
+        return displayUsers(currentUserPage);
+      }
+
+      if (filteredUsers.length > rowsPerPage) {
+        elements.userPaginationControls.style.display = 'block';
+      } else {
+        elements.userPaginationControls.style.display = 'none';
+      }
+
+      if (paginatedUsers.length === 0) {
+        elements.userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
+      } else {
+        paginatedUsers.forEach(([uid, u]) => {
+          const tr = el('tr');
+          const isCurrentUser = (uid === currentUser.uid);
+          const deleteButton = isCurrentUser
+              ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
+              : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+          
+          const roleClass = (u.role || '').replace(' ', '-');
+
+          tr.innerHTML = `
+              <td data-label="UID"><small>${uid}</small></td>
+              <td data-label="Nama">${u.name || '-'}</td>
+              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
+              <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
+              <td data-label="Aksi">${deleteButton}</td>`;
+          elements.userList.appendChild(tr);
+        });
+      }
+      
+      const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+      elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
+      elements.prevUserBtn.disabled = currentUserPage === 1;
+      elements.nextUserBtn.disabled = currentUserPage === totalPages;
+    }
   </script>
 </body>
 </html>
