@@ -3,53 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Koordinator Panel</title>
+  <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="content-wrapper">
     <nav class="sidebar">
       <div class="sidebar-header">
-        <h3>Input Perjalanan Baru</h3>
+        <h3>Administrator</h3>
       </div>
-      <div class="sidebar-form-container">
-        <form id="tripForm">
-          <div class="form-group">
-            <label for="driverSelect">Pilih Driver</label>
-            <select id="driverSelect" required>
-              <option value="">Memuat daftar driver...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="nopol">No. Polisi</label>
-            <select id="nopol" required>
-              <option value="">Memuat nopol...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="asal">Asal</label>
-            <select id="asal" required>
-              <option value="">Memuat rute...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="tujuan">Tujuan</label>
-            <select id="tujuan" required>
-              <option value="">Memuat rute...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="muatan">Muatan</label>
-            <input id="muatan" type="text" required>
-          </div>
-          <div class="form-group">
-            <label for="tanggal">Tanggal Keberangkatan</label>
-            <input id="tanggal" type="date" required>
-          </div>
-          <button type="submit">Kirim Data Perjalanan</button>
-          <p id="statusMsg" class="form-status"></p>
-        </form>
-      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#monitoring" class="nav-link active">Monitoring Perjalanan</a></li>
+        <li><a href="#users" class="nav-link">Manajemen Karyawan</a></li>
+        <li><a href="#routes" class="nav-link">Manajemen Rute</a></li>
+        <li><a href="#vehicles" class="nav-link">Manajemen Nopol</a></li>
+        <li><a href="#addusers" class="nav-link">Tambah Karyawan</a></li>
+        <li><a href="#addrutes" class="nav-link">Tambah Rute</a></li>
+        <li><a href="#addvehicles" class="nav-link">Tambah Nopol</a></li>
+        <li><a href="#performance" class="nav-link">Kinerja Role</a></li>
+      </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Logout</button>
         <p style="text-align:center;margin:1.5rem 0 0 0;">DEMO Version</p>
@@ -58,25 +30,25 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1>Status Perjalanan Saya</h1>
-        <p>Pantau semua perjalanan yang telah Anda buat di sini.</p>
+        <h1 id="pageTitle">Monitoring Perjalanan</h1>
+        <p>Selamat datang yang mulia! Akses penuh terbuka untuk anda.</p>
       </header>
       
-      <div class="page active">
+      <div id="page-monitoring" class="page active">
         <section class="card">
-          <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
+          <h2 class="card-header">Daftar Perjalanan</h2>
           <div class="card-body">
             <div class="table-responsive">
-              <table>
+              <table id="tripTable">
                 <thead>
                   <tr>
-                    <th>Rute</th>
-                    <th>Driver</th>
+                    <th>Rute Perjalanan</th>
+                    <th>Sopir</th>
                     <th>No. Polisi</th>
                     <th>Muatan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
-                    <th>Aksi Cetak</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="tripList">
@@ -84,289 +56,1034 @@
                 </tbody>
               </table>
             </div>
-            <div id="koor-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-              <button id="prevKoorBtn" class="btn-sm info">Sebelumnya</button>
-              <span id="koorPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
-              <button id="nextKoorBtn" class="btn-sm info">Berikutnya</button>
+            <div id="pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="pageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextBtn" class="btn-sm info">Berikutnya</button>
             </div>
           </div>
         </section>
       </div>
+      
+    <div id="page-users" class="page">
+        <section class="card">
+          <h2 class="card-header">Daftar Semua Karyawan</h2>
+          <div class="card-body">
+            <div class="table-controls">
+              <div class="form-group"><label>Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+              <div class="form-group"><label>Cari Nama: </label><input type="text" id="searchName" placeholder="Ketik nama karyawan..." /></div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead><tr><th>UID</th><th>Nama</th><th>Role</th><th>Login Terakhir</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="userList"><tr><td colspan="6">Memuat data...</td></tr></tbody>
+              </table>
+            </div>
+            <div id="user-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+                <button id="prevUserBtn" class="btn-sm info">Sebelumnya</button>
+                <span id="userPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+                <button id="nextUserBtn" class="btn-sm info">Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-routes" class="page">
+        <section class="card">
+          <h2 class="card-header">Daftar Rute Tersimpan</h2>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Rute</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="routeList">
+                  <tr><td colspan="3">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="route-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevRouteBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="routePageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextRouteBtn" class="btn-sm info">Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-vehicles" class="page">
+        <section class="card">
+          <h2 class="card-header">Daftar Nopol Tersimpan</h2>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No. Polisi</th>
+                    <th>Tipe/Keterangan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="vehicleList">
+                  <tr><td colspan="3">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="vehicle-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevVehicleBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="vehiclePageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextVehicleBtn" class="btn-sm info">Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-addusers" class="page">
+          <section class="card">
+              <h2 class="card-header">Tambah Karyawan Baru</h2>
+              <div class="card-body">
+                  <form id="addUserForm">
+                      <div class="form-group"><label for="newUserName">Nama</label><input type="text" id="newUserName" autocomplete="off" required></div>
+                      <div class="form-group"><label for="newUserEmail">Email</label><input type="email" id="newUserEmail" autocomplete="off" required></div>
+                      <div class="form-group"><label for="newUserPassword">Password</label><input type="password" id="newUserPassword" autocomplete="new-password" required></div>
+                      <div class="form-group"><label for="newUserRole">Role</label><select id="newUserRole" required><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+                      <button type="submit">Tambah User</button>
+                  </form>
+                  <p id="addUserStatus" class="form-status"></p>
+              </div>
+          </section>
+        </div>
+
+      <div id="page-addrutes" class="page">
+          <section class="card">
+          <h2 class="card-header">Tambah Rute Baru</h2>
+          <div class="card-body">
+            <form id="addRouteForm">
+              <div class="form-group">
+                <label for="routeCode">Kode Rute (Contoh: BDG)</label>
+                <input type="text" id="routeCode" required>
+              </div>
+              <div class="form-group">
+                <label for="routeAddress">Alamat/Nama Lokasi (Contoh: Bandung)</label>
+                <input type="text" id="routeAddress" required>
+              </div>
+              <button type="submit">Tambah Rute</button>
+            </form>
+            <p id="addRouteStatus" class="form-status"></p>
+          </div>
+        </section>
+        </div>
+
+      <div id="page-addvehicles" class="page">
+          <section class="card">
+          <h2 class="card-header">Tambah Nopol Baru</h2>
+          <div class="card-body">
+            <form id="addVehicleForm">
+              <div class="form-group">
+                <label for="vehicleNopol">No. Polisi</label>
+                <input type="text" id="vehicleNopol" required>
+              </div>
+              <div class="form-group">
+                <label for="vehicleType">Tipe/Keterangan Kendaraan</label>
+                <input type="text" id="vehicleType" placeholder="Contoh: Tronton, Box, dll." required>
+              </div>
+              <button type="submit">Tambah Nopol</button>
+            </form>
+            <p id="addVehicleStatus" class="form-status"></p>
+          </div>
+        </section>
+        </div>
+
+      <div id="page-performance" class="page">
+        <section class="card">
+          <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
+          <div id="roleStats" class="card-body">
+            </div>
+        </section>
+      </div>
+
     </main>
   </div>
 
   <script type="module">
     import { 
-      auth, 
-      onAuthStateChanged, 
-      signOut, 
-      db, 
-      ref, 
-      get, 
-      push, 
-      set, 
-      onValue, 
-      query, 
-      orderByChild, 
-      equalTo,
-      update,
-      onDisconnect
+      auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push,
+      onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
+      createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
+    import { setupNavigation, renderUsersTable } from './styles.js';
 
-    const tripForm = document.getElementById('tripForm');
-    const tripList = document.getElementById('tripList');
-    const driverSelect = document.getElementById('driverSelect');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const statusMsg = document.getElementById('statusMsg');
-    const asalSelect = document.getElementById('asal');
-    const tujuanSelect = document.getElementById('tujuan');
-    const nopolSelect = document.getElementById('nopol');
-    const koorPaginationControls = document.getElementById('koor-pagination-controls');
-    const prevKoorBtn = document.getElementById('prevKoorBtn');
-    const nextKoorBtn = document.getElementById('nextKoorBtn');
-    const koorPageInfo = document.getElementById('koorPageInfo');
-    
+    const elements = {
+        pageTitle: document.getElementById('pageTitle'),
+        navLinks: document.querySelectorAll('.nav-link'),
+        pages: document.querySelectorAll('.page'),
+        tripList: document.getElementById('tripList'),
+        userList: document.getElementById('userList'),
+        roleStats: document.getElementById('roleStats'),
+        filterRole: document.getElementById('filterRole'),
+        searchName: document.getElementById('searchName'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        addUserForm: document.getElementById('addUserForm'),
+        addUserStatus: document.getElementById('addUserStatus'),
+        newUserRole: document.getElementById('newUserRole'),
+        addRouteForm: document.getElementById('addRouteForm'),
+        addRouteStatus: document.getElementById('addRouteStatus'),
+        routeList: document.getElementById('routeList'),
+        addVehicleForm: document.getElementById('addVehicleForm'),
+        addVehicleStatus: document.getElementById('addVehicleStatus'),
+        vehicleList: document.getElementById('vehicleList'),
+        paginationControls: document.getElementById('pagination-controls'),
+        prevBtn: document.getElementById('prevBtn'),
+        nextBtn: document.getElementById('nextBtn'),
+        pageInfo: document.getElementById('pageInfo'),
+        userPaginationControls: document.getElementById('user-pagination-controls'),
+        prevUserBtn: document.getElementById('prevUserBtn'),
+        nextUserBtn: document.getElementById('nextUserBtn'),
+        userPageInfo: document.getElementById('userPageInfo'),
+        routePaginationControls: document.getElementById('route-pagination-controls'),
+        prevRouteBtn: document.getElementById('prevRouteBtn'),
+        nextRouteBtn: document.getElementById('nextRouteBtn'),
+        routePageInfo: document.getElementById('routePageInfo'),
+        vehiclePaginationControls: document.getElementById('vehicle-pagination-controls'),
+        prevVehicleBtn: document.getElementById('prevVehicleBtn'),
+        nextVehicleBtn: document.getElementById('nextVehicleBtn'),
+        vehiclePageInfo: document.getElementById('vehiclePageInfo'),
+    };
+
     let currentUser = null;
-    let allMyTrips = [];
-    let currentKoorPage = 1;
+    let allUsers = {};
+    let allTrips = [];
+    let allRoutes = [];
+    let allVehicles = [];
+    let currentPage = 1;
+    let currentUserPage = 1;
+    let currentRoutePage = 1;
+    let currentVehiclePage = 1;
     const rowsPerPage = 10;
+    
+    let allAdminActivities = [];
+    let allKoorActivities = [];
+    let allDriverActivities = [];
+    let currentAdminPage = 1;
+    let currentKoorPage = 1;
+    let currentDriverPage = 1;
+
+    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
-      const userRef = ref(db, 'users/' + currentUser.uid);
-
-      const snap = await get(userRef);
-      if (!snap.exists() || snap.val().role !== 'koordinator') {
-        alert('Akses ditolak. Hanya untuk koordinator.');
-        return window.location.href = 'index.html';
-      }
-      
-      await update(userRef, { lastLogin: Date.now(), online: true });
-      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-
-      loadMyTrips();
-      loadDrivers(); 
-      loadRoutes();
-      loadVehicles();
-    });
-
-    async function loadVehicles() {
       try {
-        const vehiclesRef = ref(db, 'vehicles');
-        const snapshot = await get(vehiclesRef);
-        
-        nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
-
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            const vehicle = child.val();
-            const optionText = `${vehicle.nopol} (${vehicle.type})`;
-            const option = el('option', optionText, { value: vehicle.nopol });
-            nopolSelect.appendChild(option);
-          });
-        } else {
-          nopolSelect.innerHTML = '<option value="">Belum ada nopol</option>';
+        const snap = await get(ref(db, `users/${user.uid}`));
+        const userData = snap.val();
+        if (!snap.exists() || (userData.role !== 'admin' && userData.role !== 'super admin')) {
+          alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
-      } catch (error) {
-        console.error("Gagal memuat nopol:", error);
-        nopolSelect.innerHTML = '<option value="">Error</option>';
-      }
-    }
 
-    async function loadRoutes() {
-      try {
-        const routesRef = ref(db, 'routes');
-        const snapshot = await get(routesRef);
-        
-        asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
-        tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
-
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            const route = child.val();
-            const optionText = `${route.code} - ${route.address}`;
-            const option = el('option', optionText, { value: route.address });
-            const option2 = option.cloneNode(true);
-            asalSelect.appendChild(option);
-            tujuanSelect.appendChild(option2);
-          });
-        } else {
-          asalSelect.innerHTML = '<option value="">Belum ada rute</option>';
-          tujuanSelect.innerHTML = '<option value="">Belum ada rute</option>';
-        }
-      } catch (error) {
-        console.error("Gagal memuat rute:", error);
-        asalSelect.innerHTML = '<option value="">Error</option>';
-        tujuanSelect.innerHTML = '<option value="">Error</option>';
-      }
-    }
-
-    async function loadDrivers() {
-        try {
-            const usersRef = ref(db, 'users');
-            const q = query(usersRef, orderByChild('role'), equalTo('driver'));
-            const snapshot = await get(q);
-            
-            driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>';
-            
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    const driver = child.val();
-                    const option = el('option', driver.name, { value: child.key });
-                    driverSelect.appendChild(option);
-                });
-            } else {
-                driverSelect.innerHTML = '<option value="">Tidak ada driver</option>';
+        if (userData.role === 'super admin') {
+            const adminOption = el('option', 'Admin', { value: 'admin' });
+            if (!elements.newUserRole.querySelector('option[value="admin"]')) {
+              elements.newUserRole.appendChild(adminOption);
             }
-        } catch (error) {
-            console.error("Gagal memuat daftar driver:", error);
-            driverSelect.innerHTML = '<option value="">Error</option>';
         }
-    }
 
-    tripForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      statusMsg.textContent = 'Mengirim...';
-      if (!currentUser) return alert('Anda belum login.');
-
-      const selectedDriverOption = driverSelect.options[driverSelect.selectedIndex];
-      const driverId = selectedDriverOption.value;
-      const driverName = selectedDriverOption.text;
-
-      if (!driverId) {
-        alert('Silakan pilih driver terlebih dahulu.');
-        return;
-      }
-
-      const data = {
-        koorId: currentUser.uid,
-        driverId: driverId,
-        driverName: driverName,
-        nopol: document.getElementById('nopol').value,
-        asal: document.getElementById('asal').value,
-        tujuan: document.getElementById('tujuan').value,
-        muatan: document.getElementById('muatan').value,
-        tanggal: document.getElementById('tanggal').value,
-        status: 'submitted',
-        createdAt: Date.now()
-      };
-
-      try {
-        await set(push(ref(db, 'trips')), data);
-        tripForm.reset();
-        statusMsg.textContent = '✔️ Data berhasil dikirim.';
-        setTimeout(() => statusMsg.textContent = '', 3000);
-      } catch(err) {
-        statusMsg.style.color = 'var(--danger)';
-        statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
-      }
+        await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
+        onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+        
+        await loadAllUsers(); 
+        loadAllTrips();
+        loadRoutes();
+        loadVehicles();
+        loadRoleStats();
+      } catch (e) { console.error("Error cek admin:", e); }
     });
-
-    // --- PAGINATION LOGIC ---
-    function displayMyTrips(page) {
-      tripList.innerHTML = '';
-      currentKoorPage = page;
+    
+    // --- TRIP PAGINATION LOGIC ---
+    function displayTrips(page) {
+      elements.tripList.innerHTML = '';
+      currentPage = page;
       
-      const start = (currentKoorPage - 1) * rowsPerPage;
+      const start = (currentPage - 1) * rowsPerPage;
       const end = start + rowsPerPage;
-      const paginatedTrips = allMyTrips.slice(start, end);
+      const paginatedTrips = allTrips.slice(start, end);
       
-      if (paginatedTrips.length === 0 && allMyTrips.length > 0) {
-        currentKoorPage = Math.ceil(allMyTrips.length / rowsPerPage);
-        return displayMyTrips(currentKoorPage);
+      if (paginatedTrips.length === 0 && allTrips.length > 0) {
+        currentPage = Math.ceil(allTrips.length / rowsPerPage);
+        return displayTrips(currentPage);
       }
 
-      if (allMyTrips.length > rowsPerPage) {
-        koorPaginationControls.style.display = 'block';
+      if (allTrips.length > rowsPerPage) {
+        elements.paginationControls.style.display = 'block';
       } else {
-        koorPaginationControls.style.display = 'none';
+        elements.paginationControls.style.display = 'none';
       }
 
       if (paginatedTrips.length === 0) {
-        tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="7">Belum ada data perjalanan.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
-          const tripId = tripEntry.id;
-          const tripData = tripEntry.data;
-          const tr = el('tr');
+            const tripId = tripEntry.id;
+            const trip = tripEntry.data;
+            const tr = el('tr');
+            
+            const tripInfo = `${trip.asal} → ${trip.tujuan}`;
+            
+            const actionsCell = el('td', '', {'data-label': 'Aksi'});
+            const actionsContainer = el('div', '', { class: 'trip-actions' });
+            actionsContainer.style.justifyContent = 'flex-start';
+            
+            if (trip.status === 'submitted') {
+                const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
+                const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
+                approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
+                rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
+                actionsContainer.append(approveBtn, rejectBtn);
+            }
 
-          const actionsCell = el('td');
-          const actionsContainer = el('div', '', { class: 'trip-actions' });
-          actionsContainer.style.justifyContent = 'flex-start';
+            const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
+            actionsContainer.appendChild(deleteBtn);
+            actionsCell.appendChild(actionsContainer);
 
-          if (tripData.status === 'approved') {
-            const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
-            const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
-            sjButton.onclick = () => window.open('surat-jalan.html?id=' + tripId);
-            invButton.onclick = () => window.open('invoice.html?id=' + tripId);
-            actionsContainer.append(sjButton, invButton);
-          } else {
-            actionsContainer.textContent = '-';
-          }
-          actionsCell.appendChild(actionsContainer);
+            const statusCell = el('td', '', {'data-label': 'Status'});
+            statusCell.appendChild(badge(trip.status));
 
-          const statusCell = el('td');
-          statusCell.appendChild(badge(tripData.status));
-          
-          tr.innerHTML = `
-            <td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
-            <td data-label="Driver">${tripData.driverName || '-'}</td>
-            <td data-label="No. Polisi">${tripData.nopol}</td>
-            <td data-label="Muatan">${tripData.muatan || '-'}</td>
-            <td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>
-          `;
-          tr.appendChild(statusCell);
-          tr.appendChild(actionsCell);
-          
-          tripList.appendChild(tr);
+            tr.innerHTML = `
+                <td data-label="Rute">${tripInfo}</td>
+                <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
+                <td data-label="No. Polisi">${trip.nopol || 'N/A'}</td>
+                <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
+                <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
+            `;
+            tr.appendChild(statusCell);
+            tr.appendChild(actionsCell);
+            
+            elements.tripList.appendChild(tr);
         });
       }
       
-      const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
-      koorPageInfo.textContent = `Halaman ${currentKoorPage} dari ${totalPages}`;
-      prevKoorBtn.disabled = currentKoorPage === 1;
-      nextKoorBtn.disabled = currentKoorPage === totalPages;
+      const totalPages = Math.ceil(allTrips.length / rowsPerPage);
+      elements.pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+      elements.prevBtn.disabled = currentPage === 1;
+      elements.nextBtn.disabled = currentPage === totalPages;
     }
     
-    prevKoorBtn.addEventListener('click', () => {
-      if (currentKoorPage > 1) {
-        displayMyTrips(currentKoorPage - 1);
+    elements.prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        displayTrips(currentPage - 1);
       }
     });
 
-    nextKoorBtn.addEventListener('click', () => {
-      const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
-      if (currentKoorPage < totalPages) {
-        displayMyTrips(currentKoorPage + 1);
+    elements.nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allTrips.length / rowsPerPage);
+      if (currentPage < totalPages) {
+        displayTrips(currentPage + 1);
       }
     });
 
-    function loadMyTrips() {
-      const tripsRef = ref(db, 'trips');
-      const q = query(tripsRef, orderByChild('koorId'), equalTo(currentUser.uid));
-
-      onValue(q, (snapshot) => {
-        allMyTrips = [];
+    function loadAllTrips() {
+      onValue(ref(db, 'trips'), (snapshot) => {
+        allTrips = [];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
-            allMyTrips.push({ id: child.key, data: child.val() });
+            allTrips.push({ id: child.key, data: child.val() });
           });
         }
-        allMyTrips.reverse();
-        displayMyTrips(currentKoorPage);
+        allTrips.reverse();
+        displayTrips(currentPage);
       });
     }
-    // --- END PAGINATION LOGIC ---
+    // --- END TRIP PAGINATION LOGIC ---
 
-    logoutBtn.addEventListener('click', async () => {
-        if (currentUser) {
-            await update(ref(db, 'users/' + currentUser.uid), { online: false });
-        }
-        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    // --- USER PAGINATION LOGIC ---
+    function displayUsers(page) {
+      elements.userList.innerHTML = '';
+      currentUserPage = page;
+      const filteredUsers = Object.entries(allUsers).filter(([uid, u]) => {
+        const nameMatch = !elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase());
+        const roleMatch = elements.filterRole.value === 'all' || u.role === elements.filterRole.value;
+        return nameMatch && roleMatch;
+      });
+      
+      const start = (currentUserPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedUsers = filteredUsers.slice(start, end);
+      
+      if (paginatedUsers.length === 0 && filteredUsers.length > 0) {
+        currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage);
+        return displayUsers(currentUserPage);
+      }
+
+      if (filteredUsers.length > rowsPerPage) {
+        elements.userPaginationControls.style.display = 'block';
+      } else {
+        elements.userPaginationControls.style.display = 'none';
+      }
+
+      if (paginatedUsers.length === 0) {
+        elements.userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
+      } else {
+        paginatedUsers.forEach(([uid, u]) => {
+          const tr = el('tr');
+          const isCurrentUser = (uid === currentUser.uid);
+          const deleteButton = isCurrentUser
+              ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
+              : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+          
+          const roleClass = (u.role || '').replace(' ', '-');
+
+          tr.innerHTML = `
+              <td data-label="UID"><small>${uid}</small></td>
+              <td data-label="Nama">${u.name || '-'}</td>
+              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
+              <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
+              <td data-label="Aksi">${deleteButton}</td>`;
+          elements.userList.appendChild(tr);
+        });
+      }
+      
+      const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+      elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
+      elements.prevUserBtn.disabled = currentUserPage === 1;
+      elements.nextUserBtn.disabled = currentUserPage === totalPages;
+    }
+    
+    elements.prevUserBtn.addEventListener('click', () => {
+      if (currentUserPage > 1) {
+        displayUsers(currentUserPage - 1);
+      }
     });
 
+    elements.nextUserBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(Object.keys(allUsers).length / rowsPerPage);
+      if (currentUserPage < totalPages) {
+        displayUsers(currentUserPage + 1);
+      }
+    });
+
+    function loadAllUsers() {
+        return new Promise((resolve) => {
+            onValue(ref(db, 'users'), (snapshot) => {
+                allUsers = snapshot.val() || {};
+                displayUsers(1);
+                resolve();
+            });
+            elements.filterRole.onchange = () => displayUsers(1);
+            elements.searchName.oninput = () => displayUsers(1);
+        });
+    }
+    
+    elements.userList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-user-btn')) {
+            const { uid, name } = e.target.dataset;
+            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
+                try {
+                    await set(ref(db, `users/${uid}`), null);
+                    alert(`Data user ${name} berhasil dihapus.`);
+                } catch (error) { alert(`Gagal: ${error.message}`); }
+            }
+        }
+    });
+    // --- END USER PAGINATION LOGIC ---
+
+    // --- ROUTE PAGINATION LOGIC ---
+    function displayRoutes(page) {
+      elements.routeList.innerHTML = '';
+      currentRoutePage = page;
+
+      const start = (currentRoutePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedRoutes = allRoutes.slice(start, end);
+      
+      if (paginatedRoutes.length === 0 && allRoutes.length > 0) {
+        currentRoutePage = Math.ceil(allRoutes.length / rowsPerPage);
+        return displayRoutes(currentRoutePage);
+      }
+
+      if (allRoutes.length > rowsPerPage) {
+        elements.routePaginationControls.style.display = 'block';
+      } else {
+        elements.routePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedRoutes.length === 0) {
+        elements.routeList.innerHTML = '<tr><td colspan="3">Belum ada rute tersimpan.</td></tr>';
+      } else {
+        paginatedRoutes.forEach(routeEntry => {
+          const routeId = routeEntry.id;
+          const route = routeEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${route.code}</td>
+            <td>${route.address}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
+              await set(ref(db, `routes/${routeId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.routeList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
+      elements.prevRouteBtn.disabled = currentRoutePage === 1;
+      elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
+    }
+
+    elements.prevRouteBtn.addEventListener('click', () => {
+      if (currentRoutePage > 1) {
+        displayRoutes(currentRoutePage - 1);
+      }
+    });
+
+    elements.nextRouteBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      if (currentRoutePage < totalPages) {
+        displayRoutes(currentRoutePage + 1);
+      }
+    });
+
+    function loadRoutes() {
+      onValue(ref(db, 'routes'), (snapshot) => {
+        allRoutes = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allRoutes.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayRoutes(1);
+      });
+    }
+    // --- END ROUTE PAGINATION LOGIC ---
+
+    // --- VEHICLE PAGINATION LOGIC ---
+    function displayVehicles(page) {
+      elements.vehicleList.innerHTML = '';
+      currentVehiclePage = page;
+      
+      const start = (currentVehiclePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedVehicles = allVehicles.slice(start, end);
+
+      if (paginatedVehicles.length === 0 && allVehicles.length > 0) {
+        currentVehiclePage = Math.ceil(allVehicles.length / rowsPerPage);
+        return displayVehicles(currentVehiclePage);
+      }
+
+      if (allVehicles.length > rowsPerPage) {
+        elements.vehiclePaginationControls.style.display = 'block';
+      } else {
+        elements.vehiclePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedVehicles.length === 0) {
+        elements.vehicleList.innerHTML = '<tr><td colspan="3">Belum ada nopol tersimpan.</td></tr>';
+      } else {
+        paginatedVehicles.forEach(vehicleEntry => {
+          const vehicleId = vehicleEntry.id;
+          const vehicle = vehicleEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${vehicle.nopol}</td>
+            <td>${vehicle.type}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
+              await set(ref(db, `vehicles/${vehicleId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.vehicleList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages}`;
+      elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
+      elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
+    }
+
+    elements.prevVehicleBtn.addEventListener('click', () => {
+      if (currentVehiclePage > 1) {
+        displayVehicles(currentVehiclePage - 1);
+      }
+    });
+
+    elements.nextVehicleBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      if (currentVehiclePage < totalPages) {
+        displayVehicles(currentVehiclePage + 1);
+      }
+    });
+
+    function loadVehicles() {
+      onValue(ref(db, 'vehicles'), (snapshot) => {
+        allVehicles = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allVehicles.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayVehicles(1);
+      });
+    }
+    // --- END VEHICLE PAGINATION LOGIC ---
+
+    function loadRoleStats() {
+      onValue(ref(db, 'trips'), (snapshot) => {
+        let activities = { admin: [], koordinator: [], driver: [] };
+        if (snapshot.exists() && Object.keys(allUsers).length) {
+          snapshot.forEach(child => {
+              const t = child.val();
+              const tripId = child.key;
+              const tripInfo = `${t.asal} ke ${t.tujuan}`;
+              if (t.approvedBy && t.approvedAt) {
+                const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
+                activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${koorName}`, tripId: tripId });
+              }
+              if (t.rejectedBy && t.rejectedAt) {
+                const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
+                activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${koorName}`, tripId: tripId });
+              }
+              if (t.koorId && t.createdAt) {
+                const driverName = t.driverName || 'Driver Tidak Dikenal';
+                activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
+              }
+              if (t.driverId && t.arrivedAt) {
+                activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}`, tripId: tripId });
+              }
+          });
+        }
+        allAdminActivities = activities.admin.sort((a, b) => b.time - a.time);
+        allKoorActivities = activities.koordinator.sort((a, b) => b.time - a.time);
+        allDriverActivities = activities.driver.sort((a, b) => b.time - a.time);
+        
+        displayAdminActivities(1);
+        displayKoorActivities(1);
+        displayDriverActivities(1);
+      });
+    }
+
+    function displayAdminActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allAdminActivities.slice(start, end);
+      const totalPages = Math.ceil(allAdminActivities.length / rowsPerPage);
+      
+      let html = createActivityTable('admin', 'Aktivitas Admin', paginatedActivities);
+      html += createPaginationControls('admin', page, totalPages);
+      
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.admin-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('admin', displayAdminActivities, totalPages);
+      }
+    }
+
+    function displayKoorActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allKoorActivities.slice(start, end);
+      const totalPages = Math.ceil(allKoorActivities.length / rowsPerPage);
+
+      let html = createActivityTable('koordinator', 'Aktivitas Koordinator', paginatedActivities);
+      html += createPaginationControls('koordinator', page, totalPages);
+      
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.koordinator-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('koordinator', displayKoorActivities, totalPages);
+      }
+    }
+
+    function displayDriverActivities(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedActivities = allDriverActivities.slice(start, end);
+      const totalPages = Math.ceil(allDriverActivities.length / rowsPerPage);
+
+      let html = createActivityTable('driver', 'Aktivitas Driver', paginatedActivities);
+      html += createPaginationControls('driver', page, totalPages);
+
+      const element = document.getElementById('roleStats');
+      if (element) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const oldTable = element.querySelector('.driver-table-container');
+        if (oldTable) {
+            oldTable.replaceWith(div.firstChild);
+        } else {
+            element.appendChild(div.firstChild);
+        }
+        attachPaginationListeners('driver', displayDriverActivities, totalPages);
+      }
+    }
+
+    function createActivityTable(role, title, activities) {
+      let tableHtml = `<div class="${role}-table-container"><h4>${title} (${activities.length} Total Aksi)</h4>`;
+      if (activities.length === 0) {
+        return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p></div>`;
+      }
+      
+      tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama Karyawan</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+      activities.forEach(act => {
+        const userName = allUsers[act.userId]?.name || 'User Dihapus';
+        const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`;
+      });
+      tableHtml += '</tbody></table></div></div>';
+      return tableHtml;
+    }
+
+    function createPaginationControls(role, currentPage, totalPages) {
+        if (totalPages <= 1) return '';
+        return `
+            <div id="${role}-pagination-controls" style="margin-top:1rem; text-align:center;">
+                <button class="btn-sm info" data-role="${role}" data-direction="prev" ${currentPage === 1 ? 'disabled' : ''}>Sebelumnya</button>
+                <span style="margin: 0 1rem; font-weight: 500;">Halaman ${currentPage} dari ${totalPages}</span>
+                <button class="btn-sm info" data-role="${role}" data-direction="next" ${currentPage === totalPages ? 'disabled' : ''}>Berikutnya</button>
+            </div>
+        `;
+    }
+
+    function attachPaginationListeners(role, displayFunction, totalPages) {
+      const prevBtn = document.querySelector(`#${role}-pagination-controls [data-direction="prev"]`);
+      const nextBtn = document.querySelector(`#${role}-pagination-controls [data-direction="next"]`);
+
+      if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (role === 'admin') currentAdminPage--;
+            else if (role === 'koordinator') currentKoorPage--;
+            else if (role === 'driver') currentDriverPage--;
+            displayFunction(eval(`current${role.charAt(0).toUpperCase() + role.slice(1)}Page`));
+        };
+      }
+      
+      if (nextBtn) {
+        nextBtn.onclick = () => {
+            if (role === 'admin') currentAdminPage++;
+            else if (role === 'koordinator') currentKoorPage++;
+            else if (role === 'driver') currentDriverPage++;
+            displayFunction(eval(`current${role.charAt(0).toUpperCase() + role.slice(1)}Page`));
+        };
+      }
+    }
+    
+    elements.addVehicleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nopol = document.getElementById('vehicleNopol').value.toUpperCase();
+      const type = document.getElementById('vehicleType').value;
+      elements.addVehicleStatus.textContent = 'Menambahkan...';
+      try {
+        await push(ref(db, 'vehicles'), { nopol, type });
+        elements.addVehicleStatus.textContent = '✔️ Nopol berhasil ditambahkan.';
+        elements.addVehicleForm.reset();
+        setTimeout(() => elements.addVehicleStatus.textContent = '', 3000);
+      } catch (error) {
+        elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
+      }
+    });
+
+    function loadVehicles() {
+      onValue(ref(db, 'vehicles'), (snapshot) => {
+        allVehicles = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allVehicles.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayVehicles(1);
+      });
+    }
+
+    function displayVehicles(page) {
+      elements.vehicleList.innerHTML = '';
+      currentVehiclePage = page;
+      
+      const start = (currentVehiclePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedVehicles = allVehicles.slice(start, end);
+
+      if (paginatedVehicles.length === 0 && allVehicles.length > 0) {
+        currentVehiclePage = Math.ceil(allVehicles.length / rowsPerPage);
+        return displayVehicles(currentVehiclePage);
+      }
+
+      if (allVehicles.length > rowsPerPage) {
+        elements.vehiclePaginationControls.style.display = 'block';
+      } else {
+        elements.vehiclePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedVehicles.length === 0) {
+        elements.vehicleList.innerHTML = '<tr><td colspan="3">Belum ada nopol tersimpan.</td></tr>';
+      } else {
+        paginatedVehicles.forEach(vehicleEntry => {
+          const vehicleId = vehicleEntry.id;
+          const vehicle = vehicleEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${vehicle.nopol}</td>
+            <td>${vehicle.type}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
+              await set(ref(db, `vehicles/${vehicleId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.vehicleList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages}`;
+      elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
+      elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
+    }
+
+    elements.prevVehicleBtn.addEventListener('click', () => {
+      if (currentVehiclePage > 1) {
+        displayVehicles(currentVehiclePage - 1);
+      }
+    });
+
+    elements.nextVehicleBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allVehicles.length / rowsPerPage);
+      if (currentVehiclePage < totalPages) {
+        displayVehicles(currentVehiclePage + 1);
+      }
+    });
+
+    elements.addRouteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('routeCode').value.toUpperCase();
+      const address = document.getElementById('routeAddress').value;
+      elements.addRouteStatus.textContent = 'Menambahkan...';
+      try {
+        await push(ref(db, 'routes'), { code, address });
+        elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.';
+        elements.addRouteForm.reset();
+        setTimeout(() => elements.addRouteStatus.textContent = '', 3000);
+      } catch (error) {
+        elements.addRouteStatus.textContent = 'Gagal: ' + error.message;
+      }
+    });
+
+    function loadRoutes() {
+      onValue(ref(db, 'routes'), (snapshot) => {
+        allRoutes = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allRoutes.push({ id: child.key, data: child.val() });
+          });
+        }
+        displayRoutes(1);
+      });
+    }
+
+    function displayRoutes(page) {
+      elements.routeList.innerHTML = '';
+      currentRoutePage = page;
+
+      const start = (currentRoutePage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedRoutes = allRoutes.slice(start, end);
+      
+      if (paginatedRoutes.length === 0 && allRoutes.length > 0) {
+        currentRoutePage = Math.ceil(allRoutes.length / rowsPerPage);
+        return displayRoutes(currentRoutePage);
+      }
+
+      if (allRoutes.length > rowsPerPage) {
+        elements.routePaginationControls.style.display = 'block';
+      } else {
+        elements.routePaginationControls.style.display = 'none';
+      }
+
+      if (paginatedRoutes.length === 0) {
+        elements.routeList.innerHTML = '<tr><td colspan="3">Belum ada rute tersimpan.</td></tr>';
+      } else {
+        paginatedRoutes.forEach(routeEntry => {
+          const routeId = routeEntry.id;
+          const route = routeEntry.data;
+          const tr = el('tr');
+          tr.innerHTML = `
+            <td>${route.code}</td>
+            <td>${route.address}</td>
+            <td></td>
+          `;
+          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          deleteBtn.onclick = async () => {
+            if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
+              await set(ref(db, `routes/${routeId}`), null);
+            }
+          };
+          tr.cells[2].appendChild(deleteBtn);
+          elements.routeList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
+      elements.prevRouteBtn.disabled = currentRoutePage === 1;
+      elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
+    }
+
+    elements.prevRouteBtn.addEventListener('click', () => {
+      if (currentRoutePage > 1) {
+        displayRoutes(currentRoutePage - 1);
+      }
+    });
+
+    elements.nextRouteBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      if (currentRoutePage < totalPages) {
+        displayRoutes(currentRoutePage + 1);
+      }
+    });
+
+    elements.userList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-user-btn')) {
+            const { uid, name } = e.target.dataset;
+            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
+                try {
+                    await set(ref(db, `users/${uid}`), null);
+                    alert(`Data user ${name} berhasil dihapus.`);
+                } catch (error) { alert(`Gagal: ${error.message}`); }
+            }
+        }
+    });
+    
+    elements.addUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        elements.addUserStatus.textContent = 'Menambahkan...';
+        const name = document.getElementById('newUserName').value;
+        const email = document.getElementById('newUserEmail').value;
+        const password = document.getElementById('newUserPassword').value;
+        const role = document.getElementById('newUserRole').value;
+        const tempAppName = 'temp-app-' + Date.now();
+        let tempApp;
+        try {
+            tempApp = initializeApp(firebaseConfig, tempAppName);
+            const cred = await createUserWithEmailAndPassword(getAuth(tempApp), email, password);
+            await set(ref(db, `users/${cred.user.uid}`), { name, role, online: false, lastLogin: null });
+            elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
+            elements.addUserForm.reset();
+        } catch (error) {
+            elements.addUserStatus.textContent = 'Gagal: ' + error.message;
+        } finally { if (tempApp) await deleteApp(tempApp); }
+    });
+    
+    elements.tripList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('btn-delete-trip')) {
+            const { tripId, tripInfo } = e.target.dataset;
+            if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) {
+                try {
+                    await set(ref(db, `trips/${tripId}`), null);
+                    alert(`Perjalanan berhasil dihapus.`);
+                } catch (error) { alert(`Gagal: ${error.message}`); }
+            }
+        }
+    });
+
+    elements.logoutBtn.addEventListener('click', async () => {
+        if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
+        signOut(auth);
+    });
+
+    function loadAllUsers() {
+        return new Promise((resolve) => {
+            onValue(ref(db, 'users'), (snapshot) => {
+                allUsers = snapshot.val() || {};
+                displayUsers(1);
+                resolve();
+            });
+            elements.filterRole.onchange = () => displayUsers(1);
+            elements.searchName.oninput = () => displayUsers(1);
+        });
+    }
+
+    function displayUsers(page) {
+      elements.userList.innerHTML = '';
+      currentUserPage = page;
+      const filteredUsers = Object.entries(allUsers).filter(([uid, u]) => {
+        const nameMatch = !elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase());
+        const roleMatch = elements.filterRole.value === 'all' || u.role === elements.filterRole.value;
+        return nameMatch && roleMatch;
+      });
+      
+      const start = (currentUserPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const paginatedUsers = filteredUsers.slice(start, end);
+      
+      if (paginatedUsers.length === 0 && filteredUsers.length > 0) {
+        currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage);
+        return displayUsers(currentUserPage);
+      }
+
+      if (filteredUsers.length > rowsPerPage) {
+        elements.userPaginationControls.style.display = 'block';
+      } else {
+        elements.userPaginationControls.style.display = 'none';
+      }
+
+      if (paginatedUsers.length === 0) {
+        elements.userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
+      } else {
+        paginatedUsers.forEach(([uid, u]) => {
+          const tr = el('tr');
+          const isCurrentUser = (uid === currentUser.uid);
+          const deleteButton = isCurrentUser
+              ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
+              : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+          
+          const roleClass = (u.role || '').replace(' ', '-');
+
+          tr.innerHTML = `
+              <td data-label="UID"><small>${uid}</small></td>
+              <td data-label="Nama">${u.name || '-'}</td>
+              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
+              <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
+              <td data-label="Aksi">${deleteButton}</td>`;
+          elements.userList.appendChild(tr);
+        });
+      }
+      
+      const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+      elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
+      elements.prevUserBtn.disabled = currentUserPage === 1;
+      elements.nextUserBtn.disabled = currentUserPage === totalPages;
+    }
   </script>
 </body>
 </html>
