@@ -56,6 +56,10 @@
                 </tbody>
               </table>
             </div>
+            <div style="display:flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <button id="prevPageBtn" class="btn-sm info" disabled>Halaman Sebelumnya</button>
+                <button id="nextPageBtn" class="btn-sm info" disabled>Halaman Berikutnya</button>
+            </div>
           </div>
         </section>
       </div>
@@ -192,7 +196,7 @@
     import { 
       auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push,
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
-      createUserWithEmailAndPassword
+      createUserWithEmailAndPassword, query, orderByChild, equalTo, orderByKey, limitToFirst
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
     import { setupNavigation, renderUsersTable } from './styles.js';
@@ -216,10 +220,14 @@
         addVehicleForm: document.getElementById('addVehicleForm'),
         addVehicleStatus: document.getElementById('addVehicleStatus'),
         vehicleList: document.getElementById('vehicleList'),
+        prevPageBtn: document.getElementById('prevPageBtn'),
+        nextPageBtn: document.getElementById('nextPageBtn')
     };
 
     let currentUser = null;
     let allUsers = {};
+    const tripsPerPage = 20;
+    let lastLoadedKey = null;
 
     setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
 
@@ -244,7 +252,7 @@
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
         await loadAllUsers(); 
-        loadAllTrips();
+        loadTrips(); // Memuat halaman pertama
         loadRoutes();
         loadVehicles();
         loadRoleStats();
@@ -369,54 +377,82 @@
         } finally { if (tempApp) await deleteApp(tempApp); }
     });
     
-    function loadAllTrips() {
-        onValue(ref(db, 'trips'), (snapshot) => {
-            elements.tripList.innerHTML = '';
-            if (!snapshot.exists()) {
-                elements.tripList.innerHTML = '<tr><td colspan="7">Belum ada data perjalanan.</td></tr>';
-                return;
+    // Fungsi untuk memuat data perjalanan dengan paginasi
+    async function loadTrips(startAfterKey = null) {
+        elements.tripList.innerHTML = '<tr><td colspan="7">Memuat data...</td></tr>';
+        
+        let tripsQuery;
+        const tripsRef = ref(db, 'trips');
+        
+        // Mengurutkan berdasarkan kunci (ID trip)
+        if (startAfterKey) {
+            tripsQuery = query(tripsRef, orderByKey(), limitToFirst(tripsPerPage + 1), startAfter(startAfterKey));
+        } else {
+            tripsQuery = query(tripsRef, orderByKey(), limitToFirst(tripsPerPage + 1));
+        }
+
+        const snapshot = await get(tripsQuery);
+        elements.tripList.innerHTML = '';
+        
+        const trips = [];
+        snapshot.forEach(child => trips.push({ key: child.key, ...child.val() }));
+
+        let hasNextPage = trips.length > tripsPerPage;
+        let tripsToDisplay = hasNextPage ? trips.slice(0, tripsPerPage) : trips;
+
+        if (tripsToDisplay.length === 0) {
+            elements.tripList.innerHTML = '<tr><td colspan="7">Belum ada data perjalanan.</td></tr>';
+            elements.nextPageBtn.disabled = true;
+            return;
+        }
+
+        tripsToDisplay.forEach(trip => {
+            const tr = el('tr');
+            const actionsCell = el('td', '', {'data-label': 'Aksi'});
+            const actionsContainer = el('div', '', { class: 'trip-actions' });
+            actionsContainer.style.justifyContent = 'flex-start';
+
+            if (trip.status === 'submitted') {
+                const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
+                const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
+                approveBtn.onclick = () => update(ref(db, `trips/${trip.key}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
+                rejectBtn.onclick = () => update(ref(db, `trips/${trip.key}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
+                actionsContainer.append(approveBtn, rejectBtn);
             }
-            snapshot.forEach(child => {
-                const tripId = child.key;
-                const trip = child.val();
-                const tr = el('tr');
 
-                const tripInfo = `${trip.asal} → ${trip.tujuan}`;
-                
-                const actionsCell = el('td', '', {'data-label': 'Aksi'});
-                const actionsContainer = el('div', '', { class: 'trip-actions' });
-                actionsContainer.style.justifyContent = 'flex-start';
-                
-                if (trip.status === 'submitted') {
-                    const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
-                    const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
-                    approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
-                    rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
-                    actionsContainer.append(approveBtn, rejectBtn);
-                }
+            const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': trip.key, 'data-trip-info': `${trip.asal} → ${trip.tujuan}` });
+            actionsContainer.appendChild(deleteBtn);
+            actionsCell.appendChild(actionsContainer);
 
-                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
-                actionsContainer.appendChild(deleteBtn);
-                actionsCell.appendChild(actionsContainer);
+            const statusCell = el('td', '', {'data-label': 'Status'});
+            statusCell.appendChild(badge(trip.status));
 
-                const statusCell = el('td', '', {'data-label': 'Status'});
-                statusCell.appendChild(badge(trip.status));
-
-                tr.innerHTML = `
-                    <td data-label="Rute">${tripInfo}</td>
-                    <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
-                    <td data-label="No. Polisi">${trip.nopol || 'N/A'}</td>
-                    <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
-                    <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
-                `;
-                tr.appendChild(statusCell);
-                tr.appendChild(actionsCell);
-                
-                elements.tripList.appendChild(tr);
-            });
+            tr.innerHTML = `
+                <td data-label="Rute">${trip.asal} → ${trip.tujuan}</td>
+                <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
+                <td data-label="No. Polisi">${trip.nopol || 'N/A'}</td>
+                <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
+                <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
+            `;
+            tr.appendChild(statusCell);
+            tr.appendChild(actionsCell);
+            
+            elements.tripList.appendChild(tr);
         });
+
+        lastLoadedKey = tripsToDisplay[tripsToDisplay.length - 1]?.key || null;
+        elements.nextPageBtn.disabled = !hasNextPage;
+        // Tombol previous tidak diimplementasikan penuh dalam versi ini, tapi tetap ada
+        elements.prevPageBtn.disabled = true;
     }
     
+    // Event listener untuk tombol Halaman Berikutnya
+    elements.nextPageBtn.addEventListener('click', () => {
+        if (lastLoadedKey) {
+            loadTrips(lastLoadedKey);
+        }
+    });
+
     elements.tripList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('btn-delete-trip')) {
             const { tripId, tripInfo } = e.target.dataset;
@@ -424,6 +460,7 @@
                 try {
                     await set(ref(db, `trips/${tripId}`), null);
                     alert(`Perjalanan berhasil dihapus.`);
+                    loadTrips(); // Muat ulang halaman setelah penghapusan
                 } catch (error) { alert(`Gagal: ${error.message}`); }
             }
         }
