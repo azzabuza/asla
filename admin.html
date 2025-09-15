@@ -663,18 +663,6 @@
       }
     });
 
-    elements.userList.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('delete-user-btn')) {
-            const { uid, name } = e.target.dataset;
-            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
-                try {
-                    await set(ref(db, `users/${uid}`), null);
-                    alert(`Data user ${name} berhasil dihapus.`);
-                } catch (error) { alert(`Gagal: ${error.message}`); }
-            }
-        }
-    });
-    
     elements.addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         elements.addUserStatus.textContent = 'Menambahkan...';
