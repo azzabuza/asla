@@ -720,16 +720,16 @@
             const tripInfo = `${t.asal} ke ${t.tujuan}`;
 
             if (t.approvedBy && t.approvedAt) {
-              const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
-              activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${koorName}`, tripId: tripId });
+              const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus';
+              activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${coorName}`, tripId: tripId });
             }
             if (t.rejectedBy && t.rejectedAt) {
-              const koorName = allUsers[t.koorId]?.name || 'Koordinator Dihapus';
-              activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${koorName}`, tripId: tripId });
+              const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus';
+              activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${coorName}`, tripId: tripId });
             }
-            if (t.koorId && t.createdAt) {
+            if (t.coorId && t.createdAt) {
               const driverName = t.driverName || 'Supir Tidak Dikenal';
-              activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
+              activities.coordinator.push({ userId: t.coorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
             }
             if (t.driverId && t.arrivedAt) {
               activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}`, tripId: tripId });
