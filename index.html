@@ -5,11 +5,35 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SLA Trucking - Solusi Cerdas Manajemen Logistik</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* Tambahan Style untuk Landing Page */
     body {
       overflow-x: hidden;
     }
+    .navbar {
+        background-color: var(--background-secondary);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .navbar .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .navbar .nav-links a {
+        color: var(--text-secondary);
+        margin-left: 1.5rem;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    .navbar .nav-links a:hover {
+        color: var(--accent-primary);
+    }
+
     .hero {
       background: linear-gradient(120deg, var(--background-primary), #0d121f);
       padding: 6rem 2rem;
@@ -40,15 +64,25 @@
       padding: 1rem 2.5rem;
       text-decoration: none;
     }
-    .features {
+
+    .section {
       padding: 5rem 2rem;
-      background-color: var(--background-primary);
     }
-    .features h2 {
+    .section-title {
       text-align: center;
       font-size: 2.5rem;
-      margin-bottom: 4rem;
+      margin-bottom: 1rem;
     }
+    .section-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 4rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -68,15 +102,89 @@
       transform: translateY(-8px);
       border-color: var(--accent-primary);
     }
+    .feature-card i {
+      font-size: 2.5rem;
+      color: var(--accent-primary);
+      margin-bottom: 1.5rem;
+    }
     .feature-card h3 {
       font-size: 1.5rem;
-      color: var(--accent-primary);
+      color: var(--text-primary);
       margin-bottom: 1rem;
     }
     .feature-card p {
       color: var(--text-secondary);
       line-height: 1.7;
     }
+
+    /* How it works section */
+    .how-it-works {
+        background-color: var(--background-secondary);
+    }
+    .timeline {
+        position: relative;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 3px;
+        background: linear-gradient(var(--accent-primary), var(--warning));
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -1.5px;
+    }
+    .timeline-container {
+        padding: 10px 40px;
+        position: relative;
+        width: 50%;
+    }
+    .timeline-container.left { left: 0; }
+    .timeline-container.right { left: 50%; }
+    .timeline-container::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: var(--background-primary);
+        border: 4px solid var(--accent-primary);
+        top: 22px;
+        border-radius: 50%;
+        z-index: 1;
+    }
+    .timeline-container.left::after { right: -12px; }
+    .timeline-container.right::after { left: -8px; }
+    .timeline-content {
+        padding: 20px 30px;
+        background-color: var(--background-tertiary);
+        position: relative;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(120deg, var(--accent-primary), var(--warning));
+        text-align: center;
+        color: var(--background-primary);
+    }
+    .cta-section h2 {
+        color: var(--background-primary);
+        font-size: 2.2rem;
+    }
+    .cta-section p {
+        color: var(--background-primary);
+        opacity: 0.9;
+    }
+    .cta-section .button {
+        background: var(--background-primary);
+        color: var(--accent-primary);
+        box-shadow: none;
+    }
+
     .footer {
       text-align: center;
       padding: 3rem 2rem;
@@ -88,10 +196,23 @@
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.8rem; }
       .hero p { font-size: 1.1rem; }
+      .timeline::after { left: 15px; }
+      .timeline-container { width: 100%; padding-left: 50px; padding-right: 15px; }
+      .timeline-container.right { left: 0%; }
+      .timeline-container.left::after, .timeline-container.right::after { left: 5px; }
     }
   </style>
 </head>
 <body>
+
+  <nav class="navbar">
+    <div class="logo">SLA Trucking</div>
+    <div class="nav-links">
+        <a href="#features">Fitur</a>
+        <a href="#how-it-works">Cara Kerja</a>
+        <a href="index.html">Login</a>
+    </div>
+  </nav>
 
   <section class="hero">
     <h1>Manajemen Logistik Cerdas dengan <span>SLA Trucking</span></h1>
@@ -100,13 +221,15 @@
       perjalanan armada Anda. Efisiensi operasional ada di ujung jari Anda,
       diberdayakan oleh teknologi real-time.
     </p>
-    <a href="login.html" class="button">Masuk ke Dasbor</a>
+    <a href="index.html" class="button">Masuk ke Dasbor</a>
   </section>
 
-  <section class="features">
-    <h2>Fitur Unggulan Kami</h2>
+  <section id="features" class="section">
+    <h2 class="section-title">Solusi Lengkap Untuk Armada Anda</h2>
+    <p class="section-subtitle">Aplikasi kami menyediakan semua yang Anda butuhkan untuk menjalankan operasional logistik yang efisien, transparan, dan terukur.</p>
     <div class="features-grid">
       <div class="feature-card">
+        <i class="fas fa-users"></i>
         <h3>Panel Berbasis Peran</h3>
         <p>
           Setiap pengguna—Admin, Koordinator, dan Supir—memiliki dasbor khusus
@@ -115,6 +238,7 @@
         </p>
       </div>
       <div class="feature-card">
+        <i class="fas fa-desktop"></i>
         <h3>Monitoring Real-Time</h3>
         <p>
           Admin dapat memantau semua status perjalanan secara langsung, mulai dari
@@ -123,6 +247,7 @@
         </p>
       </div>
       <div class="feature-card">
+        <i class="fas fa-database"></i>
         <h3>Manajemen Data Terpusat</h3>
         <p>
           Kelola data karyawan, rute perjalanan, dan nomor polisi kendaraan
@@ -131,6 +256,7 @@
         </p>
       </div>
       <div class="feature-card">
+        <i class="fas fa-cogs"></i>
         <h3>Alur Kerja Otomatis</h3>
         <p>
           Koordinator dapat membuat perjalanan baru dan menugaskannya ke supir.
@@ -139,6 +265,7 @@
         </p>
       </div>
       <div class="feature-card">
+        <i class="fas fa-qrcode"></i>
         <h3>Konfirmasi Digital & QR Code</h3>
         <p>
           Supir dapat dengan mudah mengonfirmasi kedatangan di lokasi tujuan
@@ -147,6 +274,7 @@
         </p>
       </div>
       <div class="feature-card">
+        <i class="fas fa-chart-line"></i>
         <h3>Analitik Kinerja</h3>
         <p>
           Dapatkan ringkasan kinerja supir dan aktivitas berdasarkan peran
@@ -156,6 +284,52 @@
       </div>
     </div>
   </section>
+
+  <section id="how-it-works" class="section how-it-works">
+    <h2 class="section-title">Bagaimana Ini Bekerja?</h2>
+    <p class="section-subtitle">Alur kerja kami dirancang untuk menjadi sederhana dan efisien, menghubungkan setiap peran dalam satu platform yang mulus.</p>
+    <div class="timeline">
+        <div class="timeline-container left">
+            <div class="timeline-content">
+                <h3>1. Koordinator Membuat Perjalanan</h3>
+                <p>Koordinator mengisi detail perjalanan seperti supir, rute, nopol, dan muatan, lalu mengirimkannya untuk persetujuan.</p>
+            </div>
+        </div>
+        <div class="timeline-container right">
+            <div class="timeline-content">
+                <h3>2. Admin Menyetujui</h3>
+                <p>Admin me-review data perjalanan yang masuk. Jika sesuai, perjalanan akan disetujui dan statusnya berubah menjadi 'Approved'.</p>
+            </div>
+        </div>
+        <div class="timeline-container left">
+            <div class="timeline-content">
+                <h3>3. Supir Menerima Tugas</h3>
+                <p>Setelah disetujui, tugas perjalanan secara otomatis muncul di dasbor supir, lengkap dengan detail dan kode resi.</p>
+            </div>
+        </div>
+        <div class="timeline-container right">
+            <div class="timeline-content">
+                <h3>4. Konfirmasi Kedatangan</h3>
+                <p>Setibanya di tujuan, supir melakukan konfirmasi dengan memindai QR code atau memasukkan kode resi perjalanan.</p>
+            </div>
+        </div>
+        <div class="timeline-container left">
+            <div class="timeline-content">
+                <h3>5. Semua Terpantau</h3>
+                <p>Seluruh proses dari awal hingga akhir dapat dipantau secara real-time oleh Admin, memberikan visibilitas penuh.</p>
+            </div>
+        </div>
+    </div>
+  </section>
+
+  <section class="section cta-section">
+      <h2 class="section-title">Siap Mengoptimalkan Logistik Anda?</h2>
+      <p class="section-subtitle" style="color: var(--background-primary);">
+        Bergabunglah sekarang dan rasakan kemudahan mengelola armada Anda dengan teknologi terdepan.
+      </p>
+      <a href="index.html" class="button">Mulai Sekarang</a>
+  </section>
+
 
   <footer class="footer">
     <p>&copy; 2024 SLA Trucking. Didukung oleh Teknologi Modern.</p>
