@@ -15,9 +15,9 @@
       <div class="sidebar-form-container">
         <form id="tripForm">
           <div class="form-group">
-            <label for="driverSelect">Pilih Driver</label>
+            <label for="driverSelect">Pilih Supir</label>
             <select id="driverSelect" required>
-              <option value="">Memuat daftar driver...</option>
+              <option value="">Memuat daftar supir...</option>
             </select>
           </div>
           <div class="form-group">
@@ -71,7 +71,7 @@
                 <thead>
                   <tr>
                     <th>Rute</th>
-                    <th>Driver</th>
+                    <th>Supir</th>
                     <th>No. Polisi</th>
                     <th>Muatan</th>
                     <th>Tanggal</th>
@@ -209,7 +209,7 @@
             const q = query(usersRef, orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
             
-            driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>';
+            driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
             
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
@@ -218,10 +218,10 @@
                     driverSelect.appendChild(option);
                 });
             } else {
-                driverSelect.innerHTML = '<option value="">Tidak ada driver</option>';
+                driverSelect.innerHTML = '<option value="">Tidak ada supir</option>';
             }
         } catch (error) {
-            console.error("Gagal memuat daftar driver:", error);
+            console.error("Gagal memuat daftar supir:", error);
             driverSelect.innerHTML = '<option value="">Error</option>';
         }
     }
@@ -236,7 +236,7 @@
       const driverName = selectedDriverOption.text;
 
       if (!driverId) {
-        alert('Silakan pilih driver terlebih dahulu.');
+        alert('Silakan pilih supir terlebih dahulu.');
         return;
       }
 
