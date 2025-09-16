@@ -122,7 +122,6 @@
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
-    // Objek untuk mengatur judul dan subjudul halaman
     const pageContent = {
         list: { title: 'Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
         add: { title: 'Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
@@ -154,7 +153,6 @@
     let currentKoorPage = 1;
     const rowsPerPage = 10;
 
-    // Setup navigasi SPA
     function setupKoordinatorNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -173,7 +171,6 @@
         });
     }
     setupKoordinatorNavigation();
-
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -207,12 +204,9 @@
             const option = el('option', optionText, { value: vehicle.nopol });
             elements.nopolSelect.appendChild(option);
           });
-        } else {
-          elements.nopolSelect.innerHTML = '<option value="">Belum ada nopol</option>';
         }
       } catch (error) {
         console.error("Gagal memuat nopol:", error);
-        elements.nopolSelect.innerHTML = '<option value="">Error</option>';
       }
     }
 
@@ -231,14 +225,9 @@
             elements.asalSelect.appendChild(option);
             elements.tujuanSelect.appendChild(option2);
           });
-        } else {
-          elements.asalSelect.innerHTML = '<option value="">Belum ada rute</option>';
-          elements.tujuanSelect.innerHTML = '<option value="">Belum ada rute</option>';
         }
       } catch (error) {
         console.error("Gagal memuat rute:", error);
-        elements.asalSelect.innerHTML = '<option value="">Error</option>';
-        elements.tujuanSelect.innerHTML = '<option value="">Error</option>';
       }
     }
 
@@ -254,12 +243,9 @@
                     const option = el('option', driver.name, { value: child.key });
                     elements.driverSelect.appendChild(option);
                 });
-            } else {
-                elements.driverSelect.innerHTML = '<option value="">Tidak ada supir</option>';
             }
         } catch (error) {
             console.error("Gagal memuat daftar supir:", error);
-            elements.driverSelect.innerHTML = '<option value="">Error</option>';
         }
     }
 
@@ -291,10 +277,18 @@
       };
 
       try {
-        await set(push(ref(db, 'trips')), data);
+        // ### PERBAIKAN DI SINI ###
+        const newTripRef = push(ref(db, 'trips')); // 1. Buat referensi baru
+        await set(newTripRef, data); // 2. Simpan data di referensi tersebut
+        // ##########################
+        
         elements.tripForm.reset();
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
-        setTimeout(() => elements.statusMsg.textContent = '', 3000);
+        setTimeout(() => {
+            elements.statusMsg.textContent = '';
+            // Pindah ke halaman daftar setelah berhasil menambah
+            document.querySelector('.nav-link[href="#list"]').click();
+        }, 2000);
       } catch(err) {
         elements.statusMsg.style.color = 'var(--danger)';
         elements.statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
@@ -303,14 +297,14 @@
     
     function loadDriverPerformance() {
         if (allMyTrips.length === 0) {
-            elements.driverPerformanceStats.innerHTML = '<p class="empty-state">Belum ada data perjalanan yang Anda buat untuk menampilkan kinerja.</p>';
+            elements.driverPerformanceStats.innerHTML = '<p class="empty-state">Belum ada data perjalanan.</p>';
             return;
         }
 
         const performance = {};
         allMyTrips.forEach(tripEntry => {
             const trip = tripEntry.data;
-            if (!trip.driverId) return; // Lewati jika tidak ada driverId
+            if (!trip.driverId) return;
             if (!performance[trip.driverId]) {
                 performance[trip.driverId] = {
                     name: trip.driverName, total: 0, arrived: 0, approved: 0,
@@ -330,7 +324,7 @@
                         </tr></thead><tbody>`;
 
         if (Object.keys(performance).length === 0) {
-            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja supir.</td></tr>';
+            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data.</td></tr>';
         } else {
             Object.values(performance).forEach(driver => {
                 tableHTML += `<tr>
@@ -346,7 +340,6 @@
         elements.driverPerformanceStats.innerHTML = tableHTML;
     }
 
-    // --- LOGIKA PAGINASI & TAMPILAN TABEL (DIJAMIN SAMA DENGAN ASLI) ---
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
       currentKoorPage = page;
@@ -388,7 +381,6 @@
           const statusCell = el('td');
           statusCell.appendChild(badge(tripData.status));
           
-          // Bagian ini sekarang 100% identik dengan kode awal
           tr.innerHTML = `
             <td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
             <td data-label="Driver">${tripData.driverName || '-'}</td>
@@ -427,9 +419,9 @@
         if (snapshot.exists()) {
           snapshot.forEach(child => allMyTrips.push({ id: child.key, data: child.val() }));
         }
-        allMyTrips.reverse(); // Menampilkan yang terbaru di atas
+        allMyTrips.reverse();
         displayMyTrips(currentKoorPage);
-        loadDriverPerformance(); // Perbarui statistik setiap kali data perjalanan berubah
+        loadDriverPerformance();
       });
     }
 
