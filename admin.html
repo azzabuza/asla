@@ -269,13 +269,13 @@
     setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = 'login.html';
+      if (!user) return window.location.href = 'index.html';
       currentUser = user;
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
         currentUserData = snap.val();
         if (!snap.exists() || (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin')) {
-          alert('Akses ditolak.'); return window.location.href = 'login.html';
+          alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
 
         if (currentUserData.role === 'super admin') {
