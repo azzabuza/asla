@@ -70,7 +70,7 @@
           <h2 class="card-header">Daftar Semua Karyawan</h2>
           <div class="card-body">
             <div class="table-controls">
-              <div class="form-group"><label>Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+              <div class="form-group"><label>Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="coordinator">Koordinator</option><option value="driver">Supir</option></select></div>
               <div class="form-group"><label>Cari Nama: </label><input type="text" id="searchName" placeholder="Ketik nama karyawan..." /></div>
             </div>
             <div class="table-responsive">
@@ -150,7 +150,7 @@
                       <div class="form-group"><label for="newUserName">Nama</label><input type="text" id="newUserName" autocomplete="off" required></div>
                       <div class="form-group"><label for="newUserEmail">Email</label><input type="email" id="newUserEmail" autocomplete="off" required></div>
                       <div class="form-group"><label for="newUserPassword">Password</label><input type="password" id="newUserPassword" autocomplete="new-password" required></div>
-                      <div class="form-group"><label for="newUserRole">Role</label><select id="newUserRole" required><option value="koordinator">Koordinator</option><option value="driver">Driver</option></select></div>
+                      <div class="form-group"><label for="newUserRole">Role</label><select id="newUserRole" required><option value="coordinator">Koordinator</option><option value="driver">Supir</option></select></div>
                       <button type="submit">Tambah User</button>
                   </form>
                   <p id="addUserStatus" class="form-status"></p>
@@ -713,7 +713,7 @@
           return;
         }
 
-        let activities = { admin: [], koordinator: [], driver: [] };
+        let activities = { admin: [], coordinator: [], driver: [] };
         snapshot.forEach(child => {
             const t = child.val();
             const tripId = child.key;
@@ -728,7 +728,7 @@
               activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${koorName}`, tripId: tripId });
             }
             if (t.koorId && t.createdAt) {
-              const driverName = t.driverName || 'Driver Tidak Dikenal';
+              const driverName = t.driverName || 'Supir Tidak Dikenal';
               activities.koordinator.push({ userId: t.koorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId });
             }
             if (t.driverId && t.arrivedAt) {
@@ -756,9 +756,9 @@
         elements.roleStats.innerHTML = `
           ${createActivityTable('admin', 'Aktivitas Admin')}
           <hr>
-          ${createActivityTable('koordinator', 'Aktivitas Koordinator')}
+          ${createActivityTable('coordinator', 'Aktivitas Koordinator')}
           <hr>
-          ${createActivityTable('driver', 'Aktivitas Driver')}
+          ${createActivityTable('driver', 'Aktivitas Supir')}
         `;
       });
     }
