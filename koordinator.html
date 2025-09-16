@@ -25,8 +25,8 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1 id="pageTitle">Daftar Perjalanan</h1>
-        <p>Pantau semua perjalanan yang telah Anda buat di sini.</p>
+        <h1 id="pageTitle">Status Perjalanan Saya</h1>
+        <p id="pageSubtitle">Pantau semua perjalanan yang telah Anda buat di sini.</p>
       </header>
       
       <div id="page-list" class="page active">
@@ -121,16 +121,17 @@
       query, orderByChild, equalTo, update, onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
-    import { setupNavigation } from './styles.js';
 
-    const pageHeaders = {
-        list: 'Daftar Perjalanan',
-        add: 'Tambah Perjalanan',
-        performance: 'Kinerja Supir'
+    // Objek untuk mengatur judul dan subjudul halaman
+    const pageContent = {
+        list: { title: 'Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
+        add: { title: 'Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
+        performance: { title: 'Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
     };
 
     const elements = {
       pageTitle: document.getElementById('pageTitle'),
+      pageSubtitle: document.getElementById('pageSubtitle'),
       navLinks: document.querySelectorAll('.nav-link'),
       pages: document.querySelectorAll('.page'),
       tripForm: document.getElementById('tripForm'),
@@ -153,8 +154,26 @@
     let currentKoorPage = 1;
     const rowsPerPage = 10;
 
-    // Setup navigasi Single Page Application (SPA)
-    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle, pageHeaders);
+    // Setup navigasi SPA
+    function setupKoordinatorNavigation() {
+        elements.navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+
+                elements.pages.forEach(page => page.classList.remove('active'));
+                elements.navLinks.forEach(nav => nav.classList.remove('active'));
+
+                document.getElementById(`page-${targetId}`).classList.add('active');
+                link.classList.add('active');
+                
+                elements.pageTitle.textContent = pageContent[targetId].title;
+                elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
+            });
+        });
+    }
+    setupKoordinatorNavigation();
+
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -282,7 +301,6 @@
       }
     });
     
-    // --- FUNGSI BARU: KINERJA SUPIR ---
     function loadDriverPerformance() {
         if (allMyTrips.length === 0) {
             elements.driverPerformanceStats.innerHTML = '<p class="empty-state">Belum ada data perjalanan yang Anda buat untuk menampilkan kinerja.</p>';
@@ -292,14 +310,11 @@
         const performance = {};
         allMyTrips.forEach(tripEntry => {
             const trip = tripEntry.data;
+            if (!trip.driverId) return; // Lewati jika tidak ada driverId
             if (!performance[trip.driverId]) {
                 performance[trip.driverId] = {
-                    name: trip.driverName,
-                    total: 0,
-                    arrived: 0,
-                    approved: 0,
-                    submitted: 0,
-                    rejected: 0
+                    name: trip.driverName, total: 0, arrived: 0, approved: 0,
+                    submitted: 0, rejected: 0
                 };
             }
             performance[trip.driverId].total++;
@@ -309,40 +324,29 @@
             else if (trip.status === 'rejected') performance[trip.driverId].rejected++;
         });
 
-        let tableHTML = `
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nama Supir</th>
-                            <th>Total Tugas</th>
-                            <th>Selesai</th>
-                            <th>Dalam Perjalanan</th>
-                            <th>Menunggu Persetujuan</th>
-                            <th>Ditolak</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
+        let tableHTML = `<div class="table-responsive"><table><thead><tr>
+                            <th>Nama Supir</th><th>Total Tugas</th><th>Selesai</th>
+                            <th>Dalam Perjalanan</th><th>Menunggu Persetujuan</th><th>Ditolak</th>
+                        </tr></thead><tbody>`;
 
-        Object.values(performance).forEach(driver => {
-            tableHTML += `
-                <tr>
-                    <td><strong>${driver.name}</strong></td>
-                    <td>${driver.total}</td>
+        if (Object.keys(performance).length === 0) {
+            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja supir.</td></tr>';
+        } else {
+            Object.values(performance).forEach(driver => {
+                tableHTML += `<tr>
+                    <td><strong>${driver.name}</strong></td><td>${driver.total}</td>
                     <td style="color: var(--success);">${driver.arrived}</td>
                     <td style="color: var(--info);">${driver.approved}</td>
                     <td style="color: var(--warning);">${driver.submitted}</td>
                     <td style="color: var(--danger);">${driver.rejected}</td>
-                </tr>
-            `;
-        });
-
+                </tr>`;
+            });
+        }
         tableHTML += '</tbody></table></div>';
         elements.driverPerformanceStats.innerHTML = tableHTML;
     }
 
-    // --- LOGIKA PAGINASI ---
+    // --- LOGIKA PAGINASI & TAMPILAN TABEL (DIJAMIN SAMA DENGAN ASLI) ---
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
       currentKoorPage = page;
@@ -362,12 +366,14 @@
         elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
-          const { id: tripId, data: tripData } = tripEntry;
+          const tripId = tripEntry.id;
+          const tripData = tripEntry.data;
           const tr = el('tr');
 
           const actionsCell = el('td');
-          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content: flex-start;' });
-          
+          const actionsContainer = el('div', '', { class: 'trip-actions' });
+          actionsContainer.style.justifyContent = 'flex-start';
+
           if (tripData.status === 'approved') {
             const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
             const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
@@ -382,6 +388,7 @@
           const statusCell = el('td');
           statusCell.appendChild(badge(tripData.status));
           
+          // Bagian ini sekarang 100% identik dengan kode awal
           tr.innerHTML = `
             <td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
             <td data-label="Driver">${tripData.driverName || '-'}</td>
@@ -420,9 +427,9 @@
         if (snapshot.exists()) {
           snapshot.forEach(child => allMyTrips.push({ id: child.key, data: child.val() }));
         }
-        allMyTrips.reverse(); // Show latest first
+        allMyTrips.reverse(); // Menampilkan yang terbaru di atas
         displayMyTrips(currentKoorPage);
-        loadDriverPerformance(); // Update performance stats whenever trips data changes
+        loadDriverPerformance(); // Perbarui statistik setiap kali data perjalanan berubah
       });
     }
 
