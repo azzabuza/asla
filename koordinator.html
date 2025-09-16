@@ -12,44 +12,11 @@
       <div class="sidebar-header">
         <h3>Koordinator</h3>
       </div>
-      <div class="sidebar-form-container">
-        <form id="tripForm">
-          <div class="form-group">
-            <label for="driverSelect">Pilih Supir</label>
-            <select id="driverSelect" required>
-              <option value="">Memuat daftar supir...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="nopol">No. Polisi</label>
-            <select id="nopol" required>
-              <option value="">Memuat nopol...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="asal">Asal</label>
-            <select id="asal" required>
-              <option value="">Memuat rute...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="tujuan">Tujuan</label>
-            <select id="tujuan" required>
-              <option value="">Memuat rute...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="muatan">Muatan</label>
-            <input id="muatan" type="text" required>
-          </div>
-          <div class="form-group">
-            <label for="tanggal">Tanggal Keberangkatan</label>
-            <input id="tanggal" type="date" required>
-          </div>
-          <button type="submit">Kirim Data Perjalanan</button>
-          <p id="statusMsg" class="form-status"></p>
-        </form>
-      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#list" class="nav-link active">Daftar Perjalanan</a></li>
+        <li><a href="#add" class="nav-link">Tambah Perjalanan</a></li>
+        <li><a href="#performance" class="nav-link">Kinerja Supir</a></li>
+      </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Logout</button>
         <p style="text-align:center;margin:1.5rem 0 0 0;">DEMO Version</p>
@@ -58,11 +25,11 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1>Status Perjalanan Saya</h1>
+        <h1 id="pageTitle">Daftar Perjalanan</h1>
         <p>Pantau semua perjalanan yang telah Anda buat di sini.</p>
       </header>
       
-      <div class="page active">
+      <div id="page-list" class="page active">
         <section class="card">
           <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
           <div class="card-body">
@@ -92,45 +59,102 @@
           </div>
         </section>
       </div>
+
+      <div id="page-add" class="page">
+        <section class="card">
+            <h2 class="card-header">Buat Data Perjalanan Baru</h2>
+            <div class="card-body">
+                <form id="tripForm">
+                  <div class="form-group">
+                    <label for="driverSelect">Pilih Supir</label>
+                    <select id="driverSelect" required>
+                      <option value="">Memuat daftar supir...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="nopol">No. Polisi</label>
+                    <select id="nopol" required>
+                      <option value="">Memuat nopol...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="asal">Asal</label>
+                    <select id="asal" required>
+                      <option value="">Memuat rute...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="tujuan">Tujuan</label>
+                    <select id="tujuan" required>
+                      <option value="">Memuat rute...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="muatan">Muatan</label>
+                    <input id="muatan" type="text" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="tanggal">Tanggal Keberangkatan</label>
+                    <input id="tanggal" type="date" required>
+                  </div>
+                  <button type="submit">Kirim Data Perjalanan</button>
+                  <p id="statusMsg" class="form-status"></p>
+                </form>
+            </div>
+        </section>
+      </div>
+
+      <div id="page-performance" class="page">
+        <section class="card">
+          <h2 class="card-header">Ringkasan Kinerja Supir</h2>
+          <div class="card-body" id="driverPerformanceStats">
+            <p>Memuat data kinerja...</p>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
   <script type="module">
     import { 
-      auth, 
-      onAuthStateChanged, 
-      signOut, 
-      db, 
-      ref, 
-      get, 
-      push, 
-      set, 
-      onValue, 
-      query, 
-      orderByChild, 
-      equalTo,
-      update,
-      onDisconnect
+      auth, onAuthStateChanged, signOut, db, ref, get, push, set, onValue, 
+      query, orderByChild, equalTo, update, onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
+    import { setupNavigation } from './styles.js';
 
-    const tripForm = document.getElementById('tripForm');
-    const tripList = document.getElementById('tripList');
-    const driverSelect = document.getElementById('driverSelect');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const statusMsg = document.getElementById('statusMsg');
-    const asalSelect = document.getElementById('asal');
-    const tujuanSelect = document.getElementById('tujuan');
-    const nopolSelect = document.getElementById('nopol');
-    const koorPaginationControls = document.getElementById('koor-pagination-controls');
-    const prevKoorBtn = document.getElementById('prevKoorBtn');
-    const nextKoorBtn = document.getElementById('nextKoorBtn');
-    const koorPageInfo = document.getElementById('koorPageInfo');
+    const pageHeaders = {
+        list: 'Daftar Perjalanan',
+        add: 'Tambah Perjalanan',
+        performance: 'Kinerja Supir'
+    };
+
+    const elements = {
+      pageTitle: document.getElementById('pageTitle'),
+      navLinks: document.querySelectorAll('.nav-link'),
+      pages: document.querySelectorAll('.page'),
+      tripForm: document.getElementById('tripForm'),
+      tripList: document.getElementById('tripList'),
+      driverSelect: document.getElementById('driverSelect'),
+      nopolSelect: document.getElementById('nopol'),
+      asalSelect: document.getElementById('asal'),
+      tujuanSelect: document.getElementById('tujuan'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      statusMsg: document.getElementById('statusMsg'),
+      koorPaginationControls: document.getElementById('koor-pagination-controls'),
+      prevKoorBtn: document.getElementById('prevKoorBtn'),
+      nextKoorBtn: document.getElementById('nextKoorBtn'),
+      koorPageInfo: document.getElementById('koorPageInfo'),
+      driverPerformanceStats: document.getElementById('driverPerformanceStats')
+    };
     
     let currentUser = null;
     let allMyTrips = [];
     let currentKoorPage = 1;
     const rowsPerPage = 10;
+
+    // Setup navigasi Single Page Application (SPA)
+    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle, pageHeaders);
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -156,22 +180,20 @@
       try {
         const vehiclesRef = ref(db, 'vehicles');
         const snapshot = await get(vehiclesRef);
-        
-        nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
-
+        elements.nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const vehicle = child.val();
             const optionText = `${vehicle.nopol} (${vehicle.type})`;
             const option = el('option', optionText, { value: vehicle.nopol });
-            nopolSelect.appendChild(option);
+            elements.nopolSelect.appendChild(option);
           });
         } else {
-          nopolSelect.innerHTML = '<option value="">Belum ada nopol</option>';
+          elements.nopolSelect.innerHTML = '<option value="">Belum ada nopol</option>';
         }
       } catch (error) {
         console.error("Gagal memuat nopol:", error);
-        nopolSelect.innerHTML = '<option value="">Error</option>';
+        elements.nopolSelect.innerHTML = '<option value="">Error</option>';
       }
     }
 
@@ -179,27 +201,25 @@
       try {
         const routesRef = ref(db, 'routes');
         const snapshot = await get(routesRef);
-        
-        asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
-        tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
-
+        elements.asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
+        elements.tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
             const optionText = `${route.code} - ${route.address}`;
             const option = el('option', optionText, { value: route.address });
             const option2 = option.cloneNode(true);
-            asalSelect.appendChild(option);
-            tujuanSelect.appendChild(option2);
+            elements.asalSelect.appendChild(option);
+            elements.tujuanSelect.appendChild(option2);
           });
         } else {
-          asalSelect.innerHTML = '<option value="">Belum ada rute</option>';
-          tujuanSelect.innerHTML = '<option value="">Belum ada rute</option>';
+          elements.asalSelect.innerHTML = '<option value="">Belum ada rute</option>';
+          elements.tujuanSelect.innerHTML = '<option value="">Belum ada rute</option>';
         }
       } catch (error) {
         console.error("Gagal memuat rute:", error);
-        asalSelect.innerHTML = '<option value="">Error</option>';
-        tujuanSelect.innerHTML = '<option value="">Error</option>';
+        elements.asalSelect.innerHTML = '<option value="">Error</option>';
+        elements.tujuanSelect.innerHTML = '<option value="">Error</option>';
       }
     }
 
@@ -208,30 +228,28 @@
             const usersRef = ref(db, 'users');
             const q = query(usersRef, orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
-            
-            driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
-            
+            elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const driver = child.val();
                     const option = el('option', driver.name, { value: child.key });
-                    driverSelect.appendChild(option);
+                    elements.driverSelect.appendChild(option);
                 });
             } else {
-                driverSelect.innerHTML = '<option value="">Tidak ada supir</option>';
+                elements.driverSelect.innerHTML = '<option value="">Tidak ada supir</option>';
             }
         } catch (error) {
             console.error("Gagal memuat daftar supir:", error);
-            driverSelect.innerHTML = '<option value="">Error</option>';
+            elements.driverSelect.innerHTML = '<option value="">Error</option>';
         }
     }
 
-    tripForm.addEventListener('submit', async (e) => {
+    elements.tripForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusMsg.textContent = 'Mengirim...';
+      elements.statusMsg.textContent = 'Mengirim...';
       if (!currentUser) return alert('Anda belum login.');
 
-      const selectedDriverOption = driverSelect.options[driverSelect.selectedIndex];
+      const selectedDriverOption = elements.driverSelect.options[elements.driverSelect.selectedIndex];
       const driverId = selectedDriverOption.value;
       const driverName = selectedDriverOption.text;
 
@@ -255,47 +273,101 @@
 
       try {
         await set(push(ref(db, 'trips')), data);
-        tripForm.reset();
-        statusMsg.textContent = '✔️ Data berhasil dikirim.';
-        setTimeout(() => statusMsg.textContent = '', 3000);
+        elements.tripForm.reset();
+        elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
+        setTimeout(() => elements.statusMsg.textContent = '', 3000);
       } catch(err) {
-        statusMsg.style.color = 'var(--danger)';
-        statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
+        elements.statusMsg.style.color = 'var(--danger)';
+        elements.statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
       }
     });
+    
+    // --- FUNGSI BARU: KINERJA SUPIR ---
+    function loadDriverPerformance() {
+        if (allMyTrips.length === 0) {
+            elements.driverPerformanceStats.innerHTML = '<p class="empty-state">Belum ada data perjalanan yang Anda buat untuk menampilkan kinerja.</p>';
+            return;
+        }
 
-    // --- PAGINATION LOGIC ---
+        const performance = {};
+        allMyTrips.forEach(tripEntry => {
+            const trip = tripEntry.data;
+            if (!performance[trip.driverId]) {
+                performance[trip.driverId] = {
+                    name: trip.driverName,
+                    total: 0,
+                    arrived: 0,
+                    approved: 0,
+                    submitted: 0,
+                    rejected: 0
+                };
+            }
+            performance[trip.driverId].total++;
+            if (trip.status === 'arrived') performance[trip.driverId].arrived++;
+            else if (trip.status === 'approved') performance[trip.driverId].approved++;
+            else if (trip.status === 'submitted') performance[trip.driverId].submitted++;
+            else if (trip.status === 'rejected') performance[trip.driverId].rejected++;
+        });
+
+        let tableHTML = `
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama Supir</th>
+                            <th>Total Tugas</th>
+                            <th>Selesai</th>
+                            <th>Dalam Perjalanan</th>
+                            <th>Menunggu Persetujuan</th>
+                            <th>Ditolak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        Object.values(performance).forEach(driver => {
+            tableHTML += `
+                <tr>
+                    <td><strong>${driver.name}</strong></td>
+                    <td>${driver.total}</td>
+                    <td style="color: var(--success);">${driver.arrived}</td>
+                    <td style="color: var(--info);">${driver.approved}</td>
+                    <td style="color: var(--warning);">${driver.submitted}</td>
+                    <td style="color: var(--danger);">${driver.rejected}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += '</tbody></table></div>';
+        elements.driverPerformanceStats.innerHTML = tableHTML;
+    }
+
+    // --- LOGIKA PAGINASI ---
     function displayMyTrips(page) {
-      tripList.innerHTML = '';
+      elements.tripList.innerHTML = '';
       currentKoorPage = page;
       
       const start = (currentKoorPage - 1) * rowsPerPage;
       const end = start + rowsPerPage;
       const paginatedTrips = allMyTrips.slice(start, end);
-      
+
       if (paginatedTrips.length === 0 && allMyTrips.length > 0) {
         currentKoorPage = Math.ceil(allMyTrips.length / rowsPerPage);
         return displayMyTrips(currentKoorPage);
       }
 
-      if (allMyTrips.length > rowsPerPage) {
-        koorPaginationControls.style.display = 'block';
-      } else {
-        koorPaginationControls.style.display = 'none';
-      }
+      elements.koorPaginationControls.style.display = allMyTrips.length > rowsPerPage ? 'block' : 'none';
 
       if (paginatedTrips.length === 0) {
-        tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
-          const tripId = tripEntry.id;
-          const tripData = tripEntry.data;
+          const { id: tripId, data: tripData } = tripEntry;
           const tr = el('tr');
 
           const actionsCell = el('td');
-          const actionsContainer = el('div', '', { class: 'trip-actions' });
-          actionsContainer.style.justifyContent = 'flex-start';
-
+          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content: flex-start;' });
+          
           if (tripData.status === 'approved') {
             const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
             const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
@@ -320,27 +392,23 @@
           tr.appendChild(statusCell);
           tr.appendChild(actionsCell);
           
-          tripList.appendChild(tr);
+          elements.tripList.appendChild(tr);
         });
       }
       
       const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
-      koorPageInfo.textContent = `Halaman ${currentKoorPage} dari ${totalPages}`;
-      prevKoorBtn.disabled = currentKoorPage === 1;
-      nextKoorBtn.disabled = currentKoorPage === totalPages;
+      elements.koorPageInfo.textContent = `Halaman ${currentKoorPage} dari ${totalPages}`;
+      elements.prevKoorBtn.disabled = currentKoorPage === 1;
+      elements.nextKoorBtn.disabled = currentKoorPage === totalPages;
     }
     
-    prevKoorBtn.addEventListener('click', () => {
-      if (currentKoorPage > 1) {
-        displayMyTrips(currentKoorPage - 1);
-      }
+    elements.prevKoorBtn.addEventListener('click', () => {
+      if (currentKoorPage > 1) displayMyTrips(currentKoorPage - 1);
     });
 
-    nextKoorBtn.addEventListener('click', () => {
+    elements.nextKoorBtn.addEventListener('click', () => {
       const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
-      if (currentKoorPage < totalPages) {
-        displayMyTrips(currentKoorPage + 1);
-      }
+      if (currentKoorPage < totalPages) displayMyTrips(currentKoorPage + 1);
     });
 
     function loadMyTrips() {
@@ -350,23 +418,20 @@
       onValue(q, (snapshot) => {
         allMyTrips = [];
         if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            allMyTrips.push({ id: child.key, data: child.val() });
-          });
+          snapshot.forEach(child => allMyTrips.push({ id: child.key, data: child.val() }));
         }
-        allMyTrips.reverse();
+        allMyTrips.reverse(); // Show latest first
         displayMyTrips(currentKoorPage);
+        loadDriverPerformance(); // Update performance stats whenever trips data changes
       });
     }
-    // --- END PAGINATION LOGIC ---
 
-    logoutBtn.addEventListener('click', async () => {
+    elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
             await update(ref(db, 'users/' + currentUser.uid), { online: false });
         }
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
     });
-
   </script>
 </body>
 </html>
