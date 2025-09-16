@@ -425,9 +425,17 @@
         paginatedUsers.forEach(([uid, u]) => {
           const tr = el('tr');
           const isCurrentUser = (uid === currentUser.uid);
-          const deleteButton = isCurrentUser
-              ? `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`
-              : `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+          const isTargetSuperAdmin = u.role === 'super admin';
+          const isCurrentUserAdmin = currentUserData.role === 'admin';
+          
+          let deleteButton;
+          if (isCurrentUser) {
+              deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`;
+          } else if (isCurrentUserAdmin && isTargetSuperAdmin) {
+              deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin">Hapus</button>`;
+          } else {
+              deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+          }
           
           const roleClass = (u.role || '').replace(' ', '-');
 
