@@ -32,36 +32,36 @@
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorMsg.textContent = '';
-    console.log("Login form submitted."); // LOG 1: Cek form submit
+    console.log("Login form submitted.");
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
     try {
-      console.log("Attempting to sign in with email:", email); // LOG 2: Cek proses sign-in
+      console.log("Attempting to sign in with email:", email);
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const user = cred.user;
-      console.log("Sign-in successful. User UID:", user.uid); // LOG 3: Cek UID setelah berhasil
+      console.log("Sign-in successful. User UID:", user.uid);
 
       const userRef = ref(db, 'users/' + user.uid);
-      console.log("Fetching user data from path:", 'users/' + user.uid); // LOG 4: Cek path database
+      console.log("Fetching user data from path:", 'users/' + user.uid);
       let snap = await get(userRef);
 
       // Jika user baru → set default role = driver
       if (!snap.exists()) {
-        console.log("User does not exist in database. Creating new entry with role 'driver'."); // LOG 5: Info jika user baru
+        console.log("User does not exist in database. Creating new entry with role 'driver'.");
         await set(userRef, {
           name: email.split('@')[0],
           role: 'driver'
         });
-        snap = await get(userRef); // Ambil data lagi setelah dibuat
+        snap = await get(userRef);
       }
 
       const userData = snap.val();
-      console.log("User data from database:", userData); // LOG 6: Tampilkan data user
+      console.log("User data from database:", userData);
 
       const role = userData ? userData.role : null;
-      console.log("Login sebagai:", role, "UID:", user.uid); // LOG 7: Tampilkan role
+      console.log("Login sebagai:", role, "UID:", user.uid);
 
       if (role === 'admin' || role === 'super admin') {
         console.log("Redirecting to admin.html");
@@ -73,12 +73,12 @@
         console.log("Redirecting to driver.html");
         window.location.href = 'driver.html';
       } else {
-        console.error('Role tidak dikenal atau null:', role); // LOG 8: Error jika role tidak ada
+        console.error('Role tidak dikenal atau null:', role);
         errorMsg.textContent = 'Role tidak dikenal: ' + role;
       }
 
     } catch (err) {
-      console.error('Login error:', err); // LOG 9: Tangkap error login
+      console.error('Login error:', err);
       errorMsg.textContent = 'Login gagal. Periksa kembali email dan password Anda.';
     }
   });
