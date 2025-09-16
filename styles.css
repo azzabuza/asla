@@ -290,7 +290,7 @@ ul#tripList li:hover {
   color: var(--background-primary);
   line-height: 1.5;
 }
-.badge.success, .role-koordinator { background-color: var(--success); }
+.badge.success, .role-coordinator { background-color: var(--success); }
 .badge.warn { background-color: var(--warning); }
 .badge.danger { background-color: var(--danger); }
 .badge.info { background-color: var(--info); }
