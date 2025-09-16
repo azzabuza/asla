@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Driver Panel</title>
+  <title>Panel Driver</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Mengoverride beberapa style agar lebih pas di layout baru */
-    .main-content { margin-left: 0; width: 100%; } /* Driver tidak punya sidebar */
+    /* Override beberapa style agar lebih pas di layout baru */
+    .main-content { margin-left: 0; width: 100%; }
     #preview {
       width: 100%;
       max-width: 400px;
@@ -22,7 +22,7 @@
       margin-bottom: 2.5rem;
     }
     .header-container .logout-button {
-      width: auto; /* Agar tombol logout tidak full width */
+      width: auto;
     }
   </style>
 </head>
@@ -32,14 +32,14 @@
       <div class="header-container">
         <header class="main-header" style="margin-bottom: 0;">
           <h1>Panel Driver</h1>
-          <p>Selamat bekerja! Lihat tugas harian dan konfirmasi kedatangan di sini.</p>
+          <p>Selamat bekerja! Lihat tugas dan konfirmasi kedatangan di sini.</p>
         </header>
         <button id="logoutBtn" class="logout-button">Logout</button>
       </div>
 
       <div class="page active">
         <section class="card">
-          <h2 class="card-header">Tugas Perjalanan Hari Ini</h2>
+          <h2 class="card-header">Daftar Tugas Perjalanan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table>
@@ -88,10 +88,10 @@
   <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo } from './firebase.js';
+    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
     import { fmtDate, badge, el } from './utils.js';
 
-    const jobList = document.getElementById('jobList'); // Sekarang menjadi <tbody>
+    const jobList = document.getElementById('jobList');
     const tripIdInput = document.getElementById('tripId');
     const arriveForm = document.getElementById('arriveForm');
     const statusMsg = document.getElementById('statusMsg');
@@ -103,17 +103,22 @@
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
 
-      const snap = await get(ref(db, 'users/' + currentUser.uid));
+      const userRef = ref(db, 'users/' + currentUser.uid);
+      const snap = await get(userRef);
+
       if (!snap.exists() || snap.val().role !== 'driver') {
         alert('Akses ditolak. Hanya untuk driver.');
         return window.location.href = 'index.html';
       }
+      
+      await update(userRef, { lastLogin: Date.now(), online: true });
+      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
 
-      loadDailyJobs();
+      loadTrips();
       startScanner();
     });
 
-    function loadDailyJobs() {
+    function loadTrips() {
       const tripsRef = ref(db, 'trips');
       const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
 
@@ -123,25 +128,25 @@
 
         snapshot.forEach(child => {
           const job = child.val();
-          if (job.status !== 'approved' && job.status !== 'arrived') return;
+          if (job.status === 'approved' || job.status === 'arrived') {
+            hasJobs = true;
+            const tr = el('tr');
+            const statusCell = el('td');
+            statusCell.appendChild(badge(job.status));
 
-          hasJobs = true;
-          const tr = el('tr');
-          const statusCell = el('td');
-          statusCell.appendChild(badge(job.status));
-
-          tr.innerHTML = `
-            <td data-label="Rute"><strong>${job.asal} → ${job.tujuan}</strong><br><small>${fmtDate(job.tanggal)}</small></td>
-            <td data-label="Muatan">${job.muatan}</td>
-            <td data-label="No. Polisi">${job.nopol}</td>
-            <td data-label="Kode Resi"><code>${child.key}</code></td>
-          `;
-          tr.appendChild(statusCell);
-          jobList.appendChild(tr);
+            tr.innerHTML = `
+              <td data-label="Rute"><strong>${job.asal} → ${job.tujuan}</strong><br><small>${fmtDate(job.tanggal)}</small></td>
+              <td data-label="Muatan">${job.muatan}</td>
+              <td data-label="No. Polisi">${job.nopol}</td>
+              <td data-label="Kode Resi"><code>${child.key}</code></td>
+            `;
+            tr.appendChild(statusCell);
+            jobList.appendChild(tr);
+          }
         });
 
         if (!hasJobs) {
-          jobList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada tugas perjalanan untuk Anda hari ini.</td></tr>';
+          jobList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada tugas perjalanan untuk Anda.</td></tr>';
         }
       });
     }
@@ -202,7 +207,6 @@
 
         Instascan.Camera.getCameras().then(function (cameras) {
             if (cameras.length > 0) {
-                // Coba kamera belakang dulu (biasanya index 1 jika ada 2 kamera)
                 scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
             } else {
                 console.error('No cameras found.');
@@ -214,7 +218,10 @@
         });
     }
 
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
+        if (currentUser) {
+            await update(ref(db, 'users/' + currentUser.uid), { online: false });
+        }
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
     });
   </script>
