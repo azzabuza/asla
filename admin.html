@@ -255,6 +255,7 @@
     };
 
     let currentUser = null;
+    let currentUserData = null;
     let allUsers = {};
     let allTrips = [];
     let allRoutes = [];
@@ -272,12 +273,12 @@
       currentUser = user;
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
-        const userData = snap.val();
-        if (!snap.exists() || (userData.role !== 'admin' && userData.role !== 'super admin')) {
+        currentUserData = snap.val();
+        if (!snap.exists() || (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin')) {
           alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
 
-        if (userData.role === 'super admin') {
+        if (currentUserData.role === 'super admin') {
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -337,8 +338,10 @@
                 actionsContainer.append(approveBtn, rejectBtn);
             }
 
-            const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
-            actionsContainer.appendChild(deleteBtn);
+            if (currentUserData && currentUserData.role === 'super admin') {
+                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
+                actionsContainer.appendChild(deleteBtn);
+            }
             actionsCell.appendChild(actionsContainer);
 
             const statusCell = el('td', '', {'data-label': 'Status'});
