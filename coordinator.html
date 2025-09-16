@@ -51,10 +51,10 @@
                 </tbody>
               </table>
             </div>
-            <div id="koor-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-              <button id="prevKoorBtn" class="btn-sm info">Sebelumnya</button>
-              <span id="koorPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
-              <button id="nextKoorBtn" class="btn-sm info">Berikutnya</button>
+            <div id="coor-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevCoorBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="coorPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextCoorBtn" class="btn-sm info">Berikutnya</button>
             </div>
           </div>
         </section>
@@ -141,19 +141,19 @@
       tujuanSelect: document.getElementById('tujuan'),
       logoutBtn: document.getElementById('logoutBtn'),
       statusMsg: document.getElementById('statusMsg'),
-      koorPaginationControls: document.getElementById('koor-pagination-controls'),
-      prevKoorBtn: document.getElementById('prevKoorBtn'),
-      nextKoorBtn: document.getElementById('nextKoorBtn'),
-      koorPageInfo: document.getElementById('koorPageInfo'),
+      coorPaginationControls: document.getElementById('coor-pagination-controls'),
+      prevCoorBtn: document.getElementById('prevCoorBtn'),
+      nextCoorBtn: document.getElementById('nextCoorBtn'),
+      coorPageInfo: document.getElementById('coorPageInfo'),
       driverPerformanceStats: document.getElementById('driverPerformanceStats')
     };
     
     let currentUser = null;
     let allMyTrips = [];
-    let currentKoorPage = 1;
+    let currentCoorPage = 1;
     const rowsPerPage = 10;
 
-    function setupKoordinatorNavigation() {
+    function setupCoordinatorNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -170,7 +170,7 @@
             });
         });
     }
-    setupKoordinatorNavigation();
+    setupCoordinatorNavigation();
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -178,7 +178,7 @@
       const userRef = ref(db, 'users/' + currentUser.uid);
 
       const snap = await get(userRef);
-      if (!snap.exists() || snap.val().role !== 'koordinator') {
+      if (!snap.exists() || snap.val().role !== 'coordinator') {
         alert('Akses ditolak. Hanya untuk koordinator.');
         return window.location.href = 'index.html';
       }
@@ -248,7 +248,7 @@
       if (!driverId) return alert('Silakan pilih supir terlebih dahulu.');
 
       const data = {
-        koorId: currentUser.uid, driverId, driverName,
+        coorId: currentUser.uid, driverId, driverName,
         nopol: document.getElementById('nopol').value,
         asal: document.getElementById('asal').value,
         tujuan: document.getElementById('tujuan').value,
@@ -306,7 +306,7 @@
 
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
-      currentKoorPage = page;
+      currentCoorPage = page;
       
       const start = (page - 1) * rowsPerPage;
       const paginatedTrips = allMyTrips.slice(start, start + rowsPerPage);
@@ -315,7 +315,7 @@
         return displayMyTrips(Math.ceil(allMyTrips.length / rowsPerPage));
       }
 
-      elements.koorPaginationControls.style.display = allMyTrips.length > rowsPerPage ? 'block' : 'none';
+      elements.coorPaginationControls.style.display = allMyTrips.length > rowsPerPage ? 'block' : 'none';
 
       if (allMyTrips.length === 0) {
         elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
@@ -347,13 +347,13 @@
       }
       
       const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
-      elements.koorPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
-      elements.prevKoorBtn.disabled = page === 1;
-      elements.nextKoorBtn.disabled = page === totalPages;
+      elements.coorPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
+      elements.prevCoorBtn.disabled = page === 1;
+      elements.nextCoorBtn.disabled = page === totalPages;
     }
     
-    elements.prevKoorBtn.addEventListener('click', () => displayMyTrips(currentKoorPage - 1));
-    elements.nextKoorBtn.addEventListener('click', () => displayMyTrips(currentKoorPage + 1));
+    elements.prevCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage - 1));
+    elements.nextCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage + 1));
 
     function loadMyTrips() {
       // ### PERBAIKAN UTAMA DI SINI ###
@@ -363,7 +363,7 @@
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             // 2. Saring secara manual hanya untuk data milik koordinator ini
-            if (child.val().koorId === currentUser.uid) {
+            if (child.val().coorId === currentUser.uid) {
               allMyTrips.push({ id: child.key, data: child.val() });
             }
           });
