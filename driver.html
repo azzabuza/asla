@@ -100,7 +100,7 @@
     let currentUser = null;
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = 'login.html';
+      if (!user) return window.location.href = 'index.html';
       currentUser = user;
 
       const userRef = ref(db, 'users/' + currentUser.uid);
@@ -108,7 +108,7 @@
 
       if (!snap.exists() || snap.val().role !== 'driver') {
         alert('Akses ditolak. Hanya untuk driver.');
-        return window.location.href = 'login.html';
+        return window.location.href = 'index.html';
       }
       
       await update(userRef, { lastLogin: Date.now(), online: true });
