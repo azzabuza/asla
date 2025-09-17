@@ -255,7 +255,7 @@ th {
   text-transform: uppercase;
   font-size: 1.5rem;
   color: #a0aec0;
-  border-bottom: 2px solid #313d5f;
+  border-bottom: 1px solid #313d5f;
 }
 tbody tr { border-bottom: 1px solid #313d5f; }
 tbody tr:last-child { border-bottom: none; }
