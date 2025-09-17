@@ -21,6 +21,7 @@
         <li><a href="#addrutes" class="nav-link">Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link">Tambah Nopol</a></li>
         <li><a href="#performance" class="nav-link">Kinerja Role</a></li>
+        <li><a href="#statistics" class="nav-link">Statistik Rinci</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
@@ -205,6 +206,25 @@
         </section>
       </div>
 
+      <div id="page-statistics" class="page">
+        <section class="card">
+            <h2 class="card-header">Statistik Umum</h2>
+            <div id="generalStats" class="card-body">Memuat...</div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Performa Supir Terbaik (Berdasarkan Trip Selesai)</h2>
+            <div id="driverPerformance" class="card-body">Memuat...</div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Rute Paling Populer</h2>
+            <div id="popularRoutes" class="card-body">Memuat...</div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Kendaraan Paling Sering Digunakan</h2>
+            <div id="popularVehicles" class="card-body">Memuat...</div>
+        </section>
+      </div>
+
     </main>
   </div>
 
@@ -251,7 +271,12 @@
         vehiclePaginationControls: document.getElementById('vehicle-pagination-controls'),
         prevVehicleBtn: document.getElementById('prevVehicleBtn'),
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
-        vehiclePageInfo: document.getElementById('vehiclePageInfo')
+        vehiclePageInfo: document.getElementById('vehiclePageInfo'),
+        // Statistik sections
+        generalStats: document.getElementById('generalStats'),
+        driverPerformance: document.getElementById('driverPerformance'),
+        popularRoutes: document.getElementById('popularRoutes'),
+        popularVehicles: document.getElementById('popularVehicles'),
     };
 
     let currentUser = null;
@@ -266,7 +291,36 @@
     let currentVehiclePage = 1;
     const rowsPerPage = 10;
 
-    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
+    const pageHeaders = {
+      monitoring: 'Monitoring Perjalanan',
+      users: 'Manajemen Karyawan',
+      routes: 'Manajemen Rute',
+      vehicles: 'Manajemen Nopol',
+      addusers: 'Tambah Karyawan',
+      addrutes: 'Tambah Rute',
+      addvehicles: 'Tambah Nopol',
+      performance: 'Kinerja Role',
+      statistics: 'Statistik Rinci'
+    };
+    
+    function customSetupNavigation() {
+        elements.navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+
+                elements.pages.forEach(page => page.classList.remove('active'));
+                elements.navLinks.forEach(nav => nav.classList.remove('active'));
+
+                document.getElementById(`page-${targetId}`).classList.add('active');
+                link.classList.add('active');
+                
+                elements.pageTitle.textContent = pageHeaders[targetId] || 'Dashboard';
+            });
+        });
+    }
+
+    customSetupNavigation();
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -288,13 +342,115 @@
         await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
-        await loadAllUsers(); 
-        loadAllTrips();
-        loadRoutes();
-        loadVehicles();
-        loadRoleStats();
+        await loadAllData(); 
+        
       } catch (e) { console.error("Error cek admin:", e); }
     });
+
+    async function loadAllData() {
+        const usersPromise = onValue(ref(db, 'users'), s => { allUsers = s.val() || {}; }, { onlyOnce: true });
+        const tripsPromise = onValue(ref(db, 'trips'), s => {
+            allTrips = [];
+            s.forEach(child => allTrips.push({ id: child.key, data: child.val() }));
+            allTrips.reverse();
+        }, { onlyOnce: true });
+        const routesPromise = onValue(ref(db, 'routes'), s => {
+            allRoutes = [];
+            s.forEach(child => allRoutes.push({ id: child.key, data: child.val() }));
+        }, { onlyOnce: true });
+        const vehiclesPromise = onValue(ref(db, 'vehicles'), s => {
+            allVehicles = [];
+            s.forEach(child => allVehicles.push({ id: child.key, data: child.val() }));
+        }, { onlyOnce: true });
+
+        await Promise.all([usersPromise, tripsPromise, routesPromise, vehiclesPromise]);
+
+        // Once all data is loaded, display it and calculate stats
+        displayTrips(1);
+        displayUsers(1);
+        displayRoutes(1);
+        displayVehicles(1);
+        loadRoleStats();
+        loadDetailedStats(); // New function call
+    }
+    
+    // --- DETAILED STATS LOGIC ---
+    function loadDetailedStats() {
+      // 1. General Stats
+      const totalTrips = allTrips.length;
+      const totalUsers = Object.keys(allUsers).length;
+      const totalRoutes = allRoutes.length;
+      const totalVehicles = allVehicles.length;
+      elements.generalStats.innerHTML = `
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+          <div><h3>${totalTrips}</h3><p>Total Perjalanan</p></div>
+          <div><h3>${totalUsers}</h3><p>Total Karyawan</p></div>
+          <div><h3>${totalRoutes}</h3><p>Total Rute</p></div>
+          <div><h3>${totalVehicles}</h3><p>Total Kendaraan</p></div>
+        </div>
+      `;
+
+      // 2. Driver Performance
+      const driverScores = {};
+      allTrips.forEach(trip => {
+        if (trip.data.status === 'arrived' && trip.data.driverId) {
+          driverScores[trip.data.driverId] = (driverScores[trip.data.driverId] || 0) + 1;
+        }
+      });
+      const sortedDrivers = Object.entries(driverScores).sort((a, b) => b[1] - a[1]);
+      let driverTable = createStatsTable(['Peringkat', 'Nama Supir', 'Trip Selesai']);
+      if(sortedDrivers.length > 0) {
+        sortedDrivers.forEach(([driverId, count], index) => {
+          const driverName = allUsers[driverId]?.name || 'Supir Dihapus';
+          driverTable += `<tr><td>${index + 1}</td><td>${driverName}</td><td>${count}</td></tr>`;
+        });
+      } else {
+        driverTable += `<tr><td colspan="3" class="empty-state">Belum ada data perjalanan selesai.</td></tr>`;
+      }
+      elements.driverPerformance.innerHTML = driverTable + '</tbody></table></div>';
+
+      // 3. Popular Routes
+      const routeScores = {};
+      allTrips.forEach(trip => {
+        const routeName = `${trip.data.asal} → ${trip.data.tujuan}`;
+        routeScores[routeName] = (routeScores[routeName] || 0) + 1;
+      });
+      const sortedRoutes = Object.entries(routeScores).sort((a, b) => b[1] - a[1]);
+      let routeTable = createStatsTable(['Peringkat', 'Rute', 'Jumlah Perjalanan']);
+      if(sortedRoutes.length > 0) {
+          sortedRoutes.forEach(([routeName, count], index) => {
+            routeTable += `<tr><td>${index + 1}</td><td>${routeName}</td><td>${count}</td></tr>`;
+          });
+      } else {
+          routeTable += `<tr><td colspan="3" class="empty-state">Belum ada data perjalanan.</td></tr>`;
+      }
+      elements.popularRoutes.innerHTML = routeTable + '</tbody></table></div>';
+
+      // 4. Popular Vehicles
+      const vehicleScores = {};
+      allTrips.forEach(trip => {
+          if(trip.data.nopol) {
+            vehicleScores[trip.data.nopol] = (vehicleScores[trip.data.nopol] || 0) + 1;
+          }
+      });
+      const sortedVehicles = Object.entries(vehicleScores).sort((a, b) => b[1] - a[1]);
+      let vehicleTable = createStatsTable(['Peringkat', 'No. Polisi', 'Jumlah Perjalanan']);
+      if(sortedVehicles.length > 0) {
+          sortedVehicles.forEach(([nopol, count], index) => {
+            vehicleTable += `<tr><td>${index + 1}</td><td>${nopol}</td><td>${count}</td></tr>`;
+          });
+      } else {
+          vehicleTable += `<tr><td colspan="3" class="empty-state">Belum ada data perjalanan.</td></tr>`;
+      }
+      elements.popularVehicles.innerHTML = vehicleTable + '</tbody></table></div>';
+    }
+
+    function createStatsTable(headers) {
+      let tableHTML = `<div class="table-responsive"><table><thead><tr>`;
+      headers.forEach(h => tableHTML += `<th>${h}</th>`);
+      tableHTML += `</tr></thead><tbody>`;
+      return tableHTML;
+    }
     
     // --- TRIP PAGINATION LOGIC ---
     function displayTrips(page) {
