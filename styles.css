@@ -227,7 +227,7 @@ input, select {
   display: inline-block;
   background-color: transparent;
   font-family: "Poppins", sans-serif;
-  color: #132028;
+  color: #e0e5f5;
   caret-color: #24323d;
   font-size: 1.5rem;
   padding: 1rem;
@@ -237,15 +237,6 @@ input, select {
   border-radius: 1rem;
   border: 1px solid #313d5f;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  
-  width: 100%;
-  padding: 0.8rem 1.2rem;
-  border: 1px solid #313d5f;
-  border-radius: 6px;
-  background-color: #121828;
-  color: #e0e5f5;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  font-size: 1rem;
 }
 input:focus, select:focus {
   border-color: #f59e0b;
