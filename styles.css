@@ -27,14 +27,20 @@
 }
 html {
   scroll-behavior: smooth;
+  font-size: 10px;
 }
 body {
-  background-color: var(--background-primary);
-  color: var(--text-primary);
-  font-family: var(--font-family-sans);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background-color: #121828;
+  font-family: "Poppins", sans-serif;
+  text-align: left;
+  user-select:none;
+  text-size-adjust: none;
   text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent !important;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 h1, h2, h3, h4 {
   color: var(--text-primary);
