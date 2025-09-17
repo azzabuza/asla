@@ -57,7 +57,7 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   padding: 0;
 }
 .sidebar {
-  width: 320px;
+  width: 400px;
   background-color: var(--background-secondary);
   color: var(--text-primary);
   display: flex;
