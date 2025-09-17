@@ -348,13 +348,10 @@
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const targetId = link.getAttribute('href').substring(1);
-
                 elements.pages.forEach(page => page.classList.remove('active'));
                 elements.navLinks.forEach(nav => nav.classList.remove('active'));
-
                 document.getElementById(`page-${targetId}`).classList.add('active');
                 link.classList.add('active');
-                
                 elements.pageTitle.textContent = pageHeaders[targetId] || 'Dashboard';
             });
         });
@@ -371,22 +368,18 @@
         if (!snap.exists() || (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin')) {
           alert('Akses ditolak.'); return window.location.href = 'index.html';
         }
-
         if (currentUserData.role === 'super admin') {
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
             }
         }
-
         await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-        
         loadAllTrips();
         loadAllUsers(); 
         loadRoutes();
         loadVehicles();
-        
       } catch (e) { console.error("Error cek admin:", e); }
     });
     
@@ -401,8 +394,7 @@
           <div><h3>${totalUsers}</h3><p>Total Karyawan</p></div>
           <div><h3>${totalRoutes}</h3><p>Total Rute</p></div>
           <div><h3>${totalVehicles}</h3><p>Total Kendaraan</p></div>
-        </div>
-      `;
+        </div>`;
 
       const driverScores = {};
       allTrips.forEach(trip => {
@@ -464,23 +456,19 @@
     }
     
     function displayTrips(page) {
-      elements.tripList.innerHTML = '';
       currentPage = page;
       const paginatedTrips = allTrips.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-      
+      elements.tripList.innerHTML = '';
       elements.paginationControls.style.display = allTrips.length > rowsPerPage ? 'block' : 'none';
 
       if (paginatedTrips.length === 0) {
         elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan.</td></tr>';
       } else {
-        paginatedTrips.forEach(tripEntry => {
-            const { id: tripId, data: trip } = tripEntry;
+        paginatedTrips.forEach(({ id: tripId, data: trip }) => {
             const tr = el('tr');
             const tripInfo = `${trip.asal || '?'} → ${trip.tujuan || '?'}`;
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
-            const actionsContainer = el('div', '', { class: 'trip-actions' });
-            actionsContainer.style.justifyContent = 'flex-start';
-            
+            const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start' });
             if (trip.status === 'submitted') {
                 const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                 const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
@@ -493,36 +481,28 @@
                 actionsContainer.appendChild(deleteBtn);
             }
             actionsCell.appendChild(actionsContainer);
-
             const statusCell = el('td', '', {'data-label': 'Status'});
             statusCell.appendChild(badge(trip.status));
-
-            tr.innerHTML = `
-                <td data-label="Rute">${tripInfo}</td>
-                <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
-                <td data-label="No. Polisi">${trip.nopol || 'N/A'}</td>
-                <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
-                <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+            tr.innerHTML = `<td data-label="Rute">${tripInfo}</td><td data-label="Sopir">${trip.driverName || 'N/A'}</td><td data-label="No. Polisi">${trip.nopol || 'N/A'}</td><td data-label="Muatan">${trip.muatan || 'N/A'}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
             tr.append(statusCell, actionsCell);
             elements.tripList.appendChild(tr);
         });
       }
-      
       const totalPages = Math.ceil(allTrips.length / rowsPerPage);
       elements.pageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
       elements.prevBtn.disabled = page === 1;
       elements.nextBtn.disabled = page === totalPages;
     }
     
-    elements.prevBtn.addEventListener('click', () => displayTrips(currentPage - 1));
-    elements.nextBtn.addEventListener('click', () => displayTrips(currentPage + 1));
+    elements.prevBtn.addEventListener('click', () => { if (currentPage > 1) displayTrips(currentPage - 1) });
+    elements.nextBtn.addEventListener('click', () => { if (currentPage < Math.ceil(allTrips.length / rowsPerPage)) displayTrips(currentPage + 1) });
 
     function loadAllTrips() {
       onValue(ref(db, 'trips'), (snapshot) => {
         allTrips = [];
         snapshot.forEach(child => allTrips.push({ id: child.key, data: child.val() }));
         allTrips.reverse();
-        displayTrips(currentPage);
+        displayTrips(1);
         loadRoleStats();
         loadDetailedStats();
       });
@@ -534,49 +514,33 @@
         (!elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase())) &&
         (elements.filterRole.value === 'all' || u.role === elements.filterRole.value)
       );
-      
       const paginatedUsers = filteredUsers.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-      elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'block' : 'none';
       elements.userList.innerHTML = '';
+      elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'block' : 'none';
 
       if (paginatedUsers.length === 0) {
         elements.userList.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada user ditemukan.</td></tr>';
       } else {
         paginatedUsers.forEach(([uid, u]) => {
           const tr = el('tr');
-          const isCurrentUser = uid === currentUser.uid;
-          const isTargetSuperAdmin = u.role === 'super admin';
-          const isCurrentUserAdmin = currentUserData.role === 'admin';
-          
+          const isCurrentUser = uid === currentUser.uid, isTargetSuperAdmin = u.role === 'super admin', isCurrentUserAdmin = currentUserData.role === 'admin';
           let deleteButton;
-          if (isCurrentUser) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`;
-          } else if (isCurrentUserAdmin && isTargetSuperAdmin) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin">Hapus</button>`;
-          } else {
-              deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
-          }
-          
+          if (isCurrentUser) deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`;
+          else if (isCurrentUserAdmin && isTargetSuperAdmin) deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin">Hapus</button>`;
+          else deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
           const roleClass = (u.role || '').replace(' ', '-');
-          tr.innerHTML = `
-              <td data-label="UID"><small>${uid}</small></td>
-              <td data-label="Nama">${u.name || '-'}</td>
-              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
-              <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
-              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
-              <td data-label="Aksi">${deleteButton}</td>`;
+          tr.innerHTML = `<td data-label="UID"><small>${uid}</small></td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td><td data-label="Aksi">${deleteButton}</td>`;
           elements.userList.appendChild(tr);
         });
       }
-      
       const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
       elements.userPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
       elements.prevUserBtn.disabled = page === 1;
       elements.nextUserBtn.disabled = page === totalPages;
     }
     
-    elements.prevUserBtn.addEventListener('click', () => displayUsers(currentUserPage - 1));
-    elements.nextUserBtn.addEventListener('click', () => displayUsers(currentUserPage + 1));
+    elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) displayUsers(currentUserPage - 1) });
+    elements.nextUserBtn.addEventListener('click', () => { if (currentUserPage < Math.ceil(Object.keys(allUsers).length / rowsPerPage)) displayUsers(currentUserPage + 1) });
 
     function loadAllUsers() {
         onValue(ref(db, 'users'), (snapshot) => {
@@ -601,18 +565,19 @@
         }
     });
 
+    // ### PERBAIKAN ###
     function displayRoutes(page) {
       currentRoutePage = page;
       const paginatedRoutes = allRoutes.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-      elements.routePaginationControls.style.display = allRoutes.length > rowsPerPage ? 'block' : 'none';
       elements.routeList.innerHTML = '';
+      elements.routePaginationControls.style.display = allRoutes.length > rowsPerPage ? 'block' : 'none';
 
       if (paginatedRoutes.length === 0) {
         elements.routeList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada rute tersimpan.</td></tr>';
       } else {
         paginatedRoutes.forEach(({ id: routeId, data: route }) => {
-          const tr = el('tr');
-          tr.innerHTML = `<td>${route.code}</td><td>${route.address}</td><td></td>`;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${route.code || '-'}</td><td>${route.address || '-'}</td><td></td>`;
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
@@ -628,9 +593,9 @@
       elements.prevRouteBtn.disabled = page === 1;
       elements.nextRouteBtn.disabled = page === totalPages;
     }
-
-    elements.prevRouteBtn.addEventListener('click', () => displayRoutes(currentRoutePage - 1));
-    elements.nextRouteBtn.addEventListener('click', () => displayRoutes(currentRoutePage + 1));
+    
+    elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1) });
+    elements.nextRouteBtn.addEventListener('click', () => { if (currentRoutePage < Math.ceil(allRoutes.length / rowsPerPage)) displayRoutes(currentRoutePage + 1) });
 
     function loadRoutes() {
       onValue(ref(db, 'routes'), (snapshot) => {
@@ -641,18 +606,19 @@
       });
     }
 
+    // ### PERBAIKAN ###
     function displayVehicles(page) {
       currentVehiclePage = page;
       const paginatedVehicles = allVehicles.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-      elements.vehiclePaginationControls.style.display = allVehicles.length > rowsPerPage ? 'block' : 'none';
       elements.vehicleList.innerHTML = '';
+      elements.vehiclePaginationControls.style.display = allVehicles.length > rowsPerPage ? 'block' : 'none';
 
       if (paginatedVehicles.length === 0) {
         elements.vehicleList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada nopol tersimpan.</td></tr>';
       } else {
         paginatedVehicles.forEach(({ id: vehicleId, data: vehicle }) => {
-          const tr = el('tr');
-          tr.innerHTML = `<td>${vehicle.nopol}</td><td>${vehicle.type}</td><td></td>`;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${vehicle.nopol || '-'}</td><td>${vehicle.type || '-'}</td><td></td>`;
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
@@ -669,8 +635,8 @@
       elements.nextVehicleBtn.disabled = page === totalPages;
     }
 
-    elements.prevVehicleBtn.addEventListener('click', () => displayVehicles(currentVehiclePage - 1));
-    elements.nextVehicleBtn.addEventListener('click', () => displayVehicles(currentVehiclePage + 1));
+    elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1) });
+    elements.nextVehicleBtn.addEventListener('click', () => { if (currentVehiclePage < Math.ceil(allVehicles.length / rowsPerPage)) displayVehicles(currentVehiclePage + 1) });
 
     function loadVehicles() {
       onValue(ref(db, 'vehicles'), (snapshot) => {
@@ -683,8 +649,9 @@
 
     elements.addVehicleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const nopol = document.getElementById('vehicleNopol').value.toUpperCase();
-      const type = document.getElementById('vehicleType').value;
+      const nopol = document.getElementById('vehicleNopol').value.toUpperCase().trim();
+      const type = document.getElementById('vehicleType').value.trim();
+      if (!nopol || !type) return alert('Semua field harus diisi.');
       elements.addVehicleStatus.textContent = 'Menambahkan...';
       try {
         await push(ref(db, 'vehicles'), { nopol, type });
@@ -696,8 +663,9 @@
 
     elements.addRouteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const code = document.getElementById('routeCode').value.toUpperCase();
-      const address = document.getElementById('routeAddress').value;
+      const code = document.getElementById('routeCode').value.toUpperCase().trim();
+      const address = document.getElementById('routeAddress').value.trim();
+      if (!code || !address) return alert('Semua field harus diisi.');
       elements.addRouteStatus.textContent = 'Menambahkan...';
       try {
         await push(ref(db, 'routes'), { code, address });
@@ -710,10 +678,11 @@
     elements.addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         elements.addUserStatus.textContent = 'Menambahkan...';
-        const name = document.getElementById('newUserName').value;
-        const email = document.getElementById('newUserEmail').value;
+        const name = document.getElementById('newUserName').value.trim();
+        const email = document.getElementById('newUserEmail').value.trim();
         const password = document.getElementById('newUserPassword').value;
         const role = document.getElementById('newUserRole').value;
+        if (!name || !email || !password) return alert('Semua field harus diisi.');
         const tempAppName = 'temp-app-' + Date.now();
         let tempApp;
         try {
@@ -751,12 +720,11 @@
           if (t.coorId && t.createdAt) activities.coordinator.push({ userId: t.coorId, time: t.createdAt, action: `Membuat trip untuk ${t.driverName || '?'}` });
           if (t.driverId && t.arrivedAt) activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}` });
       });
-
       const createActivityTable = (role, title) => {
         let content = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`;
         if (activities[role].length === 0) return content + `<p class="empty-state">Belum ada aktivitas.</p>`;
         const sorted = activities[role].sort((a, b) => b.time - a.time).slice(0, 15);
-        content += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
+        content += `<div class="table-responsive"><table><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`;
         sorted.forEach(act => {
           content += `<tr><td>${allUsers[act.userId]?.name || '?'}</td><td>${act.action}</td><td>${new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</td></tr>`;
         });
@@ -780,7 +748,6 @@
         let data, headers, title;
         const startDate = elements.startDate.value ? new Date(elements.startDate.value + "T00:00:00Z") : null;
         const endDate = elements.endDate.value ? new Date(elements.endDate.value + "T23:59:59Z") : null;
-        
         switch(type) {
             case 'trips':
                 title = "Laporan Perjalanan";
@@ -793,11 +760,7 @@
                         if (endDate && tripDate > endDate) return false;
                         return true;
                     })
-                    .map(trip => [
-                        fmtDate(trip.data.tanggal), `${trip.data.asal || '?'} → ${trip.data.tujuan || '?'}`,
-                        trip.data.driverName || '-', trip.data.nopol || '-',
-                        trip.data.muatan || '-', trip.data.status || '-'
-                    ]);
+                    .map(trip => [ fmtDate(trip.data.tanggal), `${trip.data.asal || '?'} → ${trip.data.tujuan || '?'}`, trip.data.driverName || '-', trip.data.nopol || '-', trip.data.muatan || '-', trip.data.status || '-' ]);
                 break;
             case 'users':
                 title = "Laporan Karyawan";
@@ -825,7 +788,7 @@
         doc.text(title, 14, 16);
         doc.setFontSize(10);
         doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
-        doc.autoTable({ startY: 28, head: headers, body: data, theme: 'grid' });
+        doc.autoTable({ startY: 28, head: headers, body: data, theme: 'grid', headStyles: { fillColor: [36, 47, 72] } });
         doc.save(`${title.replace(/ /g, '_')}_${Date.now()}.pdf`);
     });
 
