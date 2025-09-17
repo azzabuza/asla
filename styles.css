@@ -60,9 +60,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   max-width: 100%;
   margin: 0 auto;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 .sidebar {
   box-sizing: border-box;
@@ -375,6 +372,11 @@ tbody tr:hover { background-color: #242f48; }
 .role-super-admin { background-color: #9333ea; }
 
 /* === HALAMAN LOGIN SEDERHANA === */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .login-container {
   box-sizing: border-box;
   max-width: 450px;
