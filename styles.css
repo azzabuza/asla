@@ -146,16 +146,16 @@ hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
   to { opacity: 1; transform: translateY(0); }
 }
 .card {
+  box-sizing: border-box;
   background-color: #1a2235;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px var(--shadow-color);
-  margin-bottom: 2.5rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
   overflow: hidden;
   border: 1px solid #313d5f;
 }
 .card-header {
-  font-size: 1.25rem;
-  padding: 1.5rem;
+  font-size: 1.5rem;
+  padding: 1rem;
   border-bottom: 1px solid #313d5f;
   font-weight: 600;
 }
