@@ -127,12 +127,16 @@ hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
   margin: 0 0 2rem 0;
 }
 .main-header h1 {
-  font-size: 2.25rem;
+  font-size: 3rem;
   font-weight: 700;
+  padding:0;
+  margin:0 0 1rem;
 }
 .main-header p {
-  color: #a0aec0;
-  font-size: 1.1rem;
+  color: #ffffff;
+  font-size: 1.5rem;
+  padding:0;
+  margin:0;
 }
 
 /* === CARD & PAGE COMPONENT === */
