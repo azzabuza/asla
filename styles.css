@@ -374,9 +374,10 @@ tbody tr:hover { background-color: #242f48; }
 
 /* === HALAMAN LOGIN SEDERHANA === */
 .login-container {
+  box-sizing: border-box;
     max-width: 450px;
-    margin: 5rem auto;
-    padding: 3rem;
+    margin: 0;
+    padding: 2rem;
     background-color: #1a2235;
     border-radius: 12px;
     border: 1px solid #313d5f;
