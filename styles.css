@@ -127,6 +127,9 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0;
   padding: 2rem;
   overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .main-header {
   box-sizing:border-box;
@@ -375,15 +378,12 @@ tbody tr:hover { background-color: #242f48; }
 /* === HALAMAN LOGIN SEDERHANA === */
 .login-container {
   box-sizing: border-box;
-  display: flex;
   max-width: 450px;
   margin: 0;
   padding: 2rem;
   background-color: #1a2235;
   border-radius: 12px;
   border: 1px solid #313d5f;
-  justify-content: center;
-  align-items: center;
 }
 .login-container h2 {
     text-align: center;
