@@ -208,30 +208,31 @@
 
       <div id="page-documentation" class="page">
         <section class="card">
-          <h2 class="card-header">Buat Laporan Dokumen</h2>
+          <h2 class="card-header">Buat Laporan</h2>
           <div class="card-body">
-            <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Pilih jenis data yang ingin Anda ekspor ke dalam format Excel (XLSX) atau PDF.</p>
-            <form id="documentationForm">
-              <div class="form-group">
-                <label for="reportType">Pilih Jenis Laporan</label>
-                <select id="reportType" required>
-                  <option value="">-- Pilih Data --</option>
-                  <option value="trips">Laporan Perjalanan</option>
-                  <option value="users">Laporan Karyawan</option>
-                  <option value="routes">Laporan Rute</option>
-                  <option value="vehicles">Laporan Nopol Kendaraan</option>
-                </select>
-              </div>
-              
-              <div class="form-group" style="flex-direction: row; gap: 1rem; justify-content: flex-start;">
-                <button type="button" id="exportToXLSX" class="btn-sm success" style="width: auto;">
-                  <i class="fas fa-file-excel"></i> Ekspor ke Excel
-                </button>
-                <button type="button" id="exportToPDF" class="btn-sm danger" style="width: auto;">
-                  <i class="fas fa-file-pdf"></i> Ekspor ke PDF
-                </button>
-              </div>
-            </form>
+            <div class="form-group">
+              <label for="reportType">Pilih Jenis Data</label>
+              <select id="reportType">
+                <option value="trips">Laporan Perjalanan</option>
+                <option value="users">Laporan Karyawan</option>
+                <option value="routes">Laporan Rute</option>
+                <option value="vehicles">Laporan Kendaraan</option>
+              </select>
+            </div>
+            <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label for="startDate">Dari Tanggal</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div>
+                    <label for="endDate">Sampai Tanggal</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button id="exportPdfBtn" class="btn-sm success" style="width: auto; background: var(--success);">Unduh PDF</button>
+                <button id="exportExcelBtn" class="btn-sm info" style="width: auto; background: var(--info);">Unduh Excel</button>
+            </div>
           </div>
         </section>
       </div>
@@ -296,9 +297,12 @@
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
         vehiclePageInfo: document.getElementById('vehiclePageInfo'),
         // Documentation elements
-        reportTypeSelect: document.getElementById('reportType'),
-        exportToXLSXBtn: document.getElementById('exportToXLSX'),
-        exportToPDFBtn: document.getElementById('exportToPDF'),
+        reportType: document.getElementById('reportType'),
+        dateFilterContainer: document.getElementById('dateFilterContainer'),
+        startDate: document.getElementById('startDate'),
+        endDate: document.getElementById('endDate'),
+        exportPdfBtn: document.getElementById('exportPdfBtn'),
+        exportExcelBtn: document.getElementById('exportExcelBtn'),
     };
 
     let currentUser = null;
@@ -331,7 +335,7 @@
         });
     }
     setupNavigation();
-
+    
     // ... (Semua fungsi JavaScript dari `onAuthStateChanged` hingga `loadRoleStats` tetap sama) ...
     
     onAuthStateChanged(auth, async (user) => {
@@ -834,14 +838,12 @@
         signOut(auth);
     });
 
-    // ===============================================
     // FUNGSI DAN EVENT LISTENER UNTUK EKSPOR DOKUMEN
-    // ===============================================
     const { jsPDF } = window.jspdf;
 
     function exportToExcel(data, filename) {
         if (data.length === 0) {
-          alert("Tidak ada data untuk diekspor.");
+          alert("Tidak ada data untuk diekspor pada rentang tanggal yang dipilih.");
           return;
         }
         const worksheet = XLSX.utils.json_to_sheet(data);
@@ -852,7 +854,7 @@
 
     function exportToPDF(headers, body, filename, title) {
         if (body.length === 0) {
-          alert("Tidak ada data untuk diekspor.");
+          alert("Tidak ada data untuk diekspor pada rentang tanggal yang dipilih.");
           return;
         }
         const doc = new jsPDF();
@@ -866,62 +868,79 @@
     }
     
     function handleExport(format) {
-      const reportType = elements.reportTypeSelect.value;
-      if (!reportType) {
-        alert("Silakan pilih jenis laporan terlebih dahulu.");
-        return;
-      }
-
+      const reportType = elements.reportType.value;
+      
       let data, headers, body, filename, title;
+      let sourceData = [];
 
       switch (reportType) {
         case 'trips':
-          data = allTrips.map(t => ({
+          const startDate = elements.startDate.value;
+          const endDate = elements.endDate.value;
+          if (!startDate || !endDate) {
+              alert("Silakan pilih rentang tanggal terlebih dahulu.");
+              return;
+          }
+          sourceData = allTrips.filter(trip => {
+              const tripDate = trip.data.tanggal;
+              return tripDate >= startDate && tripDate <= endDate;
+          });
+          data = sourceData.map(t => ({
             'Rute': `${t.data.asal} → ${t.data.tujuan}`, 'Sopir': t.data.driverName || 'N/A',
             'No. Polisi': t.data.nopol || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
           headers = ["Rute", "Sopir", "No. Polisi", "Muatan", "Tanggal", "Status"];
-          body = data.map(Object.values);
           filename = 'Laporan_Perjalanan';
-          title = 'Laporan Semua Perjalanan';
+          title = `Laporan Perjalanan (${startDate} s/d ${endDate})`;
           break;
         case 'users':
-          data = Object.values(allUsers).map(u => ({
+          sourceData = Object.values(allUsers);
+          data = sourceData.map(u => ({
             'Nama': u.name || '-', 'Role': u.role || '-',
             'Login Terakhir': u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-',
             'Status': u.online ? 'Online' : 'Offline'
           }));
           headers = ["Nama", "Role", "Login Terakhir", "Status"];
-          body = data.map(Object.values);
           filename = 'Laporan_Karyawan';
           title = 'Laporan Semua Karyawan';
           break;
         case 'routes':
-          data = allRoutes.map(r => ({ 'Kode': r.data.code, 'Alamat/Lokasi': r.data.address }));
+          sourceData = allRoutes;
+          data = sourceData.map(r => ({ 'Kode': r.data.code, 'Alamat/Lokasi': r.data.address }));
           headers = ["Kode", "Alamat/Lokasi"];
-          body = data.map(Object.values);
           filename = 'Laporan_Rute';
           title = 'Laporan Semua Rute';
           break;
         case 'vehicles':
-          data = allVehicles.map(v => ({ 'No. Polisi': v.data.nopol, 'Tipe/Keterangan': v.data.type }));
+          sourceData = allVehicles;
+          data = sourceData.map(v => ({ 'No. Polisi': v.data.nopol, 'Tipe/Keterangan': v.data.type }));
           headers = ["No. Polisi", "Tipe/Keterangan"];
-          body = data.map(Object.values);
           filename = 'Laporan_Nopol';
           title = 'Laporan Semua Nopol Kendaraan';
           break;
       }
       
+      body = data.map(Object.values);
+
       if (format === 'excel') {
         exportToExcel(data, filename);
       } else if (format === 'pdf') {
         exportToPDF(headers, body, filename, title);
       }
     }
+    
+    // Tampilkan/sembunyikan filter tanggal berdasarkan pilihan laporan
+    elements.reportType.addEventListener('change', (e) => {
+        if (e.target.value === 'trips') {
+            elements.dateFilterContainer.style.display = 'grid';
+        } else {
+            elements.dateFilterContainer.style.display = 'none';
+        }
+    });
 
-    elements.exportToXLSXBtn.addEventListener('click', () => handleExport('excel'));
-    elements.exportToPDFBtn.addEventListener('click', () => handleExport('pdf'));
+    elements.exportExcelBtn.addEventListener('click', () => handleExport('excel'));
+    elements.exportPdfBtn.addEventListener('click', () => handleExport('pdf'));
   </script>
 </body>
 </html>
