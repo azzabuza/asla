@@ -1,25 +1,6 @@
 /* FONT */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-
-/* === VARIABLE DEFINITIONS === */
-:root {
-  --background-primary: #121828; /* Deep blue-gray */
-  --background-secondary: #1a2235; /* Slightly lighter blue-gray */
-  --background-tertiary: #242f48;
-  --text-primary: #e0e5f5; /* Light, soft white */
-  --text-secondary: #a0aec0; /* Muted gray */
-  --accent-primary: #f59e0b; /* Amber/Gold for highlights */
-  --accent-primary-hover: #f5b041;
-  --success: #10b981; /* Green */
-  --danger: #ef4444;  /* Red */
-  --warning: #f97316; /* Orange */
-  --info: #3b82f6;   /* Blue */
-  --border-color: #313d5f;
-  --shadow-color: rgba(0, 0, 0, 0.25);
-  --font-family-sans: "Inter", "Poppins", sans-serif;
-}
-
-/* === BASIC & RESET === */
+/* BASIC & RESET */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -48,7 +29,7 @@ h1, h2, h3, h4 {
 }
 ul { list-style: none; }
 a { text-decoration: none; color: #f59e0b; transition: color 0.2s ease; }
-a:hover { color: var(--accent-primary-hover); }
+a:hover { color: #f5b041; }
 button { cursor: pointer; border: none; font-family: inherit; }
 hr { border: 0; height: 0; margin: 2rem 0; }
 
