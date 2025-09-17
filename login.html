@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="login-container container">
+  <div class="login-page">
+  <div class="login-container">
     <h2>Selamat Datang</h2>
     <form id="loginForm">
       <div class="form-group">
@@ -22,7 +23,7 @@
     </form>
     <p id="errorMsg" style="color:red; margin-top:8px;"></p>
   </div>
-
+    </div>
   <script type="module">
   import { auth, signInWithEmailAndPassword, db, ref, get, set } from './firebase.js';
 
