@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -39,13 +36,7 @@
       
       <div id="page-monitoring" class="page active">
         <section class="card">
-          <div class="card-header">
-            <h2 class="card-title">Daftar Perjalanan</h2>
-            <div class="header-actions">
-              <button id="exportTripsXLSX" class="btn-sm success">Excel</button>
-              <button id="exportTripsPDF" class="btn-sm danger">PDF</button>
-            </div>
-          </div>
+          <h2 class="card-header">Daftar Perjalanan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table id="tripTable">
@@ -76,13 +67,7 @@
       
     <div id="page-users" class="page">
         <section class="card">
-          <div class="card-header">
-            <h2 class="card-title">Daftar Semua Karyawan</h2>
-            <div class="header-actions">
-              <button id="exportUsersXLSX" class="btn-sm success">Excel</button>
-              <button id="exportUsersPDF" class="btn-sm danger">PDF</button>
-            </div>
-          </div>
+          <h2 class="card-header">Daftar Semua Karyawan</h2>
           <div class="card-body">
             <div class="table-controls">
               <div class="form-group"><label>Filter Role: </label><select id="filterRole"><option value="all">Semua</option><option value="admin">Admin</option><option value="coordinator">Koordinator</option><option value="driver">Supir</option></select></div>
@@ -105,13 +90,7 @@
 
       <div id="page-routes" class="page">
         <section class="card">
-          <div class="card-header">
-            <h2 class="card-title">Daftar Rute Tersimpan</h2>
-             <div class="header-actions">
-              <button id="exportRoutesXLSX" class="btn-sm success">Excel</button>
-              <button id="exportRoutesPDF" class="btn-sm danger">PDF</button>
-            </div>
-          </div>
+          <h2 class="card-header">Daftar Rute Tersimpan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table>
@@ -138,13 +117,7 @@
 
       <div id="page-vehicles" class="page">
         <section class="card">
-          <div class="card-header">
-            <h2 class="card-title">Daftar Nopol Tersimpan</h2>
-            <div class="header-actions">
-              <button id="exportVehiclesXLSX" class="btn-sm success">Excel</button>
-              <button id="exportVehiclesPDF" class="btn-sm danger">PDF</button>
-            </div>
-          </div>
+          <h2 class="card-header">Daftar Nopol Tersimpan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table>
@@ -302,7 +275,7 @@
     let currentRoutePage = 1;
     let currentVehiclePage = 1;
     const rowsPerPage = 10;
-    
+
     function setupNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -320,7 +293,6 @@
         });
     }
     setupNavigation();
-
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -820,106 +792,6 @@
     elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
         signOut(auth);
-    });
-
-    const { jsPDF } = window.jspdf;
-
-    function exportToExcel(data, filename) {
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
-        XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    function exportToPDF(headers, body, filename, title) {
-        const doc = new jsPDF();
-        doc.text(title, 14, 16);
-        doc.autoTable({
-            head: [headers],
-            body: body,
-            startY: 20,
-        });
-        doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
-    }
-    
-    // --- EVENT LISTENERS UNTUK EKSPOR ---
-
-    // 1. Ekspor Perjalanan
-    document.getElementById('exportTripsXLSX').addEventListener('click', () => {
-        const data = allTrips.map(t => ({
-            'Rute': `${t.data.asal} → ${t.data.tujuan}`,
-            'Sopir': t.data.driverName || 'N/A',
-            'No. Polisi': t.data.nopol || 'N/A',
-            'Muatan': t.data.muatan || 'N/A',
-            'Tanggal': fmtDate(t.data.tanggal),
-            'Status': t.data.status
-        }));
-        exportToExcel(data, 'Laporan_Perjalanan');
-    });
-
-    document.getElementById('exportTripsPDF').addEventListener('click', () => {
-        const headers = ["Rute", "Sopir", "No. Polisi", "Muatan", "Tanggal", "Status"];
-        const body = allTrips.map(t => ([
-            `${t.data.asal} → ${t.data.tujuan}`,
-            t.data.driverName || 'N/A',
-            t.data.nopol || 'N/A',
-            t.data.muatan || 'N/A',
-            fmtDate(t.data.tanggal),
-            t.data.status
-        ]));
-        exportToPDF(headers, body, 'Laporan_Perjalanan', 'Laporan Semua Perjalanan');
-    });
-
-    // 2. Ekspor Karyawan
-    document.getElementById('exportUsersXLSX').addEventListener('click', () => {
-        const data = Object.values(allUsers).map(u => ({
-            'Nama': u.name || '-',
-            'Role': u.role || '-',
-            'Login Terakhir': u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-',
-            'Status': u.online ? 'Online' : 'Offline'
-        }));
-        exportToExcel(data, 'Laporan_Karyawan');
-    });
-
-    document.getElementById('exportUsersPDF').addEventListener('click', () => {
-        const headers = ["Nama", "Role", "Login Terakhir", "Status"];
-        const body = Object.values(allUsers).map(u => ([
-            u.name || '-',
-            u.role || '-',
-            u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-',
-            u.online ? 'Online' : 'Offline'
-        ]));
-        exportToPDF(headers, body, 'Laporan_Karyawan', 'Laporan Semua Karyawan');
-    });
-
-    // 3. Ekspor Rute
-    document.getElementById('exportRoutesXLSX').addEventListener('click', () => {
-        const data = allRoutes.map(r => ({
-            'Kode': r.data.code,
-            'Alamat/Lokasi': r.data.address
-        }));
-        exportToExcel(data, 'Laporan_Rute');
-    });
-
-    document.getElementById('exportRoutesPDF').addEventListener('click', () => {
-        const headers = ["Kode", "Alamat/Lokasi"];
-        const body = allRoutes.map(r => ([ r.data.code, r.data.address ]));
-        exportToPDF(headers, body, 'Laporan_Rute', 'Laporan Semua Rute');
-    });
-
-    // 4. Ekspor Nopol
-    document.getElementById('exportVehiclesXLSX').addEventListener('click', () => {
-        const data = allVehicles.map(v => ({
-            'No. Polisi': v.data.nopol,
-            'Tipe/Keterangan': v.data.type
-        }));
-        exportToExcel(data, 'Laporan_Nopol');
-    });
-
-    document.getElementById('exportVehiclesPDF').addEventListener('click', () => {
-        const headers = ["No. Polisi", "Tipe/Keterangan"];
-        const body = allVehicles.map(v => ([ v.data.nopol, v.data.type ]));
-        exportToPDF(headers, body, 'Laporan_Nopol', 'Laporan Semua Nopol Kendaraan');
     });
   </script>
 </body>
