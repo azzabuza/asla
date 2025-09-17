@@ -270,6 +270,9 @@ input, select {
 input:focus, select:focus {
   border-color: #f59e0b;
 }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
 option {
   background-color: #121828;
   color: #e0e5f5;
