@@ -565,7 +565,7 @@
         }
     });
 
-    // ### PERBAIKAN ###
+    // ### PERBAIKAN DIMULAI ###
     function displayRoutes(page) {
       currentRoutePage = page;
       const paginatedRoutes = allRoutes.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -576,15 +576,20 @@
         elements.routeList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada rute tersimpan.</td></tr>';
       } else {
         paginatedRoutes.forEach(({ id: routeId, data: route }) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${route.code || '-'}</td><td>${route.address || '-'}</td><td></td>`;
+          const tr = el('tr');
+          const codeCell = el('td', route.code || '-');
+          const addressCell = el('td', route.address || '-');
+          const actionCell = el('td');
+          
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
               await set(ref(db, `routes/${routeId}`), null);
             }
           };
-          tr.cells[2].appendChild(deleteBtn);
+          
+          actionCell.appendChild(deleteBtn);
+          tr.append(codeCell, addressCell, actionCell);
           elements.routeList.appendChild(tr);
         });
       }
@@ -593,6 +598,7 @@
       elements.prevRouteBtn.disabled = page === 1;
       elements.nextRouteBtn.disabled = page === totalPages;
     }
+    // ### PERBAIKAN SELESAI ###
     
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1) });
     elements.nextRouteBtn.addEventListener('click', () => { if (currentRoutePage < Math.ceil(allRoutes.length / rowsPerPage)) displayRoutes(currentRoutePage + 1) });
@@ -606,7 +612,7 @@
       });
     }
 
-    // ### PERBAIKAN ###
+    // ### PERBAIKAN DIMULAI ###
     function displayVehicles(page) {
       currentVehiclePage = page;
       const paginatedVehicles = allVehicles.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -617,15 +623,20 @@
         elements.vehicleList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada nopol tersimpan.</td></tr>';
       } else {
         paginatedVehicles.forEach(({ id: vehicleId, data: vehicle }) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${vehicle.nopol || '-'}</td><td>${vehicle.type || '-'}</td><td></td>`;
+          const tr = el('tr');
+          const nopolCell = el('td', vehicle.nopol || '-');
+          const typeCell = el('td', vehicle.type || '-');
+          const actionCell = el('td');
+
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
               await set(ref(db, `vehicles/${vehicleId}`), null);
             }
           };
-          tr.cells[2].appendChild(deleteBtn);
+          
+          actionCell.appendChild(deleteBtn);
+          tr.append(nopolCell, typeCell, actionCell);
           elements.vehicleList.appendChild(tr);
         });
       }
@@ -634,6 +645,7 @@
       elements.prevVehicleBtn.disabled = page === 1;
       elements.nextVehicleBtn.disabled = page === totalPages;
     }
+    // ### PERBAIKAN SELESAI ###
 
     elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1) });
     elements.nextVehicleBtn.addEventListener('click', () => { if (currentVehiclePage < Math.ceil(allVehicles.length / rowsPerPage)) displayVehicles(currentVehiclePage + 1) });
