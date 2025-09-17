@@ -215,7 +215,17 @@
       createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
-    import { setupNavigation, renderUsersTable } from './styles.js';
+
+    const pageContent = {
+        monitoring: { title: 'Monitoring Perjalanan' },
+        users: { title: 'Manajemen Karyawan' },
+        routes: { title: 'Manajemen Rute' },
+        vehicles: { title: 'Manajemen Nopol' },
+        addusers: { title: 'Tambah Karyawan' },
+        addrutes: { title: 'Tambah Rute' },
+        addvehicles: { title: 'Tambah Nopol' },
+        performance: { title: 'Kinerja Role' }
+    };
 
     const elements = {
         pageTitle: document.getElementById('pageTitle'),
@@ -266,7 +276,23 @@
     let currentVehiclePage = 1;
     const rowsPerPage = 10;
 
-    setupNavigation(elements.navLinks, elements.pages, elements.pageTitle);
+    function setupNavigation() {
+        elements.navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+
+                elements.pages.forEach(page => page.classList.remove('active'));
+                elements.navLinks.forEach(nav => nav.classList.remove('active'));
+
+                document.getElementById(`page-${targetId}`).classList.add('active');
+                link.classList.add('active');
+                
+                elements.pageTitle.textContent = pageContent[targetId].title;
+            });
+        });
+    }
+    setupNavigation();
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
