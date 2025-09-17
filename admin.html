@@ -565,7 +565,7 @@
         }
     });
 
-    // ### PERBAIKAN DIMULAI ###
+    // ### KODE YANG DIPERBAIKI ###
     function displayRoutes(page) {
       currentRoutePage = page;
       const paginatedRoutes = allRoutes.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -598,7 +598,6 @@
       elements.prevRouteBtn.disabled = page === 1;
       elements.nextRouteBtn.disabled = page === totalPages;
     }
-    // ### PERBAIKAN SELESAI ###
     
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1) });
     elements.nextRouteBtn.addEventListener('click', () => { if (currentRoutePage < Math.ceil(allRoutes.length / rowsPerPage)) displayRoutes(currentRoutePage + 1) });
@@ -612,7 +611,7 @@
       });
     }
 
-    // ### PERBAIKAN DIMULAI ###
+    // ### KODE YANG DIPERBAIKI ###
     function displayVehicles(page) {
       currentVehiclePage = page;
       const paginatedVehicles = allVehicles.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -645,7 +644,6 @@
       elements.prevVehicleBtn.disabled = page === 1;
       elements.nextVehicleBtn.disabled = page === totalPages;
     }
-    // ### PERBAIKAN SELESAI ###
 
     elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1) });
     elements.nextVehicleBtn.addEventListener('click', () => { if (currentVehiclePage < Math.ceil(allVehicles.length / rowsPerPage)) displayVehicles(currentVehiclePage + 1) });
