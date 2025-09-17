@@ -277,6 +277,7 @@ input, select {
   border-radius: 1rem;
   border: 1px solid #313d5f;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  appearance: none;
 }
 input:focus, select:focus {
   border-color: #f59e0b;
