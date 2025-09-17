@@ -175,9 +175,9 @@ hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
 button, .button {
   background: linear-gradient(90deg, #f59e0b, #f97316);
   color: #121828;
-  padding: 0.8rem 1.75rem;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   transition: all 0.3s ease;
   width: 100%;
