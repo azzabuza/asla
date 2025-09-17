@@ -50,7 +50,7 @@ ul { list-style: none; }
 a { text-decoration: none; color: var(--accent-primary); transition: color 0.2s ease; }
 a:hover { color: var(--accent-primary-hover); }
 button { cursor: pointer; border: none; font-family: inherit; }
-hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem 0; }
+hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
 
 /* === ADMIN & KOORDINATOR LAYOUT === */
 .content-wrapper {
@@ -72,12 +72,13 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   height: 100dvh;
   top: 0;
   left: 0;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid #313d5f;
 }
 .sidebar-header {
-  padding: 1.75rem 1.5rem;
+  box-sizing: border-box;
+  padding: 2rem;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #313d5f;
 }
 .sidebar-header h3 {
   color: #e0e5f5;
@@ -108,9 +109,9 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
 }
 .sidebar-footer {
-  padding: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  margin-top: auto;
+  padding: 2rem;
+  margin:0;
+  border-top: 1px solid #313d5f;
 }
 .main-content {
   box-sizing:border-box;
@@ -147,12 +148,12 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
   box-shadow: 0 10px 30px var(--shadow-color);
   margin-bottom: 2.5rem;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid #313d5f;
 }
 .card-header {
   font-size: 1.25rem;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #313d5f;
   font-weight: 600;
 }
 .card-body {
@@ -216,7 +217,7 @@ label {
 input, select {
   width: 100%;
   padding: 0.8rem 1.2rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid #313d5f;
   border-radius: 6px;
   background-color: var(--background-primary);
   color: #e0e5f5;
@@ -238,9 +239,9 @@ th {
   text-transform: uppercase;
   font-size: .8rem;
   color: var(--text-secondary);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid #313d5f;
 }
-tbody tr { border-bottom: 1px solid var(--border-color); }
+tbody tr { border-bottom: 1px solid #313d5f; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
 .table-controls {
@@ -305,7 +306,7 @@ tbody tr:hover { background-color: #242f48; }
     padding: 3rem;
     background-color: #1a2235;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #313d5f;
     box-shadow: 0 10px 30px var(--shadow-color);
 }
 .login-container h2 {
