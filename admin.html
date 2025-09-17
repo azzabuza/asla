@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -21,6 +24,7 @@
         <li><a href="#addrutes" class="nav-link">Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link">Tambah Nopol</a></li>
         <li><a href="#performance" class="nav-link">Kinerja Role</a></li>
+        <li><a href="#documentation" class="nav-link">Dokumentasi Laporan</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
@@ -31,7 +35,7 @@
     <main class="main-content">
       <header class="main-header">
         <h1 id="pageTitle">Monitoring Perjalanan</h1>
-        <p>Selamat datang yang mulia! Akses penuh terbuka untuk anda.</p>
+        <p id="pageSubtitle">Selamat datang yang mulia! Akses penuh terbuka untuk anda.</p>
       </header>
       
       <div id="page-monitoring" class="page active">
@@ -65,7 +69,7 @@
         </section>
       </div>
       
-    <div id="page-users" class="page">
+      <div id="page-users" class="page">
         <section class="card">
           <h2 class="card-header">Daftar Semua Karyawan</h2>
           <div class="card-body">
@@ -141,7 +145,7 @@
           </div>
         </section>
       </div>
-
+      
       <div id="page-addusers" class="page">
           <section class="card">
               <h2 class="card-header">Tambah Karyawan Baru</h2>
@@ -156,52 +160,79 @@
                   <p id="addUserStatus" class="form-status"></p>
               </div>
           </section>
-        </div>
-
+      </div>
       <div id="page-addrutes" class="page">
           <section class="card">
-          <h2 class="card-header">Tambah Rute Baru</h2>
-          <div class="card-body">
-            <form id="addRouteForm">
-              <div class="form-group">
-                <label for="routeCode">Kode Rute (Contoh: BDG)</label>
-                <input type="text" id="routeCode" required>
-              </div>
-              <div class="form-group">
-                <label for="routeAddress">Alamat/Nama Lokasi (Contoh: Bandung)</label>
-                <input type="text" id="routeAddress" required>
-              </div>
-              <button type="submit">Tambah Rute</button>
-            </form>
-            <p id="addRouteStatus" class="form-status"></p>
-          </div>
-        </section>
-        </div>
-
+            <h2 class="card-header">Tambah Rute Baru</h2>
+            <div class="card-body">
+              <form id="addRouteForm">
+                <div class="form-group">
+                  <label for="routeCode">Kode Rute (Contoh: BDG)</label>
+                  <input type="text" id="routeCode" required>
+                </div>
+                <div class="form-group">
+                  <label for="routeAddress">Alamat/Nama Lokasi (Contoh: Bandung)</label>
+                  <input type="text" id="routeAddress" required>
+                </div>
+                <button type="submit">Tambah Rute</button>
+              </form>
+              <p id="addRouteStatus" class="form-status"></p>
+            </div>
+          </section>
+      </div>
       <div id="page-addvehicles" class="page">
           <section class="card">
-          <h2 class="card-header">Tambah Nopol Baru</h2>
-          <div class="card-body">
-            <form id="addVehicleForm">
-              <div class="form-group">
-                <label for="vehicleNopol">No. Polisi</label>
-                <input type="text" id="vehicleNopol" required>
-              </div>
-              <div class="form-group">
-                <label for="vehicleType">Tipe/Keterangan Kendaraan</label>
-                <input type="text" id="vehicleType" placeholder="Contoh: Tronton, Box, dll." required>
-              </div>
-              <button type="submit">Tambah Nopol</button>
-            </form>
-            <p id="addVehicleStatus" class="form-status"></p>
-          </div>
-        </section>
-        </div>
-
+            <h2 class="card-header">Tambah Nopol Baru</h2>
+            <div class="card-body">
+              <form id="addVehicleForm">
+                <div class="form-group">
+                  <label for="vehicleNopol">No. Polisi</label>
+                  <input type="text" id="vehicleNopol" required>
+                </div>
+                <div class="form-group">
+                  <label for="vehicleType">Tipe/Keterangan Kendaraan</label>
+                  <input type="text" id="vehicleType" placeholder="Contoh: Tronton, Box, dll." required>
+                </div>
+                <button type="submit">Tambah Nopol</button>
+              </form>
+              <p id="addVehicleStatus" class="form-status"></p>
+            </div>
+          </section>
+      </div>
       <div id="page-performance" class="page">
         <section class="card">
           <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
           <div id="roleStats" class="card-body">Memuat statistik...</div>
+        </section>
+      </div>
+
+      <div id="page-documentation" class="page">
+        <section class="card">
+          <h2 class="card-header">Buat Laporan Dokumen</h2>
+          <div class="card-body">
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Pilih jenis data yang ingin Anda ekspor ke dalam format Excel (XLSX) atau PDF.</p>
+            <form id="documentationForm">
+              <div class="form-group">
+                <label for="reportType">Pilih Jenis Laporan</label>
+                <select id="reportType" required>
+                  <option value="">-- Pilih Data --</option>
+                  <option value="trips">Laporan Perjalanan</option>
+                  <option value="users">Laporan Karyawan</option>
+                  <option value="routes">Laporan Rute</option>
+                  <option value="vehicles">Laporan Nopol Kendaraan</option>
+                </select>
+              </div>
+              
+              <div class="form-group" style="flex-direction: row; gap: 1rem; justify-content: flex-start;">
+                <button type="button" id="exportToXLSX" class="btn-sm success" style="width: auto;">
+                  <i class="fas fa-file-excel"></i> Ekspor ke Excel
+                </button>
+                <button type="button" id="exportToPDF" class="btn-sm danger" style="width: auto;">
+                  <i class="fas fa-file-pdf"></i> Ekspor ke PDF
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
       </div>
 
@@ -217,18 +248,20 @@
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
-        monitoring: { title: 'Monitoring Perjalanan' },
-        users: { title: 'Manajemen Karyawan' },
-        routes: { title: 'Manajemen Rute' },
-        vehicles: { title: 'Manajemen Nopol' },
-        addusers: { title: 'Tambah Karyawan' },
-        addrutes: { title: 'Tambah Rute' },
-        addvehicles: { title: 'Tambah Nopol' },
-        performance: { title: 'Kinerja Role' }
+        monitoring: { title: 'Monitoring Perjalanan', subtitle: 'Selamat datang yang mulia! Akses penuh terbuka untuk anda.' },
+        users: { title: 'Manajemen Karyawan', subtitle: 'Kelola semua data pengguna dalam sistem.' },
+        routes: { title: 'Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
+        vehicles: { title: 'Manajemen Nopol', subtitle: 'Kelola daftar nomor polisi kendaraan.' },
+        addusers: { title: 'Tambah Karyawan', subtitle: 'Buat akun baru untuk karyawan.' },
+        addrutes: { title: 'Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
+        addvehicles: { title: 'Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
+        performance: { title: 'Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
+        documentation: { title: 'Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' }
     };
 
     const elements = {
         pageTitle: document.getElementById('pageTitle'),
+        pageSubtitle: document.getElementById('pageSubtitle'),
         navLinks: document.querySelectorAll('.nav-link'),
         pages: document.querySelectorAll('.page'),
         tripList: document.getElementById('tripList'),
@@ -261,7 +294,11 @@
         vehiclePaginationControls: document.getElementById('vehicle-pagination-controls'),
         prevVehicleBtn: document.getElementById('prevVehicleBtn'),
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
-        vehiclePageInfo: document.getElementById('vehiclePageInfo')
+        vehiclePageInfo: document.getElementById('vehiclePageInfo'),
+        // Documentation elements
+        reportTypeSelect: document.getElementById('reportType'),
+        exportToXLSXBtn: document.getElementById('exportToXLSX'),
+        exportToPDFBtn: document.getElementById('exportToPDF'),
     };
 
     let currentUser = null;
@@ -275,7 +312,7 @@
     let currentRoutePage = 1;
     let currentVehiclePage = 1;
     const rowsPerPage = 10;
-
+    
     function setupNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -289,11 +326,14 @@
                 link.classList.add('active');
                 
                 elements.pageTitle.textContent = pageContent[targetId].title;
+                elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
             });
         });
     }
     setupNavigation();
 
+    // ... (Semua fungsi JavaScript dari `onAuthStateChanged` hingga `loadRoleStats` tetap sama) ...
+    
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
@@ -793,6 +833,95 @@
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
         signOut(auth);
     });
+
+    // ===============================================
+    // FUNGSI DAN EVENT LISTENER UNTUK EKSPOR DOKUMEN
+    // ===============================================
+    const { jsPDF } = window.jspdf;
+
+    function exportToExcel(data, filename) {
+        if (data.length === 0) {
+          alert("Tidak ada data untuk diekspor.");
+          return;
+        }
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
+        XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function exportToPDF(headers, body, filename, title) {
+        if (body.length === 0) {
+          alert("Tidak ada data untuk diekspor.");
+          return;
+        }
+        const doc = new jsPDF();
+        doc.text(title, 14, 16);
+        doc.autoTable({
+            head: [headers],
+            body: body,
+            startY: 20,
+        });
+        doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+    
+    function handleExport(format) {
+      const reportType = elements.reportTypeSelect.value;
+      if (!reportType) {
+        alert("Silakan pilih jenis laporan terlebih dahulu.");
+        return;
+      }
+
+      let data, headers, body, filename, title;
+
+      switch (reportType) {
+        case 'trips':
+          data = allTrips.map(t => ({
+            'Rute': `${t.data.asal} → ${t.data.tujuan}`, 'Sopir': t.data.driverName || 'N/A',
+            'No. Polisi': t.data.nopol || 'N/A', 'Muatan': t.data.muatan || 'N/A',
+            'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
+          }));
+          headers = ["Rute", "Sopir", "No. Polisi", "Muatan", "Tanggal", "Status"];
+          body = data.map(Object.values);
+          filename = 'Laporan_Perjalanan';
+          title = 'Laporan Semua Perjalanan';
+          break;
+        case 'users':
+          data = Object.values(allUsers).map(u => ({
+            'Nama': u.name || '-', 'Role': u.role || '-',
+            'Login Terakhir': u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-',
+            'Status': u.online ? 'Online' : 'Offline'
+          }));
+          headers = ["Nama", "Role", "Login Terakhir", "Status"];
+          body = data.map(Object.values);
+          filename = 'Laporan_Karyawan';
+          title = 'Laporan Semua Karyawan';
+          break;
+        case 'routes':
+          data = allRoutes.map(r => ({ 'Kode': r.data.code, 'Alamat/Lokasi': r.data.address }));
+          headers = ["Kode", "Alamat/Lokasi"];
+          body = data.map(Object.values);
+          filename = 'Laporan_Rute';
+          title = 'Laporan Semua Rute';
+          break;
+        case 'vehicles':
+          data = allVehicles.map(v => ({ 'No. Polisi': v.data.nopol, 'Tipe/Keterangan': v.data.type }));
+          headers = ["No. Polisi", "Tipe/Keterangan"];
+          body = data.map(Object.values);
+          filename = 'Laporan_Nopol';
+          title = 'Laporan Semua Nopol Kendaraan';
+          break;
+      }
+      
+      if (format === 'excel') {
+        exportToExcel(data, filename);
+      } else if (format === 'pdf') {
+        exportToPDF(headers, body, filename, title);
+      }
+    }
+
+    elements.exportToXLSXBtn.addEventListener('click', () => handleExport('excel'));
+    elements.exportToPDFBtn.addEventListener('click', () => handleExport('pdf'));
   </script>
 </body>
 </html>
