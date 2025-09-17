@@ -261,6 +261,16 @@ th {
   color: #a0aec0;
   border-bottom: 1px solid #313d5f;
 }
+td {
+  background: #1a2235;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: #a0aec0;
+  border-bottom: 1px solid #313d5f;
+}
+td :last-child {
+  border-bottom: none;
+}
 tbody tr { border-bottom: 1px solid #313d5f; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
