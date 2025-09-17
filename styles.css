@@ -177,6 +177,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 2rem;
   margin: 0;
 }
+.card-body h4 {
+  color: #ffffff
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+}
 
 /* === TOMBOL (BUTTONS) === */
 button, .button {
