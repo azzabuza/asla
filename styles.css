@@ -50,7 +50,7 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
 .content-wrapper {
   display: flex;
   width: 100%;
-  min-height: 100vh;
+  height: 100dvh;
 }
 .sidebar {
   width: 320px;
