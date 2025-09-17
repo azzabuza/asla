@@ -114,6 +114,12 @@ hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
   margin:0;
   border-top: 1px solid #313d5f;
 }
+.sidebar-footer p {
+  color: #ffffff;
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 2rem 0 0 0;
+}
 .main-content {
   box-sizing:border-box;
   width: 100%;
