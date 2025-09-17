@@ -16,6 +16,7 @@
         <li><a href="#list" class="nav-link active">Daftar Perjalanan</a></li>
         <li><a href="#add" class="nav-link">Tambah Perjalanan</a></li>
         <li><a href="#performance" class="nav-link">Kinerja Supir</a></li>
+        <li><a href="#statistics" class="nav-link">Statistik</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
@@ -112,6 +113,22 @@
           </div>
         </section>
       </div>
+      
+      <div id="page-statistics" class="page">
+        <section class="card">
+            <h2 class="card-header">Statistik Saya</h2>
+            <div id="myStats" class="card-body">Memuat...</div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Performa Supir Terbaik (Trip Buatan Anda)</h2>
+            <div id="driverPerformanceRanking" class="card-body">Memuat...</div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Rute Paling Populer (Trip Buatan Anda)</h2>
+            <div id="popularRoutesRanking" class="card-body">Memuat...</div>
+        </section>
+      </div>
+
     </main>
   </div>
 
@@ -125,7 +142,8 @@
     const pageContent = {
         list: { title: 'Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
         add: { title: 'Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
-        performance: { title: 'Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
+        performance: { title: 'Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' },
+        statistics: { title: 'Statistik', subtitle: 'Lihat rincian data dan statistik dari perjalanan yang Anda buat.'}
     };
 
     const elements = {
@@ -145,7 +163,11 @@
       prevCoorBtn: document.getElementById('prevCoorBtn'),
       nextCoorBtn: document.getElementById('nextCoorBtn'),
       coorPageInfo: document.getElementById('coorPageInfo'),
-      driverPerformanceStats: document.getElementById('driverPerformanceStats')
+      driverPerformanceStats: document.getElementById('driverPerformanceStats'),
+      // Statistik Elements
+      myStats: document.getElementById('myStats'),
+      driverPerformanceRanking: document.getElementById('driverPerformanceRanking'),
+      popularRoutesRanking: document.getElementById('popularRoutesRanking'),
     };
     
     let currentUser = null;
@@ -297,11 +319,71 @@
         } else {
             Object.values(performance).forEach(d => {
                 tableHTML += `<tr><td><strong>${d.name}</strong></td><td>${d.total}</td>
-                    <td style="color:var(--success);">${d.arrived}</td><td style="color:var(--info);">${d.approved}</td>
-                    <td style="color:var(--warning);">${d.submitted}</td><td style="color:var(--danger);">${d.rejected}</td></tr>`;
+                    <td style="color:var(--success);">${d.arrived || 0}</td><td style="color:var(--info);">${d.approved || 0}</td>
+                    <td style="color:var(--warning);">${d.submitted || 0}</td><td style="color:var(--danger);">${d.rejected || 0}</td></tr>`;
             });
         }
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
+    }
+
+    function loadDetailedCoordinatorStats() {
+      // 1. My Stats
+      const stats = { total: 0, approved: 0, arrived: 0, submitted: 0, rejected: 0 };
+      allMyTrips.forEach(({data: trip}) => {
+        stats.total++;
+        stats[trip.status] = (stats[trip.status] || 0) + 1;
+      });
+      elements.myStats.innerHTML = `
+        <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: wrap; gap: 1rem;">
+          <div><h3>${stats.total}</h3><p>Total Dibuat</p></div>
+          <div><h3>${stats.arrived || 0}</h3><p>Selesai</p></div>
+          <div><h3>${stats.approved || 0}</h3><p>Disetujui</p></div>
+          <div><h3>${stats.submitted || 0}</h3><p>Menunggu</p></div>
+          <div><h3>${stats.rejected || 0}</h3><p>Ditolak</p></div>
+        </div>
+      `;
+
+      // 2. Driver Performance Ranking
+      const driverScores = {};
+      allMyTrips.forEach(trip => {
+        if (trip.data.status === 'arrived' && trip.data.driverName) {
+          driverScores[trip.data.driverName] = (driverScores[trip.data.driverName] || 0) + 1;
+        }
+      });
+      const sortedDrivers = Object.entries(driverScores).sort((a, b) => b[1] - a[1]);
+      let driverTable = createStatsTable(['Peringkat', 'Nama Supir', 'Trip Selesai']);
+      if(sortedDrivers.length > 0) {
+        sortedDrivers.forEach(([driverName, count], index) => {
+          driverTable += `<tr><td>${index + 1}</td><td>${driverName}</td><td>${count}</td></tr>`;
+        });
+      } else {
+        driverTable += `<tr><td colspan="3" class="empty-state">Belum ada data perjalanan selesai.</td></tr>`;
+      }
+      elements.driverPerformanceRanking.innerHTML = driverTable + '</tbody></table></div>';
+
+      // 3. Popular Routes Ranking
+      const routeScores = {};
+      allMyTrips.forEach(trip => {
+        const routeName = `${trip.data.asal} → ${trip.data.tujuan}`;
+        routeScores[routeName] = (routeScores[routeName] || 0) + 1;
+      });
+      const sortedRoutes = Object.entries(routeScores).sort((a, b) => b[1] - a[1]);
+      let routeTable = createStatsTable(['Peringkat', 'Rute', 'Jumlah Perjalanan']);
+      if(sortedRoutes.length > 0) {
+          sortedRoutes.forEach(([routeName, count], index) => {
+            routeTable += `<tr><td>${index + 1}</td><td>${routeName}</td><td>${count}</td></tr>`;
+          });
+      } else {
+          routeTable += `<tr><td colspan="3" class="empty-state">Belum ada data perjalanan.</td></tr>`;
+      }
+      elements.popularRoutesRanking.innerHTML = routeTable + '</tbody></table></div>';
+    }
+
+    function createStatsTable(headers) {
+      let tableHTML = `<div class="table-responsive"><table><thead><tr>`;
+      headers.forEach(h => tableHTML += `<th>${h}</th>`);
+      tableHTML += `</tr></thead><tbody>`;
+      return tableHTML;
     }
 
     function displayMyTrips(page) {
@@ -356,21 +438,20 @@
     elements.nextCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage + 1));
 
     function loadMyTrips() {
-      // ### PERBAIKAN UTAMA DI SINI ###
       const tripsRef = ref(db, 'trips');
-      onValue(tripsRef, (snapshot) => { // 1. Dengar semua data di 'trips'
+      onValue(tripsRef, (snapshot) => {
         allMyTrips = [];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
-            // 2. Saring secara manual hanya untuk data milik koordinator ini
             if (child.val().coorId === currentUser.uid) {
               allMyTrips.push({ id: child.key, data: child.val() });
             }
           });
         }
-        allMyTrips.reverse(); // Tampilkan yang terbaru di atas
-        displayMyTrips(1); // Selalu reset ke halaman pertama saat data baru masuk
+        allMyTrips.reverse(); 
+        displayMyTrips(1);
         loadDriverPerformance();
+        loadDetailedCoordinatorStats(); // Load detailed stats
       });
     }
 
