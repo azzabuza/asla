@@ -50,7 +50,7 @@ ul { list-style: none; }
 a { text-decoration: none; color: #f59e0b; transition: color 0.2s ease; }
 a:hover { color: var(--accent-primary-hover); }
 button { cursor: pointer; border: none; font-family: inherit; }
-hr { border: 0; height: 1px; background-color: #313d5f; margin: 2rem 0; }
+hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* === ADMIN & KOORDINATOR LAYOUT === */
 .content-wrapper {
