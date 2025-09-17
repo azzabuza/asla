@@ -77,6 +77,7 @@ hr { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem
 .sidebar-menu {
   flex-grow: 1;
   padding-top: 1.5rem;
+  overflow-y: auto; /* <<< PERUBAHAN DI SINI */
 }
 .sidebar-menu li a {
   display: block;
