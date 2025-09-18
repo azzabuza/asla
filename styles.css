@@ -321,7 +321,11 @@ option {
   color: #e0e5f5;
 }
 .form-status { margin-top: 1rem; font-weight: 500; text-align: center; }
-.table-responsive { overflow-x: auto; }
+.table-responsive {
+  overflow-x: auto;
+  border: 1px solid #313d5f;
+  border-radius: 1rem;
+}
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
 th {
