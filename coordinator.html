@@ -339,7 +339,7 @@
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
           
-          tr.innerHTML = `<td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
+          tr.innerHTML = `<td data-label="Rute"><strong>${tripData.asal} - ${tripData.tujuan}</strong></td>
             <td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Polisi">${tripData.nopol}</td>
             <td data-label="Muatan">${tripData.muatan||'-'}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
           tr.append(statusCell, actionsCell);
