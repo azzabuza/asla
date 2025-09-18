@@ -86,7 +86,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   color: #e0e5f5;
 }
 .sidebar-menu li a.active {
-  background: linear-gradient(90deg, #f59e0b, #f97316);
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   color: #121828;
 }
 .sidebar-footer {
@@ -167,7 +167,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* === TOMBOL (BUTTONS) === */
 button, .button {
-  background: linear-gradient(90deg, #f59e0b, #f97316);
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   color: #121828;
   padding: 1rem 2rem;
   margin: 0;
