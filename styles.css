@@ -309,7 +309,9 @@ tbody tr:hover { background-color: #242f48; }
   grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
 }
-
+.table-controls .form-group {
+  margin: 0;
+}
 /* === KHUSUS FORM DI SIDEBAR KOORDINATOR === */
 .sidebar-form-container {
   padding: 0 1.5rem;
