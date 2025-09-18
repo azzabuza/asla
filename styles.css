@@ -101,6 +101,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar-menu li a.active {
   background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   color: #121828;
+  text-align: center;
 }
 .sidebar-footer {
   box-sizing:border-box;
