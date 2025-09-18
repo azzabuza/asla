@@ -343,7 +343,7 @@ td {
   color: #a0aec0;
   border-bottom: 1px solid #313d5f;
 }
-td :last-child {
+td:last-child {
   border: none;
 }
 tbody tr { border-bottom: 1px solid #313d5f; }
