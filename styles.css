@@ -303,15 +303,10 @@ tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
 .table-controls {
   box-sizing: border-box;
-  margin-bottom: 2rem;
+  margin: 0 0 2rem 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-}
-.table-controls .form-group {
-  box-sizing: border-box;
-    flex-grow: 1;
-    margin-bottom: 0;
 }
 
 /* === KHUSUS FORM DI SIDEBAR KOORDINATOR === */
