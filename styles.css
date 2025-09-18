@@ -302,11 +302,11 @@ tbody tr { border-bottom: 1px solid #313d5f; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
 .table-controls {
-  display: flex;
-  gap: 2rem;
+  box-sizing: border-box;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 .table-controls .form-group {
   box-sizing: border-box;
