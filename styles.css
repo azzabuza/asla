@@ -341,7 +341,7 @@ td {
   font-weight: 400;
   font-size: 1.5rem;
   color: #a0aec0;
-  border-bottom: 1px solid #313d5f;
+  border-top: 1px solid #313d5f;
 }
 td:last-child {
   border: none;
