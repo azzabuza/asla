@@ -714,7 +714,7 @@ itemprop="image"
 
           // Data untuk Excel (alamat lengkap)
           dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${t.data.asal} → ${t.data.tujuan}`, 'Sopir': t.data.driverName || 'N/A',
+            'Rute': `${t.data.asal} - ${t.data.tujuan}`, 'Sopir': t.data.driverName || 'N/A',
             'No. Polisi': t.data.nopol || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
