@@ -194,7 +194,7 @@ filter:brightness(0) invert(1);
   padding: 2rem;
   margin: 0;
   border-bottom: 1px solid #313d5f;
-  font-weight: 600;
+  font-weight: 500;
 }
 .card-body {
   box-sizing: border-box;
