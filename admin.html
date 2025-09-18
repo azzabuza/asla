@@ -515,7 +515,7 @@ itemprop="image"
               deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
           }
           const roleClass = (u.role || '').replace(' ', '-');
-          tr.innerHTML = `<td data-label="UID"><small>${uid}</small></td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td><td data-label="Aksi">${deleteButton}</td>`;
+          tr.innerHTML = `<td data-label="UID">${uid}</td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td><td data-label="Aksi">${deleteButton}</td>`;
           elements.userList.appendChild(tr);
         });
       }
