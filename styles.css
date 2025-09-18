@@ -23,6 +23,18 @@ body {
   -webkit-tap-highlight-color: transparent !important;
   -webkit-font-smoothing: antialiased;
 }
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 1rem;
+  height: 1rem;
+}
+::-webkit-scrollbar-track {
+  background-color: #ffffff;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #dcdcdc;
+  border-radius: 0.5rem;
+}
 h1, h2, h3, h4 {
   color: #e0e5f5;
   font-weight: 600;
