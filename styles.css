@@ -325,7 +325,6 @@ option {
   overflow-x: auto;
   border: 1px solid #313d5f;
   border-radius: 1rem;
-  margin: 0 0 1rem 0;
 }
 table { width: 100%; border-collapse: collapse;}
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
