@@ -304,11 +304,12 @@ tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
 .table-controls {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: 2rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
 }
 .table-controls .form-group {
+  box-sizing: border-box;
     flex-grow: 1;
     margin-bottom: 0;
 }
