@@ -238,6 +238,7 @@ button, .button {
 /* === FORMULIR & TABEL (UMUM) === */
 .form-group {
   box-sizing: border-box;
+  flex: 1;
   padding: 0;
   margin: 0 0 2rem 0;
 }
