@@ -29,10 +29,10 @@ body {
   height: 1rem;
 }
 ::-webkit-scrollbar-track {
-  background-color: #ffffff;
+  background-color: #121828;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #dcdcdc;
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   border-radius: 0.5rem;
 }
 h1, h2, h3, h4 {
