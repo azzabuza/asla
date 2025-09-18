@@ -108,7 +108,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border-top: 1px solid #313d5f;
 }
 .sidebar-footer p {
-  color: #ffffff;
+  color: #e0e5f5;
   font-size: 1.5rem;
   text-align: center;
   padding: 0;
@@ -202,7 +202,7 @@ filter:brightness(0) invert(1);
   margin: 0;
 }
 .card-body h4 {
-  color: #ffffff;
+  color: #e0e5f5;
   font-size: 1.5rem;
   font-weight: 500;
   margin: 0 0 1rem 0;
@@ -257,7 +257,7 @@ button, .button {
 .delete-user-btn, .btn-delete-trip {
   box-sizing: border-box;
   background: #ef4444;
-  color: #ffffff;
+  color: #e0e5f5;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 0.5rem;
