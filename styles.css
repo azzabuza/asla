@@ -140,7 +140,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .card {
   box-sizing: border-box;
   background-color: #1a2235;
-  border-radius: 1rem;
+  border-radius: 2rem;
   margin: 0 0 2rem 0;
   overflow: hidden;
   border: 1px solid #313d5f;
