@@ -382,7 +382,7 @@ tbody tr:hover { background-color: #242f48; }
   margin: 0;
   padding: 2rem;
   background-color: #1a2235;
-  border-radius: 12px;
+  border-radius: 2rem;
   border: 1px solid #313d5f;
 }
 .login-container h2 {
