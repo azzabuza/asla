@@ -63,7 +63,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 /* === ADMIN & KOORDINATOR LAYOUT === */
 .content-wrapper {
   box-sizing: border-box;
-  background-color: #121828;
   display: flex;
   height: 100dvh;
   max-width: 100%;
