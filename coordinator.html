@@ -298,8 +298,8 @@
         } else {
             Object.values(performance).forEach(d => {
                 tableHTML += `<tr><td><strong>${d.name}</strong></td><td>${d.total}</td>
-                    <td style="color:var(--success);">${d.arrived || 0}</td><td style="color:var(--info);">${d.approved || 0}</td>
-                    <td style="color:var(--warning);">${d.submitted || 0}</td><td style="color:var(--danger);">${d.rejected || 0}</td></tr>`;
+                    <td style="color: #10b981;">${d.arrived || 0}</td><td style="color: #3b82f6;">${d.approved || 0}</td>
+                    <td style="color: #ffa500;">${d.submitted || 0}</td><td style="color: #ef4444;">${d.rejected || 0}</td></tr>`;
             });
         }
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
