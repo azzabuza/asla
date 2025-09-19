@@ -1,5 +1,5 @@
 /* FONT */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 /* BASIC & RESET */
 * {
   box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #121828;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Inter', sans-serif;
   text-align: left;
   user-select:none;
   text-size-adjust: none;
@@ -298,7 +298,7 @@ input, select {
   box-sizing: border-box;
   display: inline-block;
   background-color: #121828;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #e0e5f5;
   caret-color: #24323d;
   font-size: 1.5rem;
