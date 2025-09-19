@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* CSS tanpa variabel :root, disesuaikan dengan styles.css */
+    /* CSS Final dengan penyempurnaan estetika */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -22,19 +22,28 @@
     }
 
     body {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  background-color: #121828;
-  font-family: "Poppins", sans-serif;
-  text-align: left;
-  user-select:none;
-  text-size-adjust: none;
-  text-rendering: optimizeLegibility;
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-font-smoothing: antialiased;
-  position: relative;
-}
+      background-color: #121828;
+      /* Menambahkan tekstur noise halus */
+      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23313d5f" fill-opacity="0.1"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h16v15h9v-15h9v15h9v-15h9v15h9v-15h9v15h9v-15h9v15h9v-15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+      font-family: 'Inter', sans-serif;
+      color: #e0e5f5;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(at 15% 20%, rgba(0, 210, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 80% 30%, rgba(58, 123, 213, 0.1) 0px, transparent 50%),
+        radial-gradient(at 50% 80%, rgba(0, 210, 255, 0.1) 0px, transparent 50%);
+      z-index: -1;
+    }
 
     .container {
       max-width: 1200px;
@@ -156,62 +165,100 @@
         box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
      }
 
-    /* Partner Logos */
-    .partners-logos {
+    /* Hero Mockup UI */
+    .hero-mockup {
+        background: linear-gradient(145deg, rgba(26, 34, 53, 0.5), rgba(18, 24, 40, 0.5));
+        border: 1px solid #313d5f;
+        border-radius: 16px;
+        padding: 1.5rem;
+        max-width: 600px;
+        margin: 4rem auto 0 auto;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        text-align: left;
+    }
+    .mockup-header {
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
         align-items: center;
-        gap: 3rem;
-        margin-top: 6rem;
-        filter: grayscale(100%) invert(75%);
-        opacity: 0.8;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #313d5f;
     }
-    .partners-logos img {
-        height: 35px;
-        transition: filter 0.3s ease;
+    .mockup-dot { width: 12px; height: 12px; border-radius: 50%; background-color: #313d5f; }
+    .mockup-body { margin-top: 1rem; }
+    .mockup-body p { color: #e0e5f5; font-weight: 600; }
+    .mockup-body .status {
+        display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;
     }
-     .partners-logos img:hover {
-        filter: grayscale(0) invert(0);
-     }
+    .mockup-body .status span { color: #a0aec0; font-size: 0.9rem;}
+    .mockup-body .status .badge { 
+        background-color: rgba(0, 210, 255, 0.2); color: #00d2ff; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    }
 
-    /* Features Section */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
+
+    /* Bento Grid Section */
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 200px;
+        gap: 1.5rem;
     }
-    .feature-card {
-      background: #1a2235;
-      padding: 2.5rem;
-      border-radius: 12px;
-      border: 1px solid #313d5f;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+    .bento-card {
+        background: #1a2235;
+        border-radius: 16px;
+        border: 1px solid #313d5f;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .feature-card:hover {
-      transform: translateY(-5px);
-      border-color: #3a7bd5;
-      box-shadow: 0 0 25px rgba(0, 210, 255, 0.15);
+    /* Efek Spotlight */
+    .bento-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(0, 210, 255, 0.15), transparent 80%);
+        opacity: 0;
+        transition: opacity 0.3s;
     }
-    .feature-card i {
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
+    .bento-card:hover::before {
+        opacity: 1;
+    }
+    .bento-card:hover {
+        border-color: #3a7bd5;
+    }
+
+    /* Ukuran kartu di Bento Grid */
+    .card-1 { grid-column: span 2; grid-row: span 2; }
+    .card-2 { grid-column: span 1; grid-row: span 1; }
+    .card-3 { grid-column: span 1; grid-row: span 1; }
+    .card-4 { grid-column: span 1; grid-row: span 1; }
+    .card-5 { grid-column: span 2; grid-row: span 1; }
+
+    .bento-card .icon {
+      font-size: 1.5rem;
       padding: 0.8rem;
       border-radius: 8px;
       background: linear-gradient(90deg, #00d2ff, #3a7bd5);
       color: #121828;
+      width: fit-content;
     }
-    .feature-card h3 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+    .bento-card h3 {
+      font-size: 1.3rem;
+      margin-top: auto; /* Mendorong judul ke bawah */
       color: #e0e5f5;
     }
-    .feature-card p {
+    .bento-card p {
       color: #a0aec0;
-      line-height: 1.7;
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
+    .card-1 h3 { font-size: 2rem; }
+    .card-1 p { font-size: 1rem; }
+
 
     /* Testimonials Section */
     .testimonials-grid {
@@ -222,7 +269,7 @@
     .testimonial-card {
         background-color: #1a2235;
         padding: 2rem;
-        border-radius: 12px;
+        border-radius: 16px;
         border: 1px solid #313d5f;
         border-left: 4px solid #3a7bd5;
     }
@@ -267,10 +314,23 @@
       color: #a0aec0;
     }
 
+    @media (max-width: 992px) {
+        .bento-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 220px;
+        }
+        .card-1 { grid-column: span 2; grid-row: span 1; }
+        .card-5 { grid-column: span 2; grid-row: span 1; }
+    }
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.8rem; }
       .hero p { font-size: 1.1rem; }
       .navbar .nav-links { display: none; }
+      .bento-grid {
+            grid-template-columns: 1fr;
+            grid-auto-rows: auto;
+      }
+      .bento-card { grid-column: span 1 !important; grid-row: span 1 !important; min-height: 200px; }
     }
   </style>
 </head>
@@ -294,48 +354,46 @@
         Platform cerdas yang mengintegrasikan setiap aspek operasional armada Anda. Dapatkan visibilitas penuh, efisiensi maksimal, dan kendali data secara real-time.
       </p>
       <a href="login.html" class="button-primary">Mulai Sekarang</a>
-      <div class="partners-logos">
-          <img src="asset/image/logo/ojk.png" alt="Logo OJK">
-          <img src="asset/image/logo/afpi.png" alt="Logo AFPI">
-          <img src="asset/image/logo/kominfo.png" alt="Logo Kominfo">
-          <img src="asset/image/logo/laps.png" alt="Logo LAPS">
-          <img src="asset/image/logo/iso.png" alt="Logo ISO">
+      
+      <div class="hero-mockup">
+          <div class="mockup-header">
+              <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+          </div>
+          <div class="mockup-body">
+              <p>Lacak Pengiriman: TRK-58923</p>
+              <div class="status">
+                  <span>Status Terkini</span>
+                  <span class="badge">Dalam Perjalanan</span>
+              </div>
+          </div>
       </div>
     </section>
 
     <section id="features" class="section container">
-      <h2 class="section-title">Dibangun untuk Performa Maksimal</h2>
-      <p class="section-subtitle">Setiap fitur dirancang untuk menghilangkan hambatan, mengotomatisasi proses, dan memberikan data akurat untuk keputusan strategis Anda.</p>
-      <div class="features-grid">
-        <div class="feature-card">
-          <i class="fas fa-sitemap"></i>
-          <h3>Ekosistem Terintegrasi</h3>
-          <p>Panel Admin, Koordinator, dan Supir bekerja dalam satu alur kerja yang mulus, menghilangkan miskomunikasi dan silo data.</p>
+      <h2 class="section-title">Platform Intuitif, Hasil Maksimal</h2>
+      <p class="section-subtitle">Kami merancang setiap detail untuk menyederhanakan kompleksitas logistik, memberikan Anda kendali penuh dengan kemudahan penggunaan.</p>
+      
+      <div class="bento-grid">
+        <div class="bento-card card-1">
+            <div class="icon"><i class="fas fa-sitemap"></i></div>
+            <h3>Ekosistem Terintegrasi Penuh</h3>
+            <p>Admin, Koordinator, dan Supir terhubung dalam satu alur kerja yang mulus. Hilangkan miskomunikasi dan silo data selamanya.</p>
         </div>
-        <div class="feature-card">
-          <i class="fas fa-brain"></i>
-          <h3>Dasbor Analitik Cerdas</h3>
-          <p>Monitor status perjalanan, kinerja supir, dan utilisasi armada secara real-time melalui visualisasi data yang intuitif.</p>
+        <div class="bento-card card-2">
+            <div class="icon"><i class="fas fa-brain"></i></div>
+            <h3>Dasbor Analitik</h3>
         </div>
-        <div class="feature-card">
-          <i class="fas fa-shield-alt"></i>
-          <h3>Keamanan Data Terjamin</h3>
-          <p>Manajemen data karyawan, rute, dan kendaraan terpusat dengan sistem hak akses berbasis peran untuk keamanan maksimal.</p>
+        <div class="bento-card card-3">
+            <div class="icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Keamanan Data</h3>
         </div>
-        <div class="feature-card">
-          <i class="fas fa-bolt"></i>
-          <h3>Otomatisasi Alur Kerja</h3>
-          <p>Dari pembuatan perjalanan oleh koordinator hingga persetujuan admin dan notifikasi tugas ke supir, semua berjalan otomatis.</p>
+        <div class="bento-card card-4">
+            <div class="icon"><i class="fas fa-bolt"></i></div>
+            <h3>Otomatisasi Cerdas</h3>
         </div>
-        <div class="feature-card">
-          <i class="fas fa-qrcode"></i>
-          <h3>Verifikasi Digital & Paperless</h3>
-          <p>Konfirmasi kedatangan via scan QR code atau input kode resi, mempercepat proses pelaporan dan mengurangi penggunaan kertas.</p>
-        </div>
-        <div class="feature-card">
-          <i class="fas fa-chart-pie"></i>
-          <h3>Laporan Kinerja Mendalam</h3>
-          <p>Dapatkan insight berharga mengenai produktivitas tim dan efektivitas operasional untuk evaluasi dan perencanaan strategis.</p>
+        <div class="bento-card card-5">
+            <div class="icon"><i class="fas fa-qrcode"></i></div>
+            <h3>Verifikasi & Pelaporan Digital</h3>
         </div>
       </div>
     </section>
@@ -395,6 +453,18 @@
             navbar.classList.remove('scrolled');
         }
     };
+    
+    // Script untuk efek spotlight pada bento grid
+    const bentoCards = document.querySelectorAll('.bento-card');
+    bentoCards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
   </script>
 
 </body>
