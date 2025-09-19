@@ -3,334 +3,321 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SLA Trucking - Solusi Cerdas Manajemen Logistik</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>SLA Trucking - Platform Logistik Cerdas & Inovatif</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    /* Tambahan Style untuk Landing Page yang sudah diperbaiki */
-    body {
-      overflow-x: hidden;
-    }
-    .navbar {
-        background-color: #1a2235;
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #313d5f;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        transition: background-color 0.3s ease;
-    }
-    .navbar.scrolled {
-      background-color: #121828;
-    }
-    .navbar .logo {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #e0e5f5;
-    }
-    .navbar .nav-links a {
-        color: #a0aec0;
-        margin-left: 1.5rem;
-      font-size: 1.5rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }
-    .navbar .nav-links a:hover {
-        color: #f59e0b;
+    :root {
+      --bg-dark: #0D1117;
+      --bg-secondary: #161B22;
+      --border-color: #30363D;
+      --text-primary: #C9D1D9;
+      --text-secondary: #8B949E;
+      --accent-blue: #58A6FF;
+      --accent-glow: rgba(88, 166, 255, 0.2);
     }
 
-    .hero {
-      background-image: linear-gradient(rgba(18, 24, 40, 0.8), rgba(18, 24, 40, 0.8)), url('https://images.unsplash.com/photo-1577974314757-5de74a12a526?q=80&w=2070&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      padding: 8rem 2rem;
-      text-align: center;
-      color: #e0e5f5;
-      border-bottom: 2px solid #313d5f;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    .hero h1 {
-      font-size: 3.5rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    html {
+      scroll-behavior: smooth;
     }
-    .hero h1 span {
-      background: -webkit-linear-gradient(45deg, #00d2ff, #3a7bd5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      position: relative;
     }
-    .hero p {
-      font-size: 1.5rem;
-      color: #a0aec0;
-      max-width: 800px;
-      margin: 0 auto 2.5rem auto;
+    
+    /* Efek Aurora di Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background-image: 
+        radial-gradient(at 20% 20%, var(--accent-glow) 0px, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(46, 160, 67, 0.1) 0px, transparent 50%),
+        radial-gradient(at 50% 80%, rgba(139, 87, 255, 0.1) 0px, transparent 50%);
+      animation: aurora 20s infinite linear;
+      z-index: -1;
     }
-    .hero .button {
-      width: auto;
-      font-size: 1.5rem;
-      padding: 1rem 2rem;
-      text-decoration: none;
+
+    @keyframes aurora {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
     }
 
     .section {
-      padding: 5rem 2rem;
+      padding: 6rem 0;
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
     }
     .section.visible {
       opacity: 1;
       transform: translateY(0);
     }
+
     .section-title {
       text-align: center;
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
     }
     .section-subtitle {
       text-align: center;
       font-size: 1.1rem;
-      color: #a0aec0;
+      color: var(--text-secondary);
       margin-bottom: 4rem;
       max-width: 700px;
       margin-left: auto;
       margin-right: auto;
+      line-height: 1.6;
     }
 
-    /* ... (Kode CSS .features-grid, .feature-card, .how-it-works, .timeline, dll tetap sama) ... */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
+    /* Navbar */
+    .navbar {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      background: transparent;
+      transition: background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out;
     }
-    .feature-card {
-      background-color: #1a2235;
-      padding: 2.5rem;
-      border-radius: 12px;
-      border: 1px solid #313d5f;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    .navbar.scrolled {
+      background-color: rgba(13, 17, 23, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
     }
-    .feature-card:hover {
-      transform: translateY(-8px);
-      border-color: #3a7bd5;
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .feature-card i {
-      font-size: 2.5rem;
-      color: #3a7bd5;
-      margin-bottom: 1.5rem;
-    }
-    .feature-card h3 {
+    .navbar .logo {
       font-size: 1.5rem;
-      color: #e0e5f5;
-      margin-bottom: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
     }
-    .feature-card p {
-      color: #a0aec0;
-      line-height: 1.7;
+    .navbar .nav-links a {
+      color: var(--text-secondary);
+      margin-left: 2rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
     }
-
-    .how-it-works {
-        background-color: #1a2235;
+    .navbar .nav-links a:hover {
+      color: var(--accent-blue);
     }
-    .timeline {
-        position: relative;
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 2rem 0;
-    }
-    .timeline::after {
-        content: '';
-        position: absolute;
-        width: 3px;
-        background: linear-gradient(#00d2ff, #3a7bd5);
-        top: 0;
-        bottom: 0;
-        left: 50%;
-        margin-left: -1.5px;
-    }
-    .timeline-container { padding: 10px 40px; position: relative; width: 50%; }
-    .timeline-container.left { left: 0; }
-    .timeline-container.right { left: 50%; }
-    .timeline-container::after { content: ''; position: absolute; width: 20px; height: 20px; background-color: #121828; border: 4px solid #3a7bd5; top: 22px; border-radius: 50%; z-index: 1; }
-    .timeline-container.left::after { right: -12px; }
-    .timeline-container.right::after { left: -8px; }
-    .timeline-content { padding: 20px 30px; background-color: #242f48; position: relative; border-radius: 8px; border: 1px solid #313d5f; }
-
-    /* === BAGIAN BARU: METRICS, TESTIMONIALS, PARTNERS === */
-    .metrics-section {
-        background-color: #1a2235;
-    }
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        max-width: 1000px;
-        margin: 0 auto;
-        text-align: center;
-    }
-    .metric-item h3 {
-        font-size: 2.5rem;
-        color: #00d2ff;
-        margin-bottom: 0.5rem;
-    }
-    .metric-item p {
-        font-size: 1rem;
-        color: #a0aec0;
-    }
-
-    .testimonials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    .testimonial-card {
-        background-color: #242f48;
-        padding: 2rem;
-        border-radius: 8px;
-        border-left: 4px solid #3a7bd5;
-    }
-    .testimonial-card p {
-        color: #a0aec0;
-        font-style: italic;
-        margin-bottom: 1.5rem;
-    }
-    .testimonial-card .author {
+    .navbar .nav-links a.button {
+        background-color: var(--accent-blue);
+        color: var(--bg-dark);
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
         font-weight: 600;
-        color: #e0e5f5;
     }
+     .navbar .nav-links a.button:hover {
+         background-color: #79c0ff;
+         color: var(--bg-dark);
+     }
 
-    .partners-section {
-        background-color: #121828;
+
+    /* Hero Section */
+    .hero {
+      padding: 12rem 0 8rem 0;
+      text-align: center;
     }
+    .hero h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+    }
+    .hero h1 span {
+      background: -webkit-linear-gradient(45deg, var(--accent-blue), #79c0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 750px;
+      margin: 0 auto 2.5rem auto;
+    }
+    .hero .button-primary {
+      background: var(--accent-blue);
+      color: var(--bg-dark);
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
+     .hero .button-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(88, 166, 255, 0.2);
+     }
+
+    /* Partner Logos */
     .partners-logos {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         gap: 3rem;
-        max-width: 1000px;
-        margin: 0 auto;
-        filter: grayscale(100%) invert(75%);
-        opacity: 0.6;
+        margin-top: 6rem;
+        filter: grayscale(100%) contrast(0) brightness(1.5);
+        opacity: 0.8;
     }
     .partners-logos img {
-        height: 40px;
+        height: 35px;
+        transition: filter 0.3s ease;
+    }
+    .partners-logos img:hover {
+        filter: grayscale(0) contrast(1) brightness(1);
     }
 
-    /* ... (Sisa CSS lainnya) ... */
-    .cta-section { background: linear-gradient(120deg, #00d2ff, #3a7bd5); text-align: center; color: #121828; }
-    .cta-section h2 { color: #121828; font-size: 2.2rem; }
-    .cta-section p { color: #121828; opacity: 0.9; }
-    .cta-section .button { background: #121828; color: #e0e5f5; box-shadow: none; }
+    /* Features Section */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: linear-gradient(145deg, rgba(35, 41, 49, 0.6), rgba(22, 27, 34, 0.6));
+      padding: 2.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 25px var(--accent-glow);
+    }
+    .feature-card i {
+      font-size: 2rem;
+      color: var(--accent-blue);
+      margin-bottom: 1.5rem;
+      background: var(--accent-glow);
+      padding: 0.8rem;
+      border-radius: 8px;
+    }
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
 
-    .footer { text-align: center; padding: 3rem 2rem; background-color: #1a2235; border-top: 1px solid #313d5f; color: #a0aec0; }
+    /* Testimonials Section */
+    .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+    .testimonial-card {
+        background-color: var(--bg-secondary);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    .testimonial-card p {
+        color: var(--text-primary);
+        font-style: italic;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    .testimonial-card .author {
+        font-weight: 600;
+        color: var(--accent-blue);
+    }
+    .testimonial-card .author span {
+        font-weight: 400;
+        color: var(--text-secondary);
+        display: block;
+        font-size: 0.9rem;
+    }
 
+    /* CTA Section */
+    .cta-section {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 4rem;
+        text-align: center;
+        border: 1px solid var(--border-color);
+    }
+     .cta-section .button-primary {
+         margin-top: 2rem;
+     }
+
+    /* Footer */
+    .footer {
+      padding: 4rem 0 2rem 0;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+      margin-top: 4rem;
+    }
+    .footer p {
+      color: var(--text-secondary);
+    }
+
+    /* Responsive adjustments */
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.8rem; }
       .hero p { font-size: 1.1rem; }
-      .timeline::after { left: 15px; }
-      .timeline-container { width: 100%; padding-left: 50px; padding-right: 15px; }
-      .timeline-container.right { left: 0%; }
-      .timeline-container.left::after, .timeline-container.right::after { left: 5px; }
+      .navbar .nav-links { display: none; } /* Simplifikasi untuk mobile */
     }
   </style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <div class="logo">SLA Trucking</div>
-    <div class="nav-links">
-        <a href="#features">Fitur Unggulan</a>
-        <a href="#how-it-works">Alur Kerja</a>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">SLA Trucking</div>
+      <nav class="nav-links">
+        <a href="#features">Fitur</a>
         <a href="#testimonials">Testimonial</a>
-        <a href="login.html">Login</a>
+        <a href="login.html" class="button">Masuk Dasbor</a>
+      </nav>
     </div>
-  </nav>
+  </header>
 
-  <section class="hero">
-    <h1>Revolusi Manajemen Armada Anda dengan <span>Teknologi Cerdas</span></h1>
-    <p>
-      Platform logistik terintegrasi untuk melacak, mengelola, dan meningkatkan efisiensi setiap pengiriman secara *real-time*.
-    </p>
-    <a href="login.html" class="button">Masuk ke Dasbor</a>
-  </section>
-
-  <section id="metrics" class="section metrics-section">
-      <div class="metrics-grid">
-          <div class="metric-item">
-              <h3>99.8%</h3>
-              <p>Tingkat Keberhasilan Pengiriman Tepat Waktu</p>
-          </div>
-          <div class="metric-item">
-              <h3>30%</h3>
-              <p>Peningkatan Efisiensi Operasional Rata-Rata Klien</p>
-          </div>
-          <div class="metric-item">
-              <h3>1,200+</h3>
-              <p>Armada yang Terkelola Dalam Platform Kami</p>
-          </div>
-          <div class="metric-item">
-              <h3>24/7</h3>
-              <p>Dukungan dan Pemantauan Sistem</p>
-          </div>
-      </div>
-  </section>
-
-  <section id="features" class="section">
-    <h2 class="section-title">Solusi Lengkap Untuk Armada Anda</h2>
-    <p class="section-subtitle">Aplikasi kami menyediakan semua yang Anda butuhkan untuk menjalankan operasional logistik yang efisien, transparan, dan terukur.</p>
-    <div class="features-grid">
-        <div class="feature-card"> <i class="fas fa-users"></i> <h3>Panel Berbasis Peran</h3> <p> Setiap pengguna—Admin, Koordinator, dan Supir—memiliki dasbor khusus yang dirancang sesuai dengan kebutuhan tugas mereka, memastikan alur kerja yang fokus dan efisien. </p> </div>
-        <div class="feature-card"> <i class="fas fa-desktop"></i> <h3>Monitoring Real-Time</h3> <p> Admin dapat memantau semua status perjalanan secara langsung, mulai dari pengajuan, persetujuan, hingga konfirmasi kedatangan di tujuan, memberikan kontrol penuh atas operasional. </p> </div>
-        <div class="feature-card"> <i class="fas fa-database"></i> <h3>Manajemen Data Terpusat</h3> <p> Kelola data karyawan, rute perjalanan, dan nomor polisi kendaraan dengan mudah melalui panel admin yang intuitif. Tambah, hapus, dan filter data dengan cepat. </p> </div>
-        <div class="feature-card"> <i class="fas fa-cogs"></i> <h3>Alur Kerja Otomatis</h3> <p> Koordinator dapat membuat perjalanan baru dan menugaskannya ke supir. Setelah disetujui Admin, supir akan menerima tugas secara otomatis di panel mereka. </p> </div>
-        <div class="feature-card"> <i class="fas fa-qrcode"></i> <h3>Konfirmasi Digital & QR Code</h3> <p> Supir dapat dengan mudah mengonfirmasi kedatangan di lokasi tujuan dengan memindai QR code atau memasukkan kode resi, mengurangi pekerjaan manual dan mempercepat pelaporan. </p> </div>
-        <div class="feature-card"> <i class="fas fa-chart-line"></i> <h3>Analitik Kinerja</h3> <p> Dapatkan ringkasan kinerja supir dan aktivitas berdasarkan peran untuk membantu Anda dalam mengambil keputusan strategis dan mengevaluasi produktivitas tim. </p> </div>
-    </div>
-  </section>
-
-  <section id="how-it-works" class="section how-it-works">
-    <h2 class="section-title">Bagaimana Ini Bekerja?</h2>
-    <p class="section-subtitle">Alur kerja kami dirancang untuk menjadi sederhana dan efisien, menghubungkan setiap peran dalam satu platform yang mulus.</p>
-    <div class="timeline">
-        <div class="timeline-container left"> <div class="timeline-content"> <h3>1. Koordinator Membuat Perjalanan</h3> <p>Koordinator mengisi detail perjalanan seperti supir, rute, nopol, dan muatan, lalu mengirimkannya untuk persetujuan.</p> </div> </div>
-        <div class="timeline-container right"> <div class="timeline-content"> <h3>2. Admin Menyetujui</h3> <p>Admin me-review data perjalanan yang masuk. Jika sesuai, perjalanan akan disetujui dan statusnya berubah menjadi 'Approved'.</p> </div> </div>
-        <div class="timeline-container left"> <div class="timeline-content"> <h3>3. Supir Menerima Tugas</h3> <p>Setelah disetujui, tugas perjalanan secara otomatis muncul di dasbor supir, lengkap dengan detail dan kode resi.</p> </div> </div>
-        <div class="timeline-container right"> <div class="timeline-content"> <h3>4. Konfirmasi Kedatangan</h3> <p>Setibanya di tujuan, supir melakukan konfirmasi dengan memindai QR code atau memasukkan kode resi perjalanan.</p> </div> </div>
-        <div class="timeline-container left"> <div class="timeline-content"> <h3>5. Semua Terpantau</h3> <p>Seluruh proses dari awal hingga akhir dapat dipantau secara real-time oleh Admin, memberikan visibilitas penuh.</p> </div> </div>
-    </div>
-  </section>
-  
-  <section id="testimonials" class="section">
-    <h2 class="section-title">Apa Kata Mereka Tentang Kami</h2>
-    <p class="section-subtitle">Kami bangga dapat membantu menyederhanakan operasional logistik klien-klien kami.</p>
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <p>"Sejak menggunakan SLA Trucking, proses monitoring pengiriman kami menjadi 80% lebih cepat. Semua data terpusat dan real-time, sangat membantu dalam pengambilan keputusan."</p>
-        <div class="author">Budi Santoso - Manajer Operasional, PT. Maju Logistik</div>
-      </div>
-      <div class="testimonial-card">
-        <p>"Fitur pelaporan otomatis dan konfirmasi via QR Code benar-benar mengubah cara kerja kami. Tidak ada lagi surat jalan manual yang hilang atau terlambat."</p>
-        <div class="author">Citra Lestari - CEO, Rantai Niaga Express</div>
-      </div>
-       <div class="testimonial-card">
-        <p>"Platform yang intuitif untuk semua level, dari admin hingga supir di lapangan. Tim kami dapat beradaptasi dengan cepat tanpa training yang rumit."</p>
-        <div class="author">Ahmad Jaelani - Kepala Armada, Sentosa Kargo</div>
-      </div>
-    </div>
-  </section>
-  
-  <section class="section partners-section">
-      <h2 class="section-title">Dipercaya oleh Perusahaan Terkemuka</h2>
+  <main>
+    <section class="hero container">
+      <h1>Transformasi Digital Logistik, <span>Mulai di Sini.</span></h1>
+      <p>
+        Platform cerdas yang mengintegrasikan setiap aspek operasional armada Anda. Dapatkan visibilitas penuh, efisiensi maksimal, dan kendali data secara real-time.
+      </p>
+      <a href="login.html" class="button-primary">Mulai Sekarang</a>
       <div class="partners-logos">
           <img src="asset/image/logo/ojk.png" alt="Logo OJK">
           <img src="asset/image/logo/afpi.png" alt="Logo AFPI">
@@ -338,20 +325,77 @@
           <img src="asset/image/logo/laps.png" alt="Logo LAPS">
           <img src="asset/image/logo/iso.png" alt="Logo ISO">
       </div>
-  </section>
+    </section>
 
-  <section class="section cta-section">
-      <h2 class="section-title">Siap Mengoptimalkan Logistik Anda?</h2>
-      <p class="section-subtitle" style="color: #121828;">
-        Bergabunglah sekarang dan rasakan kemudahan mengelola armada Anda dengan teknologi terdepan.
-      </p>
-      <a href="login.html" class="button">Mulai Sekarang</a>
-  </section>
+    <section id="features" class="section container">
+      <h2 class="section-title">Dibangun untuk Performa Maksimal</h2>
+      <p class="section-subtitle">Setiap fitur dirancang untuk menghilangkan hambatan, mengotomatisasi proses, dan memberikan data akurat untuk keputusan strategis Anda.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fas fa-sitemap"></i>
+          <h3>Ekosistem Terintegrasi</h3>
+          <p>Panel Admin, Koordinator, dan Supir bekerja dalam satu alur kerja yang mulus, menghilangkan miskomunikasi dan silo data.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-brain"></i>
+          <h3>Dasbor Analitik Cerdas</h3>
+          <p>Monitor status perjalanan, kinerja supir, dan utilisasi armada secara real-time melalui visualisasi data yang intuitif.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-shield-alt"></i>
+          <h3>Keamanan Data Terjamin</h3>
+          <p>Manajemen data karyawan, rute, dan kendaraan terpusat dengan sistem hak akses berbasis peran untuk keamanan maksimal.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-bolt"></i>
+          <h3>Otomatisasi Alur Kerja</h3>
+          <p>Dari pembuatan perjalanan oleh koordinator hingga persetujuan admin dan notifikasi tugas ke supir, semua berjalan otomatis.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-qrcode"></i>
+          <h3>Verifikasi Digital & Paperless</h3>
+          <p>Konfirmasi kedatangan via scan QR code atau input kode resi, mempercepat proses pelaporan dan mengurangi penggunaan kertas.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-chart-pie"></i>
+          <h3>Laporan Kinerja Mendalam</h3>
+          <p>Dapatkan insight berharga mengenai produktivitas tim dan efektivitas operasional untuk evaluasi dan perencanaan strategis.</p>
+        </div>
+      </div>
+    </section>
 
-  <footer class="footer">
-    <p>&copy; 2024 SLA Trucking. All Rights Reserved.</p>
+    <section id="testimonials" class="section container">
+      <h2 class="section-title">Dipercaya oleh Para Pemimpin Industri</h2>
+      <p class="section-subtitle">Kami tidak hanya membangun software, kami membangun kemitraan strategis untuk mendorong pertumbuhan bisnis Anda.</p>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <p>"Implementasi SLA Trucking memangkas waktu administrasi kami hingga 40%. Kini kami bisa lebih fokus pada ekspansi bisnis, bukan lagi terjebak di pekerjaan manual."</p>
+          <div class="author">Andi Wijaya <span>Manajer Operasional, LogiCepat Express</span></div>
+        </div>
+        <div class="testimonial-card">
+          <p>"Visibilitas real-time yang diberikan platform ini luar biasa. Kami bisa melacak setiap pengiriman dengan akurat, yang secara signifikan meningkatkan kepercayaan pelanggan kami."</p>
+          <div class="author">Rina Hartono <span>CEO, Kargo Nusantara</span></div>
+        </div>
+        <div class="testimonial-card">
+          <p>"User interface-nya sangat bersih dan modern. Tim kami, baik di kantor maupun di lapangan, dapat menggunakannya secara efektif sejak hari pertama tanpa perlu pelatihan intensif."</p>
+          <div class="author">Joko Susilo <span>Kepala Armada, TransJawa Cargo</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="cta-section">
+        <h2 class="section-title">Siap Merevolusi Operasional Anda?</h2>
+        <p class="section-subtitle" style="color: var(--text-secondary); margin-bottom: 0;">Jadwalkan demo gratis atau langsung masuk ke dasbor untuk melihat bagaimana SLA Trucking dapat membawa bisnis Anda ke level berikutnya.</p>
+        <a href="login.html" class="button-primary">Masuk ke Dasbor</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p>&copy; 2024 SLA Trucking. Mendorong Inovasi Logistik Indonesia.</p>
   </footer>
-  
+
   <script>
     // Script untuk animasi fade-in saat scroll
     const sections = document.querySelectorAll('.section');
@@ -365,7 +409,7 @@
     sections.forEach(section => {
         observer.observe(section);
     });
-    
+
     // Script untuk background navbar saat scroll
     const navbar = document.querySelector('.navbar');
     window.onscroll = () => {
