@@ -297,7 +297,7 @@
             tableHTML += '<tr><td colspan="6" class="empty-state">Belum ada data kinerja.</td></tr>';
         } else {
             Object.values(performance).forEach(d => {
-                tableHTML += `<tr><td><strong>${d.name}</strong></td><td>${d.total}</td>
+                tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td>
                     <td style="color: #10b981;">${d.arrived || 0}</td><td style="color: #3b82f6;">${d.approved || 0}</td>
                     <td style="color: #ffa500;">${d.submitted || 0}</td><td style="color: #ef4444;">${d.rejected || 0}</td></tr>`;
             });
@@ -339,7 +339,7 @@
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
           
-          tr.innerHTML = `<td data-label="Rute"><strong>${tripData.asal} → ${tripData.tujuan}</strong></td>
+          tr.innerHTML = `<td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td>
             <td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Polisi">${tripData.nopol}</td>
             <td data-label="Muatan">${tripData.muatan||'-'}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
           tr.append(statusCell, actionsCell);
