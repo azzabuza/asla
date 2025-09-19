@@ -38,25 +38,19 @@
       position: relative;
     }
     
-    /* Efek Aurora di Background */
+    /* Efek Gradien Statis di Background */
     body::before {
       content: '';
       position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background-image: 
         radial-gradient(at 20% 20%, var(--accent-glow) 0px, transparent 50%),
         radial-gradient(at 80% 20%, rgba(46, 160, 67, 0.1) 0px, transparent 50%),
         radial-gradient(at 50% 80%, rgba(139, 87, 255, 0.1) 0px, transparent 50%);
-      animation: aurora 20s infinite linear;
       z-index: -1;
-    }
-
-    @keyframes aurora {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
     }
 
     .container {
