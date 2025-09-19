@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* CSS Final dengan penyempurnaan estetika */
+    /* CSS Final v2 dengan penyempurnaan estetika tingkat lanjut */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -23,27 +23,41 @@
 
     body {
       background-color: #121828;
-      /* Menambahkan tekstur noise halus */
-      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23313d5f" fill-opacity="0.1"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h16v15h9v-15h9v15h9v-15h9v15h9v-15h9v15h9v-15h9v15h9v-15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
       font-family: 'Inter', sans-serif;
       color: #e0e5f5;
       overflow-x: hidden;
       position: relative;
     }
     
-    body::before {
-      content: '';
+    .aurora-background {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        radial-gradient(at 15% 20%, rgba(0, 210, 255, 0.15) 0px, transparent 50%),
-        radial-gradient(at 80% 30%, rgba(58, 123, 213, 0.1) 0px, transparent 50%),
-        radial-gradient(at 50% 80%, rgba(0, 210, 255, 0.1) 0px, transparent 50%);
+      top: 0; left: 0; width: 100%; height: 100%;
       z-index: -1;
+      opacity: 0.5;
     }
+    .aurora-background::before, .aurora-background::after {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background-image: radial-gradient(circle at center, rgba(0, 210, 255, 0.2) 0%, transparent 60%);
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: aurora-pan 25s linear infinite;
+    }
+    .aurora-background::after {
+      background-image: radial-gradient(circle at center, rgba(58, 123, 213, 0.2) 0%, transparent 60%);
+      top: 10%;
+      left: 10%;
+      animation-delay: -12.5s;
+    }
+
+    @keyframes aurora-pan {
+      0% { transform: translate(-20%, -20%) rotate(0deg) scale(1); }
+      50% { transform: translate(20%, 20%) rotate(180deg) scale(1.2); }
+      100% { transform: translate(-20%, -20%) rotate(360deg) scale(1); }
+    }
+
 
     .container {
       max-width: 1200px;
@@ -53,13 +67,11 @@
 
     .section {
       padding: 6rem 0;
+    }
+    .stagger-animation > * {
       opacity: 0;
       transform: translateY(30px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    .section.visible {
-      opacity: 1;
-      transform: translateY(0);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
     }
 
     .section-title {
@@ -121,6 +133,7 @@
         padding: 0.6rem 1.2rem;
         border-radius: 6px;
         font-weight: 600;
+        transition: opacity 0.3s;
     }
      .navbar .nav-links a.button:hover {
          opacity: 0.9;
@@ -130,12 +143,14 @@
     .hero {
       padding: 12rem 0 8rem 0;
       text-align: center;
+      position: relative;
     }
     .hero h1 {
-      font-size: 4rem;
+      font-size: 4.2rem;
       font-weight: 800;
       margin-bottom: 1.5rem;
-      line-height: 1.2;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
     }
     .hero h1 span {
       background: -webkit-linear-gradient(45deg, #00d2ff, #3a7bd5);
@@ -148,63 +163,68 @@
       max-width: 750px;
       margin: 0 auto 2.5rem auto;
     }
-    .hero .button-primary {
+    .button-primary {
       background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+      background-size: 200% 100%;
       color: #121828;
       padding: 1rem 2.5rem;
       font-size: 1.1rem;
       font-weight: 600;
       text-decoration: none;
       border-radius: 8px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.3s ease, background-position 0.4s ease;
       display: inline-block;
       border: none;
     }
-     .hero .button-primary:hover {
+     .button-primary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
+        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.25);
+        background-position: 100% 0;
      }
 
-    /* Hero Mockup UI */
+    /* Hero Mockup UI - Frameless */
+    .hero-mockup-container {
+        margin-top: 5rem;
+        perspective: 1500px;
+    }
     .hero-mockup {
         background: linear-gradient(145deg, rgba(26, 34, 53, 0.5), rgba(18, 24, 40, 0.5));
         border: 1px solid #313d5f;
         border-radius: 16px;
-        padding: 1.5rem;
-        max-width: 600px;
-        margin: 4rem auto 0 auto;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        padding: 1rem;
+        max-width: 450px;
+        margin: 0 auto;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
         text-align: left;
+        position: relative;
+        transform: rotateX(15deg) rotateY(0deg);
+        transition: transform 1s ease-out;
     }
+    .hero.visible .hero-mockup {
+        transform: rotateX(0deg) rotateY(0deg);
+    }
+    
     .mockup-header {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #313d5f;
+        padding: 0.5rem;
     }
-    .mockup-dot { width: 12px; height: 12px; border-radius: 50%; background-color: #313d5f; }
-    .mockup-body { margin-top: 1rem; }
-    .mockup-body p { color: #e0e5f5; font-weight: 600; }
-    .mockup-body .status {
-        display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;
-    }
-    .mockup-body .status span { color: #a0aec0; font-size: 0.9rem;}
-    .mockup-body .status .badge { 
-        background-color: rgba(0, 210, 255, 0.2); color: #00d2ff; padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
-    }
-
+    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #313d5f; }
+    .mockup-body { margin-top: 0.5rem; padding: 0 0.5rem; }
+    .mockup-body p { color: #e0e5f5; font-weight: 600; font-size: 0.9rem;}
+    .mockup-body .status-bar { height: 1.5rem; background-color: #313d5f33; border-radius: 4px; margin-top: 0.75rem; position: relative; overflow: hidden; }
+    .status-bar::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 60%; background: linear-gradient(90deg, #00d2ff, #3a7bd5); }
 
     /* Bento Grid Section */
     .bento-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: 200px;
         gap: 1.5rem;
     }
     .bento-card {
-        background: #1a2235;
+        background-color: #1a2235;
         border-radius: 16px;
         border: 1px solid #313d5f;
         transition: all 0.3s ease;
@@ -214,128 +234,68 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        transform-style: preserve-3d;
     }
-    /* Efek Spotlight */
     .bento-card::before {
         content: "";
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(0, 210, 255, 0.15), transparent 80%);
+        inset: 0;
+        background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(0, 210, 255, 0.2), transparent 80%);
         opacity: 0;
         transition: opacity 0.3s;
+        border-radius: inherit;
     }
-    .bento-card:hover::before {
-        opacity: 1;
-    }
-    .bento-card:hover {
-        border-color: #3a7bd5;
-    }
+    .bento-card:hover::before { opacity: 1; }
+    .bento-card:hover { border-color: #3a7bd5; }
 
-    /* Ukuran kartu di Bento Grid */
     .card-1 { grid-column: span 2; grid-row: span 2; }
-    .card-2 { grid-column: span 1; grid-row: span 1; }
-    .card-3 { grid-column: span 1; grid-row: span 1; }
-    .card-4 { grid-column: span 1; grid-row: span 1; }
-    .card-5 { grid-column: span 2; grid-row: span 1; }
+    .card-2, .card-3, .card-4 { grid-row: span 1; }
+    .card-5 { grid-column: span 3; grid-row: span 1; display: flex; flex-direction: row; align-items: center; gap: 2rem;}
 
-    .bento-card .icon {
-      font-size: 1.5rem;
-      padding: 0.8rem;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-      color: #121828;
-      width: fit-content;
-    }
-    .bento-card h3 {
-      font-size: 1.3rem;
-      margin-top: auto; /* Mendorong judul ke bawah */
-      color: #e0e5f5;
-    }
-    .bento-card p {
-      color: #a0aec0;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
+    .bento-card .icon { font-size: 1.5rem; padding: 0.8rem; border-radius: 8px; background: #121828; color: #00d2ff; width: fit-content; border: 1px solid #313d5f; }
+    .bento-card h3 { font-size: 1.3rem; margin-top: auto; color: #e0e5f5; }
+    .bento-card p { color: #a0aec0; font-size: 0.9rem; line-height: 1.5; }
     .card-1 h3 { font-size: 2rem; }
     .card-1 p { font-size: 1rem; }
 
-
-    /* Testimonials Section */
-    .testimonials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 1.5rem;
-    }
+    /* Testimonials */
     .testimonial-card {
-        background-color: #1a2235;
-        padding: 2rem;
-        border-radius: 16px;
-        border: 1px solid #313d5f;
-        border-left: 4px solid #3a7bd5;
+      background-color: transparent;
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid #313d5f;
+      position: relative;
     }
-    .testimonial-card p {
-        color: #e0e5f5;
-        font-style: italic;
-        margin-bottom: 1.5rem;
-        font-size: 1.1rem;
-        line-height: 1.6;
+    .testimonial-card::before {
+      content: '\f10d';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      top: 1rem;
+      left: 1.5rem;
+      font-size: 3rem;
+      color: #313d5f;
+      opacity: 0.5;
     }
-    .testimonial-card .author {
-        font-weight: 600;
-        color: #e0e5f5;
-    }
-    .testimonial-card .author span {
-        font-weight: 400;
-        color: #a0aec0;
-        display: block;
-        font-size: 0.9rem;
-    }
-
-    /* CTA Section */
-    .cta-section {
-        background: #1a2235;
-        border-radius: 16px;
-        padding: 4rem;
-        text-align: center;
-        border: 1px solid #313d5f;
-    }
-     .cta-section .button-primary {
-         margin-top: 2rem;
-     }
-
-    /* Footer */
-    .footer {
-      padding: 4rem 0 2rem 0;
-      text-align: center;
-      border-top: 1px solid #313d5f;
-      margin-top: 4rem;
-    }
-    .footer p {
-      color: #a0aec0;
-    }
+    
+    .footer { border-top: 1px solid #313d5f; }
 
     @media (max-width: 992px) {
-        .bento-grid {
-            grid-template-columns: repeat(2, 1fr);
-            grid-auto-rows: 220px;
-        }
-        .card-1 { grid-column: span 2; grid-row: span 1; }
-        .card-5 { grid-column: span 2; grid-row: span 1; }
+      .bento-grid { grid-template-columns: 1fr 1fr; }
+      .card-1 { grid-column: span 2; grid-row: span 1; }
+      .card-5 { grid-column: span 2; }
     }
     @media (max-width: 768px) {
       .hero h1 { font-size: 2.8rem; }
-      .hero p { font-size: 1.1rem; }
       .navbar .nav-links { display: none; }
-      .bento-grid {
-            grid-template-columns: 1fr;
-            grid-auto-rows: auto;
-      }
+      .bento-grid { grid-template-columns: 1fr; }
       .bento-card { grid-column: span 1 !important; grid-row: span 1 !important; min-height: 200px; }
     }
   </style>
 </head>
 <body>
-
+  <div class="aurora-background"></div>
+  
   <header class="navbar">
     <div class="container">
       <div class="logo">SLA Trucking</div>
@@ -348,36 +308,39 @@
   </header>
 
   <main>
-    <section class="hero container">
+    <section class="hero container stagger-animation">
       <h1>Transformasi Digital Logistik, <span>Mulai di Sini.</span></h1>
       <p>
         Platform cerdas yang mengintegrasikan setiap aspek operasional armada Anda. Dapatkan visibilitas penuh, efisiensi maksimal, dan kendali data secara real-time.
       </p>
       <a href="login.html" class="button-primary">Mulai Sekarang</a>
       
-      <div class="hero-mockup">
-          <div class="mockup-header">
-              <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
-          </div>
-          <div class="mockup-body">
-              <p>Lacak Pengiriman: TRK-58923</p>
-              <div class="status">
-                  <span>Status Terkini</span>
-                  <span class="badge">Dalam Perjalanan</span>
+      <div class="hero-mockup-container">
+          <div class="hero-mockup">
+              <div class="mockup-header">
+                  <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+              </div>
+              <div class="mockup-body">
+                  <p>Lacak Pengiriman: TRK-58923</p>
+                  <div class="mockup-body status-bar"></div>
               </div>
           </div>
       </div>
     </section>
 
     <section id="features" class="section container">
-      <h2 class="section-title">Platform Intuitif, Hasil Maksimal</h2>
-      <p class="section-subtitle">Kami merancang setiap detail untuk menyederhanakan kompleksitas logistik, memberikan Anda kendali penuh dengan kemudahan penggunaan.</p>
+      <div class="stagger-animation">
+        <h2 class="section-title">Platform Intuitif, Hasil Maksimal</h2>
+        <p class="section-subtitle">Kami merancang setiap detail untuk menyederhanakan kompleksitas logistik, memberikan Anda kendali penuh dengan kemudahan penggunaan.</p>
+      </div>
       
-      <div class="bento-grid">
+      <div class="bento-grid stagger-animation">
         <div class="bento-card card-1">
             <div class="icon"><i class="fas fa-sitemap"></i></div>
-            <h3>Ekosistem Terintegrasi Penuh</h3>
-            <p>Admin, Koordinator, dan Supir terhubung dalam satu alur kerja yang mulus. Hilangkan miskomunikasi dan silo data selamanya.</p>
+            <div>
+              <h3>Ekosistem Terintegrasi Penuh</h3>
+              <p>Admin, Koordinator, dan Supir terhubung dalam satu alur kerja yang mulus. Hilangkan miskomunikasi dan silo data selamanya.</p>
+            </div>
         </div>
         <div class="bento-card card-2">
             <div class="icon"><i class="fas fa-brain"></i></div>
@@ -393,14 +356,16 @@
         </div>
         <div class="bento-card card-5">
             <div class="icon"><i class="fas fa-qrcode"></i></div>
-            <h3>Verifikasi & Pelaporan Digital</h3>
+            <div>
+              <h3>Verifikasi & Pelaporan Digital</h3>
+              <p>Percepat proses pelaporan dengan konfirmasi paperless.</p>
+            </div>
         </div>
       </div>
     </section>
 
-    <section id="testimonials" class="section container">
+    <section id="testimonials" class="section container stagger-animation">
       <h2 class="section-title">Dipercaya oleh Para Pemimpin Industri</h2>
-      <p class="section-subtitle">Kami tidak hanya membangun software, kami membangun kemitraan strategis untuk mendorong pertumbuhan bisnis Anda.</p>
       <div class="testimonials-grid">
         <div class="testimonial-card">
           <p>"Implementasi SLA Trucking memangkas waktu administrasi kami hingga 40%. Kini kami bisa lebih fokus pada ekspansi bisnis, bukan lagi terjebak di pekerjaan manual."</p>
@@ -410,17 +375,12 @@
           <p>"Visibilitas real-time yang diberikan platform ini luar biasa. Kami bisa melacak setiap pengiriman dengan akurat, yang secara signifikan meningkatkan kepercayaan pelanggan kami."</p>
           <div class="author">Rina Hartono <span>CEO, Kargo Nusantara</span></div>
         </div>
-        <div class="testimonial-card">
-          <p>"User interface-nya sangat bersih dan modern. Tim kami, baik di kantor maupun di lapangan, dapat menggunakannya secara efektif sejak hari pertama tanpa perlu pelatihan intensif."</p>
-          <div class="author">Joko Susilo <span>Kepala Armada, TransJawa Cargo</span></div>
-        </div>
       </div>
     </section>
 
-    <section class="section container">
+    <section class="section container stagger-animation">
       <div class="cta-section">
         <h2 class="section-title">Siap Merevolusi Operasional Anda?</h2>
-        <p class="section-subtitle" style="color: #a0aec0; margin-bottom: 0;">Jadwalkan demo gratis atau langsung masuk ke dasbor untuk melihat bagaimana SLA Trucking dapat membawa bisnis Anda ke level berikutnya.</p>
         <a href="login.html" class="button-primary">Masuk ke Dasbor</a>
       </div>
     </section>
@@ -431,38 +391,47 @@
   </footer>
 
   <script>
-    // Script untuk animasi fade-in saat scroll
-    const sections = document.querySelectorAll('.section');
-    const observer = new IntersectionObserver(entries => {
+    // Script untuk animasi staggered fade-in saat scroll
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+                const elements = entry.target.children;
+                for (let i = 0; i < elements.length; i++) {
+                    elements[i].style.transitionDelay = `${i * 100}ms`;
+                    elements[i].style.opacity = '1';
+                    elements[i].style.transform = 'translateY(0)';
+                }
+                observer.unobserve(entry.target);
             }
         });
     }, { threshold: 0.1 });
-    sections.forEach(section => {
+
+    document.querySelectorAll('.stagger-animation').forEach(section => {
         observer.observe(section);
     });
 
     // Script untuk background navbar saat scroll
     const navbar = document.querySelector('.navbar');
     window.onscroll = () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
     };
     
-    // Script untuk efek spotlight pada bento grid
+    // Script untuk efek 3D tilt & spotlight pada bento grid
     const bentoCards = document.querySelectorAll('.bento-card');
     bentoCards.forEach(card => {
         card.addEventListener('mousemove', e => {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+            const rotateX = (y - rect.height / 2) / 15;
+            const rotateY = (x - rect.width / 2) / -15;
+            
             card.style.setProperty('--mouse-x', `${x}px`);
             card.style.setProperty('--mouse-y', `${y}px`);
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
         });
     });
   </script>
