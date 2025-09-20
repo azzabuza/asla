@@ -532,9 +532,9 @@ tbody tr:hover { background-color: #242f48; }
     z-index: 1;
 }
 .hero h1 {
-  font-size: 4.5rem;
+  font-size: 5rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   line-height: 1.1;
 }
 .hero h1 span {
@@ -543,7 +543,7 @@ tbody tr:hover { background-color: #242f48; }
   -webkit-text-fill-color: transparent;
 }
 .hero p {
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: #a0aec0;
   max-width: 750px;
   margin: 0 auto 2rem auto;
