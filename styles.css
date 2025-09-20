@@ -587,7 +587,7 @@ tbody tr:hover { background-color: #242f48; }
     display: flex;
     align-items: center;
     gap: 1rem;
-    font-size: 1.5rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
 }
 .problem-card h3 i { color: #ef4444; }
@@ -632,8 +632,8 @@ tbody tr:hover { background-color: #242f48; }
     color: #121828;
     display: inline-block;
 }
-.workflow-step h4 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-.workflow-step p { font-size: 0.9rem; color: #a0aec0; line-height: 1.5; }
+.workflow-step h4 { font-size: 1.1rem; font-size: 1.8rem; margin-bottom: 0.5rem; }
+.workflow-step p { font-size: 0.9rem; color: #a0aec0; font-size: 1.5rem; line-height: 1.5; }
 .workflow-arrow {
     color: #313d5f;
     font-size: 2rem;
