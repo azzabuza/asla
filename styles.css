@@ -537,24 +537,24 @@ tbody tr:hover { background-color: #242f48; }
   line-height: 1.1;
 }
 .hero h1 span {
-  background: -webkit-linear-gradient(45deg, #00d2ff, #3a7bd5);
+  background: linear-gradient(45deg, #00d2ff, #3a7bd5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .hero p {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   color: #a0aec0;
   max-width: 750px;
-  margin: 0 auto 2.5rem auto;
+  margin: 0 auto 2rem auto;
 }
 .hero .button-primary {
   background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   color: #121828;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: inline-block;
   border: none;
@@ -565,20 +565,20 @@ tbody tr:hover { background-color: #242f48; }
  }
  
 /* Section Styling */
-.section { padding: 7rem 0; }
-.section-title { text-align: center; font-size: 2.8rem; font-weight: 700; margin-bottom: 1.5rem; }
-.section-subtitle { text-align: center; font-size: 1.1rem; color: #a0aec0; margin-bottom: 5rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+.section { padding: 10rem 0; }
+.section-title { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 2rem; }
+.section-subtitle { text-align: center; font-size: 1.5rem; color: #a0aec0; margin-bottom: 5rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.6; }
 
 /* Problem-Solution Section */
 .problem-solution-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 2rem;
     align-items: center;
 }
 .problem-card, .solution-card {
     background: #1a2235;
-    border-radius: 16px;
+    border-radius: 1rem;
     padding: 2rem;
     border: 1px solid #313d5f;
 }
@@ -615,14 +615,14 @@ tbody tr:hover { background-color: #242f48; }
 .workflow-step {
     background: #1a2235;
     border: 1px solid #313d5f;
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 1rem;
+    padding: 2rem;
     text-align: center;
     width: 22%;
     position: relative;
 }
 .workflow-step .icon {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: 50%;
@@ -662,7 +662,7 @@ tbody tr:hover { background-color: #242f48; }
 /* CTA Section */
 .cta-section {
     background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-    border-radius: 16px;
+    border-radius: 1rem;
     padding: 5rem;
     text-align: center;
 }
@@ -670,11 +670,11 @@ tbody tr:hover { background-color: #242f48; }
 .cta-section .button-secondary {
     background: #121828;
     color: #e0e5f5;
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     transition: transform 0.2s ease, opacity 0.2s ease;
     display: inline-block;
     border: none;
