@@ -483,6 +483,7 @@ tbody tr:hover { background-color: #242f48; }
 }
 .navbar .nav-links a {
   color: #a0aec0;
+  font-size: 1.5rem;
   margin-left: 2rem;
   font-weight: 500;
   text-decoration: none;
@@ -494,8 +495,8 @@ tbody tr:hover { background-color: #242f48; }
 .navbar .nav-links a.button {
     background: linear-gradient(90deg, #00d2ff, #3a7bd5);
     color: #121828;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
     font-weight: 600;
 }
  .navbar .nav-links a.button:hover { opacity: 0.9; }
@@ -503,7 +504,7 @@ tbody tr:hover { background-color: #242f48; }
 /* Hero Section */
 .hero {
   position: relative;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   text-align: center;
