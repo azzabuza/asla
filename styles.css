@@ -59,7 +59,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar {
   box-sizing: border-box;
-  width: 400px;
+  width: 40rem;
   background-color: #1a2235;
   color: #e0e5f5;
   display: flex;
@@ -67,13 +67,13 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   height: 100dvh;
   top: 0;
   left: 0;
-  border-right: 1px solid #313d5f;
+  border-right: 0.1rem solid #313d5f;
 }
 .sidebar-header {
   box-sizing: border-box;
   padding: 2rem;
   text-align: center;
-  border-bottom: 1px solid #313d5f;
+  border-bottom: 0.1rem solid #313d5f;
 }
 .sidebar-header h3 {
   color: #e0e5f5;
@@ -107,7 +107,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing:border-box;
   padding: 2rem;
   margin:0;
-  border-top: 1px solid #313d5f;
+  border-top: 0.1rem solid #313d5f;
 }
 .sidebar-footer p {
   color: #e0e5f5;
@@ -118,7 +118,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar-partner{
 box-sizing:border-box;
-margin:0 0 20px 0;
+margin:0 0 2rem 0;
 padding:0;
   display: none;
 }
@@ -127,7 +127,7 @@ box-sizing:border-box;
 display:flex;
 flex-wrap:wrap;
 justify-content:left;
-gap:20px;
+gap:2rem;
 padding:0;
 margin:0;
 list-style:none;
@@ -140,7 +140,7 @@ flex-shrink:0;
 }
 .sidebar-partner li img{
 box-sizing:border-box;
-height:30px;
+height:3rem;
 width:auto;
 object-fit:contain;
 padding:0!important;
@@ -180,7 +180,7 @@ filter:brightness(0) invert(1);
 }
 .stat-card {
     background-color: #1a2235;
-    border: 1px solid #313d5f;
+    border: 0.1rem solid #313d5f;
     border-radius: 1rem;
     padding: 2rem;
     color: #e0e5f5;
@@ -205,7 +205,7 @@ filter:brightness(0) invert(1);
   animation: fadeIn 0.4s ease-in-out;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(1rem); }
   to { opacity: 1; transform: translateY(0); }
 }
 .card {
@@ -214,14 +214,14 @@ filter:brightness(0) invert(1);
   border-radius: 1rem;
   margin: 0 0 2rem 0;
   overflow: hidden;
-  border: 1px solid #313d5f;
+  border: 0.1rem solid #313d5f;
 }
 .card-header {
   box-sizing: border-box;
   font-size: 1.8rem;
   padding: 2rem;
   margin: 0;
-  border-bottom: 1px solid #313d5f;
+  border-bottom: 0.1rem solid #313d5f;
   font-weight: 500;
 }
 .card-body {
@@ -256,7 +256,7 @@ button, .button {
   font-size: 1.5rem;
   text-align: center;
   box-shadow: none;
-  border: 1px solid #ef4444;
+  border: 0.1rem solid #ef4444;
 }
 .logout-button:hover {
   background-color: #ef4444;
@@ -334,7 +334,7 @@ input, select {
   width: 100%;
   outline: none;
   border-radius: 0.5rem;
-  border: 1px solid #313d5f;
+  border: 0.1rem solid #313d5f;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   appearance: none;
 }
@@ -351,7 +351,7 @@ option {
 .form-status { margin-top: 1rem; font-weight: 500; text-align: center; }
 .table-responsive {
   overflow-x: auto;
-  border: 1px solid #313d5f;
+  border: 0.1rem solid #313d5f;
   border-radius: 0.5rem;
 }
 table { width: 100%; border-collapse: collapse;}
@@ -362,19 +362,19 @@ th {
   text-transform: uppercase;
   font-size: 1.5rem;
   color: #a0aec0;
-  border-bottom: 1px solid #313d5f;
+  border-bottom: 0.1rem solid #313d5f;
 }
 td {
   background: #1a2235;
   font-weight: 400;
   font-size: 1.5rem;
   color: #a0aec0;
-  border-top: 1px solid #313d5f;
+  border-top: 0.1rem solid #313d5f;
 }
 td:last-child {
   border: none;
 }
-tbody tr { border-bottom: 1px solid #313d5f; }
+tbody tr { border-bottom: 0.1rem solid #313d5f; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: #242f48; }
 .table-controls {
@@ -416,7 +416,7 @@ tbody tr:hover { background-color: #242f48; }
 .badge, .role-badge {
   display: inline-block;
   padding: 0.5rem 1rem;
-  border-radius: 50px;
+  border-radius: 5rem;
   font-size: 1rem;
   font-weight: 600;
   text-transform: capitalize;
@@ -441,12 +441,12 @@ tbody tr:hover { background-color: #242f48; }
 }
 .login-container {
   box-sizing: border-box;
-  width: 450px;
+  width: 45rem;
   margin: 0;
   padding: 2rem;
   background-color: #1a2235;
   border-radius: 1rem;
-  border: 1px solid #313d5f;
+  border: 0.1rem solid #313d5f;
 }
 .login-container h2 {
     text-align: center;
@@ -465,7 +465,7 @@ tbody tr:hover { background-color: #242f48; }
 
 /* === STYLING BARU DARI INDEX.HTML === */
 .container {
-  max-width: 1200px;
+  max-width: 120rem;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -473,7 +473,7 @@ tbody tr:hover { background-color: #242f48; }
 /* Animasi Reveal */
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(4rem);
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
 .reveal.visible {
@@ -494,8 +494,8 @@ tbody tr:hover { background-color: #242f48; }
 }
 .navbar.scrolled {
   background-color: rgba(18, 24, 40, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #313d5f;
+  backdrop-filter: blur(1rem);
+  border-bottom: 0.1rem solid #313d5f;
 }
 .navbar .container {
   display: flex;
@@ -571,7 +571,7 @@ tbody tr:hover { background-color: #242f48; }
 .hero p {
   font-size: 2rem;
   color: #a0aec0;
-  max-width: 750px;
+  max-width: 75rem;
   margin: 0 auto 2rem auto;
 }
 .hero .button-primary {
@@ -587,14 +587,14 @@ tbody tr:hover { background-color: #242f48; }
   border: none;
 }
  .hero .button-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
+    transform: translateY(-0.3rem);
+    box-shadow: 0 1rem 2rem rgba(0, 210, 255, 0.2);
  }
  
 /* Section Styling */
 .section { padding: 10rem 0; }
 .section-title { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 2rem; }
-.section-subtitle { text-align: center; font-size: 1.5rem; color: #a0aec0; margin-bottom: 5rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+.section-subtitle { text-align: center; font-size: 1.5rem; color: #a0aec0; margin-bottom: 5rem; max-width: 70rem; margin-left: auto; margin-right: auto; line-height: 1.6; }
 
 /* Problem-Solution Section */
 .problem-solution-grid {
@@ -607,7 +607,7 @@ tbody tr:hover { background-color: #242f48; }
     background: #1a2235;
     border-radius: 1rem;
     padding: 2rem;
-    border: 1px solid #313d5f;
+    border: 0.1rem solid #313d5f;
 }
 .problem-card h3, .solution-card h3 {
     display: flex;
@@ -642,7 +642,7 @@ tbody tr:hover { background-color: #242f48; }
 }
 .workflow-step {
     background: #1a2235;
-    border: 1px solid #313d5f;
+    border: 0.1rem solid #313d5f;
     border-radius: 1rem;
     padding: 2rem;
     text-align: center;
@@ -673,15 +673,15 @@ tbody tr:hover { background-color: #242f48; }
 }
 .role-card {
     background-color: #1a2235;
-    border: 1px solid #313d5f;
-    border-radius: 16px;
+    border: 0.1rem solid #313d5f;
+    border-radius: 1.6rem;
     padding: 2rem;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .role-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 210, 255, 0.1);
+    transform: translateY(-0.5rem);
+    box-shadow: 0 1rem 2rem rgba(0, 210, 255, 0.1);
 }
 .role-card .icon { font-size: 2.5rem; margin-bottom: 1rem; color: #00d2ff; }
 .role-card h3 { font-size: 2rem; margin-bottom: 1rem; }
@@ -707,19 +707,19 @@ tbody tr:hover { background-color: #242f48; }
     display: inline-block;
     border: none;
 }
-.cta-section .button-secondary:hover { transform: translateY(-3px); opacity: 0.9; }
+.cta-section .button-secondary:hover { transform: translateY(-0.3rem); opacity: 0.9; }
 
 /* Footer */
-.footer { padding: 4rem 0 2rem 0; text-align: center; border-top: 1px solid #313d5f; }
+.footer { padding: 4rem 0 2rem 0; text-align: center; border-top: 0.1rem solid #313d5f; }
 .footer p { color: #a0aec0; }
 
-@media (max-width: 992px) {
+@media (max-width: 99.2rem) {
     .problem-solution-grid { grid-template-columns: 1fr; }
     .workflow-grid { flex-direction: column; }
     .workflow-arrow { transform: rotate(90deg); margin: 1rem 0; }
     .roles-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 768px) {
+@media (max-width: 76.8rem) {
   .hero h1 { font-size: 2.8rem; }
   .navbar .nav-links { display: none; }
 }
