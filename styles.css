@@ -592,7 +592,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   text-align: center;
   overflow: hidden;
   /* Properti baru untuk gradien animasi */
-  background: linear-gradient(-45deg, #e73c7e, #23a6d5, #9333ea, #e73c7e);
+  background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
   background-size: 400% 400%;
   animation: animatedGradient 18s ease infinite;
 }
