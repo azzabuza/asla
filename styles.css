@@ -211,27 +211,28 @@ filter:brightness(0) invert(1);
 
 /* === DASHBOARD === */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 .stat-card {
-    background-color: var(--bg-secondary);
-    border: 0.1rem solid var(--border-primary);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 0.1rem solid var(--border-primary);
+  border-radius: 1rem;
+  padding: 2rem;
+  color: var(--text-primary);
+  text-align: center;
 }
 .stat-card h3 {
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-    margin: 0 0 1rem 0;
-    font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+  font-weight: 500;
 }
 .stat-card p {
-    font-size: 3rem;
-    font-weight: 700;
-    margin: 0;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 
@@ -364,7 +365,7 @@ input, select {
   background-color: var(--bg-primary);
   font-family: var(--font-main);
   color: var(--text-primary);
-  caret-color: #24323d; /* Keeping this as is, as it's a specific UI element color */
+  caret-color: var(--text-primary);
   font-size: 1.5rem;
   padding: 1rem;
   margin: 0;
