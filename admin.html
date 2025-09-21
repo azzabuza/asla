@@ -23,10 +23,10 @@
       <ul class="sidebar-menu">
         <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
         <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Monitoring Perjalanan</a></li>
-        <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Karyawan</a></li>
+        <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Nopol</a></li>
-        <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Karyawan</a></li>
+        <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
         <li><a href="#addrutes" class="nav-link"><i class="fas fa-plus-circle"></i> Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Nopol</a></li>
         <li><a href="#performance" class="nav-link"><i class="fas fa-chart-line"></i> Kinerja Role</a></li>
@@ -134,7 +134,7 @@
       
       <div id="page-users" class="page">
         <section class="card">
-          <h2 class="card-header">Daftar Semua Karyawan</h2>
+          <h2 class="card-header">Daftar Semua Pengguna</h2>
           <div class="card-body">
             <div class="table-controls">
               <div class="form-group">
@@ -221,7 +221,7 @@
       
       <div id="page-addusers" class="page">
           <section class="card">
-              <h2 class="card-header">Tambah Karyawan Baru</h2>
+              <h2 class="card-header">Tambah Pengguna Baru</h2>
               <div class="card-body">
                   <form id="addUserForm">
                       <div class="form-group"><label for="newUserName">Nama</label><input type="text" id="newUserName" autocomplete="off" required></div>
@@ -287,7 +287,7 @@
               <label for="reportType">Pilih Jenis Data</label>
               <select id="reportType">
                 <option value="trips">Laporan Perjalanan</option>
-                <option value="users">Laporan Karyawan</option>
+                <option value="users">Laporan Pengguna</option>
                 <option value="routes">Laporan Rute</option>
                 <option value="vehicles">Laporan Kendaraan</option>
               </select>
@@ -324,10 +324,10 @@
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: '<i class="fas fa-truck"></i> Monitoring Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
-        users: { title: '<i class="fas fa-users"></i> Manajemen Karyawan', subtitle: 'Kelola semua data pengguna dalam sistem.' },
+        users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
         vehicles: { title: '<i class="fas fa-car"></i> Manajemen Nopol', subtitle: 'Kelola daftar nomor polisi kendaraan.' },
-        addusers: { title: '<i class="fas fa-user-plus"></i> Tambah Karyawan', subtitle: 'Buat akun baru untuk karyawan.' },
+        addusers: { title: '<i class="fas fa-user-plus"></i> Tambah Pengguna', subtitle: 'Buat akun baru untuk pengguna.' },
         addrutes: { title: '<i class="fas fa-plus-circle"></i> Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
         addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
         performance: { title: '<i class="fas fa-chart-line"></i> Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
@@ -871,8 +871,8 @@
           }));
           bodyForPDF = dataForExcel.map(Object.values);
           headers = ["Nama", "Role", "Login Terakhir", "Status"];
-          filename = 'Laporan_Karyawan';
-          title = 'Laporan Semua Karyawan';
+          filename = 'Laporan_Pengguna';
+          title = 'Laporan Semua Pengguna';
           break;
 
         case 'routes':
