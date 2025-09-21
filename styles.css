@@ -655,7 +655,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 /* Problem-Solution Section */
 .problem-solution-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
 }
 .problem-card, .solution-card {
@@ -769,7 +769,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .footer p { color: var(--text-secondary); }
 
 @media (max-width: 99.2rem) {
-    .problem-solution-grid { grid-template-columns: 1fr; }
+    .problem-solution-grid { grid-template-columns: repeat(2, 1fr); }
     .workflow-grid { flex-direction: column; }
     .workflow-arrow { transform: rotate(90deg); margin: 1rem 0; }
     .roles-grid { grid-template-columns: 1fr; }
