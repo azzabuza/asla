@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Koordinator Panel</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="content-wrapper">
@@ -13,10 +14,10 @@
         <h3>Koordinator</h3>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
-        <li><a href="#list" class="nav-link">Daftar Perjalanan</a></li>
-        <li><a href="#add" class="nav-link">Tambah Perjalanan</a></li>
-        <li><a href="#performance" class="nav-link">Kinerja Supir</a></li>
+        <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#list" class="nav-link"><i class="fas fa-list-alt"></i> Daftar Perjalanan</a></li>
+        <li><a href="#add" class="nav-link"><i class="fas fa-plus"></i> Tambah Perjalanan</a></li>
+        <li><a href="#performance" class="nav-link"><i class="fas fa-chart-bar"></i> Kinerja Supir</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
@@ -26,7 +27,7 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1 id="pageTitle">Dashboard</h1>
+        <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
         <p id="pageSubtitle">Ringkasan aktivitas dan perjalanan Anda.</p>
       </header>
       
@@ -166,10 +167,10 @@
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
-        dashboard: { title: 'Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
-        list: { title: 'Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
-        add: { title: 'Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
-        performance: { title: 'Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
+        dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
+        list: { title: '<i class="fas fa-list-alt"></i> Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
+        add: { title: '<i class="fas fa-plus"></i> Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
+        performance: { title: '<i class="fas fa-chart-bar"></i> Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
     };
 
     const elements = {
@@ -220,7 +221,7 @@
                 document.getElementById(`page-${targetId}`).classList.add('active');
                 link.classList.add('active');
                 
-                elements.pageTitle.textContent = pageContent[targetId].title;
+                elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
             });
         });
