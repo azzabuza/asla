@@ -16,7 +16,8 @@
         <h3>Administrator</h3>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="#monitoring" class="nav-link active">Monitoring Perjalanan</a></li>
+        <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="#monitoring" class="nav-link">Monitoring Perjalanan</a></li>
         <li><a href="#users" class="nav-link">Manajemen Karyawan</a></li>
         <li><a href="#routes" class="nav-link">Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link">Manajemen Nopol</a></li>
@@ -73,11 +74,38 @@ itemprop="image"
 
     <main class="main-content">
       <header class="main-header">
-        <h1 id="pageTitle">Monitoring Perjalanan</h1>
-        <p id="pageSubtitle">Pusat kelola dan pemantauan seluruh data perjalanan.</p>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
       </header>
       
-      <div id="page-monitoring" class="page active">
+      <div id="page-dashboard" class="page active">
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Total Perjalanan</h3>
+                <p id="totalTrips">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pengguna Online</h3>
+                <p id="onlineUsers">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Rute</h3>
+                <p id="totalRoutes">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Kendaraan</h3>
+                <p id="totalVehicles">0</p>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 2rem;">
+            <h2 class="card-header">Aktivitas Terkini</h2>
+            <div class="card-body" id="recentActivity">
+                <p>Memuat aktivitas...</p>
+            </div>
+        </div>
+      </div>
+
+      <div id="page-monitoring" class="page">
         <section class="card">
           <h2 class="card-header">Daftar Perjalanan</h2>
           <div class="card-body">
@@ -298,6 +326,7 @@ itemprop="image"
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
+        dashboard: { title: 'Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: 'Monitoring Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
         users: { title: 'Manajemen Karyawan', subtitle: 'Kelola semua data pengguna dalam sistem.' },
         routes: { title: 'Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
@@ -345,6 +374,12 @@ itemprop="image"
         prevVehicleBtn: document.getElementById('prevVehicleBtn'),
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
         vehiclePageInfo: document.getElementById('vehiclePageInfo'),
+        // Dashboard elements
+        totalTrips: document.getElementById('totalTrips'),
+        onlineUsers: document.getElementById('onlineUsers'),
+        totalRoutes: document.getElementById('totalRoutes'),
+        totalVehicles: document.getElementById('totalVehicles'),
+        recentActivity: document.getElementById('recentActivity'),
         // Documentation elements
         reportType: document.getElementById('reportType'),
         dateFilterContainer: document.getElementById('dateFilterContainer'),
@@ -414,6 +449,36 @@ itemprop="image"
       } catch (e) { console.error("Error cek admin:", e); }
     });
     
+    function loadDashboardStats() {
+        if (elements.totalTrips) elements.totalTrips.textContent = allTrips.length;
+        if (elements.totalRoutes) elements.totalRoutes.textContent = allRoutes.length;
+        if (elements.totalVehicles) elements.totalVehicles.textContent = allVehicles.length;
+        
+        const onlineCount = Object.values(allUsers).filter(u => u.online).length;
+        if (elements.onlineUsers) elements.onlineUsers.textContent = onlineCount;
+
+        if (elements.recentActivity) {
+            elements.recentActivity.innerHTML = '';
+            const recentTrips = allTrips.slice(0, 5);
+            if (recentTrips.length === 0) {
+                elements.recentActivity.innerHTML = '<p class="empty-state">Belum ada aktivitas perjalanan.</p>';
+            } else {
+                const list = el('ul', '', { style: 'list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 1.5rem;' });
+                recentTrips.forEach(tripEntry => {
+                    const trip = tripEntry.data;
+                    const item = el('li', '', { style: 'display:flex; align-items:center; gap:1rem;' });
+                    const statusBadge = badge(trip.status);
+                    statusBadge.style.flexShrink = '0';
+                    const text = el('div');
+                    text.innerHTML = `<strong>${trip.driverName || 'N/A'}</strong> menyelesaikan rute <strong>${trip.asal} → ${trip.tujuan}</strong> <span style="color:#a0aec0; font-size:1.2rem; margin-left: 0.5rem;">${fmtDate(trip.tanggal)}</span>`;
+                    item.append(statusBadge, text);
+                    list.appendChild(item);
+                });
+                elements.recentActivity.appendChild(list);
+            }
+        }
+    }
+    
     // ... (Fungsi displayTrips, pagination, displayUsers, dll tetap sama) ...
     function displayTrips(page) {
       elements.tripList.innerHTML = '';
@@ -476,6 +541,7 @@ itemprop="image"
         }
         allTrips.reverse();
         displayTrips(currentPage);
+        loadDashboardStats();
       });
     }
     function displayUsers(page) {
@@ -531,6 +597,7 @@ itemprop="image"
             onValue(ref(db, 'users'), (snapshot) => {
                 allUsers = snapshot.val() || {};
                 displayUsers(1);
+                loadDashboardStats();
                 resolve();
             });
             elements.filterRole.onchange = () => displayUsers(1);
@@ -564,6 +631,7 @@ itemprop="image"
             });
           }
           displayRoutes(1);
+          loadDashboardStats();
           resolve();
         });
       });
@@ -656,6 +724,7 @@ itemprop="image"
         allVehicles = [];
         if (snapshot.exists()) { snapshot.forEach(child => { allVehicles.push({ id: child.key, data: child.val() }); }); }
         displayVehicles(1);
+        loadDashboardStats();
       });
     }
     elements.addVehicleForm.addEventListener('submit', async (e) => { e.preventDefault(); const nopol = document.getElementById('vehicleNopol').value.toUpperCase(); const type = document.getElementById('vehicleType').value; elements.addVehicleStatus.textContent = 'Menambahkan...'; try { await push(ref(db, 'vehicles'), { nopol, type }); elements.addVehicleStatus.textContent = '✔️ Nopol berhasil ditambahkan.'; elements.addVehicleForm.reset(); setTimeout(() => elements.addVehicleStatus.textContent = '', 3000); } catch (error) { elements.addVehicleStatus.textContent = 'Gagal: ' + error.message; } });
