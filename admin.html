@@ -123,10 +123,10 @@
                 </tbody>
               </table>
             </div>
-            <div id="pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-              <button id="prevBtn" class="btn-sm info">Sebelumnya</button>
+            <div id="pagination-controls" style="display:none; margin-top:2rem; text-align:center;">
+              <button id="prevBtn">Sebelumnya</button>
               <span id="pageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
-              <button id="nextBtn" class="btn-sm info">Berikutnya</button>
+              <button id="nextBtn">Berikutnya</button>
             </div>
           </div>
         </section>
@@ -156,10 +156,10 @@
                 <tbody id="userList"><tr><td colspan="6">Memuat data...</td></tr></tbody>
               </table>
             </div>
-            <div id="user-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-                <button id="prevUserBtn" class="btn-sm info">Sebelumnya</button>
+            <div id="user-pagination-controls" style="display:none; margin-top:2rem; text-align:center;">
+                <button id="prevUserBtn">Sebelumnya</button>
                 <span id="userPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
-                <button id="nextUserBtn" class="btn-sm info">Berikutnya</button>
+                <button id="nextUserBtn">Berikutnya</button>
             </div>
           </div>
         </section>
@@ -183,10 +183,10 @@
                 </tbody>
               </table>
             </div>
-            <div id="route-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-              <button id="prevRouteBtn" class="btn-sm info">Sebelumnya</button>
+            <div id="route-pagination-controls" style="display:none; margin-top:2rem; text-align:center;">
+              <button id="prevRouteBtn">Sebelumnya</button>
               <span id="routePageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextRouteBtn" class="btn-sm info">Berikutnya</button>
+              <button id="nextRouteBtn">Berikutnya</button>
             </div>
           </div>
         </section>
@@ -210,10 +210,10 @@
                 </tbody>
               </table>
             </div>
-            <div id="vehicle-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
-              <button id="prevVehicleBtn" class="btn-sm info">Sebelumnya</button>
+            <div id="vehicle-pagination-controls" style="display:none; margin-top:2rem; text-align:center;">
+              <button id="prevVehicleBtn">Sebelumnya</button>
               <span id="vehiclePageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
-              <button id="nextVehicleBtn" class="btn-sm info">Berikutnya</button>
+              <button id="nextVehicleBtn">Berikutnya</button>
             </div>
           </div>
         </section>
@@ -303,8 +303,8 @@
                 </div>
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button id="exportPdfBtn" class="btn-sm success">Unduh PDF</button>
-                <button id="exportExcelBtn" class="btn-sm info">Unduh Excel</button>
+                <button id="exportPdfBtn">Unduh PDF</button>
+                <button id="exportExcelBtn">Unduh Excel</button>
             </div>
           </div>
         </section>
@@ -465,7 +465,7 @@
         const start = (page - 1) * activityRowsPerPage;
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
 
-        elements.activityPaginationControls.style.display = allTrips.length > activityRowsPerPage ? 'block' : 'none';
+        elements.activityPaginationControls.style.display = allTrips.length > activityRowsPerPage ? 'flex' : 'none';
 
         if (allTrips.length === 0) {
             elements.recentActivityList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
@@ -552,7 +552,7 @@
         return displayTrips(currentPage);
       }
       if (allTrips.length > rowsPerPage) {
-        elements.paginationControls.style.display = 'block';
+        elements.paginationControls.style.display = 'flex';
       } else {
         elements.paginationControls.style.display = 'none';
       }
@@ -621,7 +621,7 @@
         return displayUsers(currentUserPage);
       }
       if (filteredUsers.length > rowsPerPage) {
-        elements.userPaginationControls.style.display = 'block';
+        elements.userPaginationControls.style.display = 'flex';
       } else {
         elements.userPaginationControls.style.display = 'none';
       }
@@ -707,7 +707,7 @@
         return displayRoutes(currentRoutePage);
       }
       if (allRoutes.length > rowsPerPage) {
-        elements.routePaginationControls.style.display = 'block';
+        elements.routePaginationControls.style.display = 'flex';
       } else {
         elements.routePaginationControls.style.display = 'none';
       }
@@ -748,7 +748,7 @@
         return displayVehicles(currentVehiclePage);
       }
       if (allVehicles.length > rowsPerPage) {
-        elements.vehiclePaginationControls.style.display = 'block';
+        elements.vehiclePaginationControls.style.display = 'flex';
       } else {
         elements.vehiclePaginationControls.style.display = 'none';
       }
