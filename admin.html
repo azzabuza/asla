@@ -30,45 +30,6 @@
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
         <p>DEMO Version</p>
-        <div class="sidebar-partner">
-<ul>
-<li>
-<img
-src="asset/image/logo/ojk.png"
-alt="ojk"
-itemprop="image"
-/>
-</li>
-<li>
-<img
-src="asset/image/logo/afpi.png"
-alt="afpi"
-itemprop="image"
-/>
-</li>
-<li>
-<img
-src="asset/image/logo/kominfo.png"
-alt="kominfo"
-itemprop="image"
-/>
-</li>
-<li>
-<img
-src="asset/image/logo/laps.png"
-alt="laps"
-itemprop="image"
-/>
-</li>
-<li>
-<img
-src="asset/image/logo/iso.png"
-alt="ojk"
-itemprop="image"
-/>
-</li>
-</ul>
-</div>
       </div>
     </nav>
 
@@ -110,9 +71,27 @@ itemprop="image"
             </div>
         </div>
         <div class="card" style="margin-top: 2rem;">
-            <h2 class="card-header">Aktivitas Terkini</h2>
-            <div class="card-body" id="recentActivity">
-                <p>Memuat aktivitas...</p>
+            <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="recentActivityTable">
+                        <thead>
+                            <tr>
+                                <th>Deskripsi</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentActivityList">
+                            <tr><td colspan="3">Memuat aktivitas...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="activity-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+                    <button id="prevActivityBtn" class="btn-sm info">Sebelumnya</button>
+                    <span id="activityPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+                    <button id="nextActivityBtn" class="btn-sm info">Berikutnya</button>
+                </div>
             </div>
         </div>
       </div>
@@ -394,7 +373,11 @@ itemprop="image"
         onlineUsers: document.getElementById('onlineUsers'),
         totalRoutes: document.getElementById('totalRoutes'),
         totalVehicles: document.getElementById('totalVehicles'),
-        recentActivity: document.getElementById('recentActivity'),
+        recentActivityList: document.getElementById('recentActivityList'),
+        activityPaginationControls: document.getElementById('activity-pagination-controls'),
+        prevActivityBtn: document.getElementById('prevActivityBtn'),
+        nextActivityBtn: document.getElementById('nextActivityBtn'),
+        activityPageInfo: document.getElementById('activityPageInfo'),
         // Documentation elements
         reportType: document.getElementById('reportType'),
         dateFilterContainer: document.getElementById('dateFilterContainer'),
@@ -415,6 +398,8 @@ itemprop="image"
     let currentUserPage = 1;
     let currentRoutePage = 1;
     let currentVehiclePage = 1;
+    let currentActivityPage = 1;
+    const activityRowsPerPage = 5;
     const rowsPerPage = 10;
     
     function setupNavigation() {
@@ -463,6 +448,48 @@ itemprop="image"
         loadRoleStats();
       } catch (e) { console.error("Error cek admin:", e); }
     });
+
+    function displayRecentActivity(page) {
+        elements.recentActivityList.innerHTML = '';
+        currentActivityPage = page;
+        const start = (page - 1) * activityRowsPerPage;
+        const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
+
+        elements.activityPaginationControls.style.display = allTrips.length > activityRowsPerPage ? 'block' : 'none';
+
+        if (allTrips.length === 0) {
+            elements.recentActivityList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+        } else {
+            paginatedActivities.forEach(tripEntry => {
+                const trip = tripEntry.data;
+                const tr = el('tr');
+                
+                let actionText = "melakukan perjalanan";
+                switch(trip.status) {
+                    case 'submitted': actionText = "dibuatkan perjalanan"; break;
+                    case 'approved': actionText = "memulai perjalanan"; break;
+                    case 'rejected': actionText = "dibatalkan perjalanannya"; break;
+                    case 'arrived': actionText = "menyelesaikan rute"; break;
+                }
+                const description = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${trip.asal} → ${trip.tujuan}</strong>`;
+
+                const statusCell = el('td');
+                statusCell.appendChild(badge(trip.status));
+                
+                tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+                tr.appendChild(statusCell);
+                elements.recentActivityList.appendChild(tr);
+            });
+        }
+        
+        const totalPages = Math.ceil(allTrips.length / activityRowsPerPage);
+        elements.activityPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
+        elements.prevActivityBtn.disabled = page === 1;
+        elements.nextActivityBtn.disabled = page === totalPages;
+    }
+
+    elements.prevActivityBtn.addEventListener('click', () => displayRecentActivity(currentActivityPage - 1));
+    elements.nextActivityBtn.addEventListener('click', () => displayRecentActivity(currentActivityPage + 1));
     
     function loadDashboardStats() {
         if (elements.totalTrips) elements.totalTrips.textContent = allTrips.length;
@@ -483,7 +510,7 @@ itemprop="image"
         let lastMonthCount = 0;
 
         allTrips.forEach(tripEntry => {
-            const tripDate = new Date(tripEntry.data.tanggal + "T00:00:00"); // Ensure correct parsing
+            const tripDate = new Date(tripEntry.data.tanggal + "T00:00:00");
             const tripYear = tripDate.getFullYear();
             const tripMonth = tripDate.getMonth();
 
@@ -501,44 +528,7 @@ itemprop="image"
         if (elements.tripsThisMonth) elements.tripsThisMonth.textContent = thisMonthCount;
         if (elements.tripsLastMonth) elements.tripsLastMonth.textContent = lastMonthCount;
 
-        if (elements.recentActivity) {
-            elements.recentActivity.innerHTML = '';
-            const recentTrips = allTrips.slice(0, 5);
-            if (recentTrips.length === 0) {
-                elements.recentActivity.innerHTML = '<p class="empty-state">Belum ada aktivitas perjalanan.</p>';
-            } else {
-                const list = el('ul', '', { style: 'list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 1.5rem;' });
-                recentTrips.forEach(tripEntry => {
-                    const trip = tripEntry.data;
-                    const item = el('li', '', { style: 'display:flex; align-items:center; gap:1rem;' });
-                    const statusBadge = badge(trip.status);
-                    statusBadge.style.flexShrink = '0';
-                    const text = el('div');
-
-                    let actionText = "melakukan perjalanan";
-                    switch(trip.status) {
-                        case 'submitted':
-                            actionText = "dibuatkan perjalanan";
-                            break;
-                        case 'approved':
-                            actionText = "memulai perjalanan";
-                            break;
-                        case 'rejected':
-                            actionText = "dibatalkan perjalanannya";
-                            break;
-                        case 'arrived':
-                            actionText = "menyelesaikan rute";
-                            break;
-                    }
-
-                    text.innerHTML = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${trip.asal} → ${trip.tujuan}</strong> <span style="color:#a0aec0; font-size:1.2rem; margin-left: 0.5rem;">${fmtDate(trip.tanggal)}</span>`;
-                    
-                    item.append(statusBadge, text);
-                    list.appendChild(item);
-                });
-                elements.recentActivity.appendChild(list);
-            }
-        }
+        displayRecentActivity(1);
     }
     
     function displayTrips(page) {
