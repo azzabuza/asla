@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
@@ -16,16 +17,16 @@
         <h3>Administrator</h3>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
-        <li><a href="#monitoring" class="nav-link">Monitoring Perjalanan</a></li>
-        <li><a href="#users" class="nav-link">Manajemen Karyawan</a></li>
-        <li><a href="#routes" class="nav-link">Manajemen Rute</a></li>
-        <li><a href="#vehicles" class="nav-link">Manajemen Nopol</a></li>
-        <li><a href="#addusers" class="nav-link">Tambah Karyawan</a></li>
-        <li><a href="#addrutes" class="nav-link">Tambah Rute</a></li>
-        <li><a href="#addvehicles" class="nav-link">Tambah Nopol</a></li>
-        <li><a href="#performance" class="nav-link">Kinerja Role</a></li>
-        <li><a href="#documentation" class="nav-link">Dokumentasi Laporan</a></li>
+        <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Monitoring Perjalanan</a></li>
+        <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Karyawan</a></li>
+        <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
+        <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Nopol</a></li>
+        <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Karyawan</a></li>
+        <li><a href="#addrutes" class="nav-link"><i class="fas fa-plus-circle"></i> Tambah Rute</a></li>
+        <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Nopol</a></li>
+        <li><a href="#performance" class="nav-link"><i class="fas fa-chart-line"></i> Kinerja Role</a></li>
+        <li><a href="#documentation" class="nav-link"><i class="fas fa-file-alt"></i> Dokumentasi Laporan</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button">Keluar</button>
@@ -35,7 +36,7 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1 id="pageTitle">Dashboard</h1>
+        <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
         <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
       </header>
       
@@ -317,16 +318,16 @@
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
-        dashboard: { title: 'Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
-        monitoring: { title: 'Monitoring Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
-        users: { title: 'Manajemen Karyawan', subtitle: 'Kelola semua data pengguna dalam sistem.' },
-        routes: { title: 'Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
-        vehicles: { title: 'Manajemen Nopol', subtitle: 'Kelola daftar nomor polisi kendaraan.' },
-        addusers: { title: 'Tambah Karyawan', subtitle: 'Buat akun baru untuk karyawan.' },
-        addrutes: { title: 'Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
-        addvehicles: { title: 'Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
-        performance: { title: 'Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
-        documentation: { title: 'Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' }
+        dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
+        monitoring: { title: '<i class="fas fa-truck"></i> Monitoring Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
+        users: { title: '<i class="fas fa-users"></i> Manajemen Karyawan', subtitle: 'Kelola semua data pengguna dalam sistem.' },
+        routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
+        vehicles: { title: '<i class="fas fa-car"></i> Manajemen Nopol', subtitle: 'Kelola daftar nomor polisi kendaraan.' },
+        addusers: { title: '<i class="fas fa-user-plus"></i> Tambah Karyawan', subtitle: 'Buat akun baru untuk karyawan.' },
+        addrutes: { title: '<i class="fas fa-plus-circle"></i> Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
+        addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
+        performance: { title: '<i class="fas fa-chart-line"></i> Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
+        documentation: { title: '<i class="fas fa-file-alt"></i> Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' }
     };
 
     const elements = {
@@ -414,7 +415,7 @@
                 document.getElementById(`page-${targetId}`).classList.add('active');
                 link.classList.add('active');
                 
-                elements.pageTitle.textContent = pageContent[targetId].title;
+                elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
             });
         });
