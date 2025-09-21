@@ -117,6 +117,22 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-size: 2rem;
   font-weight: 700;
 }
+.sidebar-account {
+  box-sizing: border-box;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  border-bottom: 0.1rem solid var(--border-primary);
+}
+.sidebar-account p {
+  color: var(--text-primary);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+.sidebar-account small {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
 .sidebar-menu {
   flex-grow: 1;
   padding-top: 1.5rem;
