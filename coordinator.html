@@ -47,8 +47,26 @@
         </div>
         <div class="card" style="margin-top: 2rem;">
             <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
-            <div class="card-body" id="recentActivityCoordinator">
-                <p>Memuat aktivitas...</p>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Deskripsi</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentActivityCoordinatorList">
+                            <tr><td colspan="3">Memuat aktivitas...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="coor-activity-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+                    <button id="prevCoorActivityBtn" class="btn-sm info">Sebelumnya</button>
+                    <span id="coorActivityPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+                    <button id="nextCoorActivityBtn" class="btn-sm info">Berikutnya</button>
+                </div>
             </div>
         </div>
       </div>
@@ -176,12 +194,18 @@
       totalMyTrips: document.getElementById('totalMyTrips'),
       myTripsThisMonth: document.getElementById('myTripsThisMonth'),
       myTripsLastMonth: document.getElementById('myTripsLastMonth'),
-      recentActivityCoordinator: document.getElementById('recentActivityCoordinator'),
+      recentActivityCoordinatorList: document.getElementById('recentActivityCoordinatorList'),
+      coorActivityPaginationControls: document.getElementById('coor-activity-pagination-controls'),
+      prevCoorActivityBtn: document.getElementById('prevCoorActivityBtn'),
+      nextCoorActivityBtn: document.getElementById('nextCoorActivityBtn'),
+      coorActivityPageInfo: document.getElementById('coorActivityPageInfo'),
     };
     
     let currentUser = null;
     let allMyTrips = [];
     let currentCoorPage = 1;
+    let currentCoorActivityPage = 1;
+    const coorActivityRowsPerPage = 5;
     const rowsPerPage = 10;
 
     function setupCoordinatorNavigation() {
@@ -304,6 +328,39 @@
       }
     });
 
+    function displayRecentCoordinatorActivity(page) {
+        elements.recentActivityCoordinatorList.innerHTML = '';
+        currentCoorActivityPage = page;
+        const start = (page - 1) * coorActivityRowsPerPage;
+        const paginatedActivities = allMyTrips.slice(start, start + coorActivityRowsPerPage);
+
+        elements.coorActivityPaginationControls.style.display = allMyTrips.length > coorActivityRowsPerPage ? 'block' : 'none';
+
+        if (allMyTrips.length === 0) {
+            elements.recentActivityCoordinatorList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+        } else {
+            paginatedActivities.forEach(({data: trip}) => {
+                const tr = el('tr');
+                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${trip.tujuan}</strong>`;
+                
+                const statusCell = el('td');
+                statusCell.appendChild(badge(trip.status));
+                
+                tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+                tr.appendChild(statusCell);
+                elements.recentActivityCoordinatorList.appendChild(tr);
+            });
+        }
+        
+        const totalPages = Math.ceil(allMyTrips.length / coorActivityRowsPerPage);
+        elements.coorActivityPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
+        elements.prevCoorActivityBtn.disabled = page === 1;
+        elements.nextCoorActivityBtn.disabled = page === totalPages;
+    }
+
+    elements.prevCoorActivityBtn.addEventListener('click', () => displayRecentCoordinatorActivity(currentCoorActivityPage - 1));
+    elements.nextCoorActivityBtn.addEventListener('click', () => displayRecentCoordinatorActivity(currentCoorActivityPage + 1));
+
     function loadCoordinatorDashboardStats() {
         elements.totalMyTrips.textContent = allMyTrips.length;
 
@@ -333,23 +390,7 @@
         elements.myTripsThisMonth.textContent = thisMonthCount;
         elements.myTripsLastMonth.textContent = lastMonthCount;
         
-        elements.recentActivityCoordinator.innerHTML = '';
-        const recentTrips = allMyTrips.slice(0, 5); // Already reversed
-        if (recentTrips.length === 0) {
-            elements.recentActivityCoordinator.innerHTML = '<p class="empty-state">Belum ada aktivitas perjalanan.</p>';
-        } else {
-            const list = el('ul', '', { style: 'list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 1.5rem;' });
-            recentTrips.forEach(({data: trip}) => {
-                const item = el('li', '', { style: 'display:flex; align-items:center; gap:1rem;' });
-                const statusBadge = badge(trip.status);
-                statusBadge.style.flexShrink = '0';
-                const text = el('div');
-                text.innerHTML = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${trip.tujuan}</strong> <span style="color:#a0aec0; font-size:1.2rem; margin-left: 0.5rem;">${fmtDate(trip.tanggal)}</span>`;
-                item.append(statusBadge, text);
-                list.appendChild(item);
-            });
-            elements.recentActivityCoordinator.appendChild(list);
-        }
+        displayRecentCoordinatorActivity(1);
     }
     
     function loadDriverPerformance() {
