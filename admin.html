@@ -85,6 +85,14 @@ itemprop="image"
                 <p id="totalTrips">0</p>
             </div>
             <div class="stat-card">
+                <h3>Perjalanan Bulan Ini</h3>
+                <p id="tripsThisMonth">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Perjalanan Bulan Lalu</h3>
+                <p id="tripsLastMonth">0</p>
+            </div>
+            <div class="stat-card">
                 <h3>Total Pengguna</h3>
                 <p id="totalUsers">0</p>
             </div>
@@ -380,6 +388,8 @@ itemprop="image"
         vehiclePageInfo: document.getElementById('vehiclePageInfo'),
         // Dashboard elements
         totalTrips: document.getElementById('totalTrips'),
+        tripsThisMonth: document.getElementById('tripsThisMonth'),
+        tripsLastMonth: document.getElementById('tripsLastMonth'),
         totalUsers: document.getElementById('totalUsers'),
         onlineUsers: document.getElementById('onlineUsers'),
         totalRoutes: document.getElementById('totalRoutes'),
@@ -464,6 +474,32 @@ itemprop="image"
         
         const onlineCount = Object.values(allUsers).filter(u => u.online).length;
         if (elements.onlineUsers) elements.onlineUsers.textContent = onlineCount;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        let thisMonthCount = 0;
+        let lastMonthCount = 0;
+
+        allTrips.forEach(tripEntry => {
+            const tripDate = new Date(tripEntry.data.tanggal + "T00:00:00"); // Ensure correct parsing
+            const tripYear = tripDate.getFullYear();
+            const tripMonth = tripDate.getMonth();
+
+            if (tripYear === currentYear && tripMonth === currentMonth) {
+                thisMonthCount++;
+            }
+
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            if (tripYear === lastMonthYear && tripMonth === lastMonth) {
+                lastMonthCount++;
+            }
+        });
+
+        if (elements.tripsThisMonth) elements.tripsThisMonth.textContent = thisMonthCount;
+        if (elements.tripsLastMonth) elements.tripsLastMonth.textContent = lastMonthCount;
 
         if (elements.recentActivity) {
             elements.recentActivity.innerHTML = '';
