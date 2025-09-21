@@ -421,27 +421,6 @@
         });
     }
     setupNavigation();
-
-    function animateCountUp(element, endValue) {
-        let startValue = 0;
-        const duration = 1500; // in milliseconds
-        const frameRate = 1000 / 60; // 60 fps
-        const totalFrames = Math.round(duration / frameRate);
-        const increment = endValue / totalFrames;
-
-        let currentFrame = 0;
-        const counter = setInterval(() => {
-            startValue += increment;
-            currentFrame++;
-
-            if (currentFrame === totalFrames) {
-                element.textContent = endValue;
-                clearInterval(counter);
-            } else {
-                element.textContent = Math.round(startValue);
-            }
-        }, frameRate);
-    }
     
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -514,15 +493,15 @@
     elements.nextActivityBtn.addEventListener('click', () => displayRecentActivity(currentActivityPage + 1));
     
     function loadDashboardStats() {
-        animateCountUp(elements.totalTrips, allTrips.length);
-        animateCountUp(elements.totalRoutes, allRoutes.length);
-        animateCountUp(elements.totalVehicles, allVehicles.length);
-
+        if (elements.totalTrips) elements.totalTrips.textContent = allTrips.length;
+        if (elements.totalRoutes) elements.totalRoutes.textContent = allRoutes.length;
+        if (elements.totalVehicles) elements.totalVehicles.textContent = allVehicles.length;
+        
         const userCount = Object.keys(allUsers).length;
-        animateCountUp(elements.totalUsers, userCount);
-
+        if (elements.totalUsers) elements.totalUsers.textContent = userCount;
+        
         const onlineCount = Object.values(allUsers).filter(u => u.online).length;
-        animateCountUp(elements.onlineUsers, onlineCount);
+        if (elements.onlineUsers) elements.onlineUsers.textContent = onlineCount;
 
         const now = new Date();
         const currentYear = now.getFullYear();
@@ -547,8 +526,8 @@
             }
         });
 
-        animateCountUp(elements.tripsThisMonth, thisMonthCount);
-        animateCountUp(elements.tripsLastMonth, lastMonthCount);
+        if (elements.tripsThisMonth) elements.tripsThisMonth.textContent = thisMonthCount;
+        if (elements.tripsLastMonth) elements.tripsLastMonth.textContent = lastMonthCount;
 
         displayRecentActivity(1);
     }
