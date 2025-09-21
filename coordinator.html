@@ -13,7 +13,8 @@
         <h3>Koordinator</h3>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="#list" class="nav-link active">Daftar Perjalanan</a></li>
+        <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="#list" class="nav-link">Daftar Perjalanan</a></li>
         <li><a href="#add" class="nav-link">Tambah Perjalanan</a></li>
         <li><a href="#performance" class="nav-link">Kinerja Supir</a></li>
       </ul>
@@ -25,11 +26,34 @@
 
     <main class="main-content">
       <header class="main-header">
-        <h1 id="pageTitle">Status Perjalanan Saya</h1>
-        <p id="pageSubtitle">Pantau semua perjalanan yang telah Anda buat di sini.</p>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageSubtitle">Ringkasan aktivitas dan perjalanan Anda.</p>
       </header>
       
-      <div id="page-list" class="page active">
+      <div id="page-dashboard" class="page active">
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Total Perjalanan Dibuat</h3>
+                <p id="totalMyTrips">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Perjalanan Bulan Ini</h3>
+                <p id="myTripsThisMonth">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Perjalanan Bulan Lalu</h3>
+                <p id="myTripsLastMonth">0</p>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 2rem;">
+            <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
+            <div class="card-body" id="recentActivityCoordinator">
+                <p>Memuat aktivitas...</p>
+            </div>
+        </div>
+      </div>
+
+      <div id="page-list" class="page">
         <section class="card">
           <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
           <div class="card-body">
@@ -124,6 +148,7 @@
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
+        dashboard: { title: 'Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
         list: { title: 'Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
         add: { title: 'Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
         performance: { title: 'Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
@@ -147,6 +172,11 @@
       nextCoorBtn: document.getElementById('nextCoorBtn'),
       coorPageInfo: document.getElementById('coorPageInfo'),
       driverPerformanceStats: document.getElementById('driverPerformanceStats'),
+      // Dashboard Elements
+      totalMyTrips: document.getElementById('totalMyTrips'),
+      myTripsThisMonth: document.getElementById('myTripsThisMonth'),
+      myTripsLastMonth: document.getElementById('myTripsLastMonth'),
+      recentActivityCoordinator: document.getElementById('recentActivityCoordinator'),
     };
     
     let currentUser = null;
@@ -273,6 +303,54 @@
         elements.statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
       }
     });
+
+    function loadCoordinatorDashboardStats() {
+        elements.totalMyTrips.textContent = allMyTrips.length;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        let thisMonthCount = 0;
+        let lastMonthCount = 0;
+
+        allMyTrips.forEach(({data: trip}) => {
+            const tripDate = new Date(trip.tanggal + "T00:00:00");
+            const tripYear = tripDate.getFullYear();
+            const tripMonth = tripDate.getMonth();
+
+            if (tripYear === currentYear && tripMonth === currentMonth) {
+                thisMonthCount++;
+            }
+
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            if (tripYear === lastMonthYear && tripMonth === lastMonth) {
+                lastMonthCount++;
+            }
+        });
+
+        elements.myTripsThisMonth.textContent = thisMonthCount;
+        elements.myTripsLastMonth.textContent = lastMonthCount;
+        
+        elements.recentActivityCoordinator.innerHTML = '';
+        const recentTrips = allMyTrips.slice(0, 5); // Already reversed
+        if (recentTrips.length === 0) {
+            elements.recentActivityCoordinator.innerHTML = '<p class="empty-state">Belum ada aktivitas perjalanan.</p>';
+        } else {
+            const list = el('ul', '', { style: 'list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 1.5rem;' });
+            recentTrips.forEach(({data: trip}) => {
+                const item = el('li', '', { style: 'display:flex; align-items:center; gap:1rem;' });
+                const statusBadge = badge(trip.status);
+                statusBadge.style.flexShrink = '0';
+                const text = el('div');
+                text.innerHTML = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${trip.tujuan}</strong> <span style="color:#a0aec0; font-size:1.2rem; margin-left: 0.5rem;">${fmtDate(trip.tanggal)}</span>`;
+                item.append(statusBadge, text);
+                list.appendChild(item);
+            });
+            elements.recentActivityCoordinator.appendChild(list);
+        }
+    }
     
     function loadDriverPerformance() {
         const performance = {};
@@ -357,19 +435,18 @@
     elements.nextCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage + 1));
 
     function loadMyTrips() {
-      const tripsRef = ref(db, 'trips');
+      const tripsRef = query(ref(db, 'trips'), orderByChild('coorId'), equalTo(currentUser.uid));
       onValue(tripsRef, (snapshot) => {
         allMyTrips = [];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
-            if (child.val().coorId === currentUser.uid) {
-              allMyTrips.push({ id: child.key, data: child.val() });
-            }
+            allMyTrips.push({ id: child.key, data: child.val() });
           });
         }
         allMyTrips.reverse(); 
         displayMyTrips(1);
         loadDriverPerformance();
+        loadCoordinatorDashboardStats();
       });
     }
 
