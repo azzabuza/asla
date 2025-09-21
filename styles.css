@@ -655,7 +655,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 /* Problem-Solution Section */
 .problem-solution-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: (2, 1fr);
     gap: 2rem;
     align-items: center;
 }
