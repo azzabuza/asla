@@ -85,6 +85,10 @@ itemprop="image"
                 <p id="totalTrips">0</p>
             </div>
             <div class="stat-card">
+                <h3>Total Pengguna</h3>
+                <p id="totalUsers">0</p>
+            </div>
+            <div class="stat-card">
                 <h3>Pengguna Online</h3>
                 <p id="onlineUsers">0</p>
             </div>
@@ -376,6 +380,7 @@ itemprop="image"
         vehiclePageInfo: document.getElementById('vehiclePageInfo'),
         // Dashboard elements
         totalTrips: document.getElementById('totalTrips'),
+        totalUsers: document.getElementById('totalUsers'),
         onlineUsers: document.getElementById('onlineUsers'),
         totalRoutes: document.getElementById('totalRoutes'),
         totalVehicles: document.getElementById('totalVehicles'),
@@ -453,6 +458,9 @@ itemprop="image"
         if (elements.totalTrips) elements.totalTrips.textContent = allTrips.length;
         if (elements.totalRoutes) elements.totalRoutes.textContent = allRoutes.length;
         if (elements.totalVehicles) elements.totalVehicles.textContent = allVehicles.length;
+        
+        const userCount = Object.keys(allUsers).length;
+        if (elements.totalUsers) elements.totalUsers.textContent = userCount;
         
         const onlineCount = Object.values(allUsers).filter(u => u.online).length;
         if (elements.onlineUsers) elements.onlineUsers.textContent = onlineCount;
