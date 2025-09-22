@@ -751,6 +751,51 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .footer { padding: 4rem 0 2rem 0; text-align: center; border-top: 0.1rem solid var(--border-primary); }
 .footer p { color: var(--text-secondary); }
 
+/* === SWITCH CONTROL === */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 5rem;
+  height: 2.4rem;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-primary);
+  transition: .4s;
+  border-radius: 2.4rem;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.6rem;
+  width: 1.6rem;
+  left: 0.4rem;
+  bottom: 0.4rem;
+  background-color: var(--text-primary);
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--color-danger);
+}
+input:disabled + .slider {
+  cursor: not-allowed;
+  background-color: var(--bg-disabled);
+}
+input:checked + .slider:before {
+  transform: translateX(2.6rem);
+}
+
 @media (max-width: 99.2rem) {
     .problem-solution-grid { grid-template-columns: repeat(2, 1fr); }
     .workflow-grid { flex-direction: column; }
