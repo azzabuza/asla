@@ -4,8 +4,8 @@
 /* === ROOT VARIABLES === */
 :root {
   /* Background Colors */
-  --bg-primary: #121828;
-  --bg-secondary: #1a2235;
+  --bg-primary: #161616;
+  --bg-secondary: #1e1e20;
   --bg-tertiary: #242f48;
   --bg-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
   --bg-scrolled: rgba(18, 24, 40, 0.8);
