@@ -2,11 +2,12 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
   <title>Koordinator Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
   <div class="content-wrapper">
@@ -115,25 +116,25 @@
                 <form id="tripForm">
                   <div class="form-group">
                     <label for="driverSelect">Pilih Supir</label>
-                    <select id="driverSelect" required>
+                    <select id="driverSelect" class="searchable-dropdown" required style="width: 100%;">
                       <option value="">Memuat daftar supir...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="nopol">No. Polisi</label>
-                    <select id="nopol" required>
+                    <select id="nopol" class="searchable-dropdown" required style="width: 100%;">
                       <option value="">Memuat nopol...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="asal">Asal</label>
-                    <select id="asal" required>
+                    <select id="asal" class="searchable-dropdown" required style="width: 100%;">
                       <option value="">Memuat rute...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="tujuan">Tujuan</label>
-                    <select id="tujuan" required>
+                    <select id="tujuan" class="searchable-dropdown" required style="width: 100%;">
                       <option value="">Memuat rute...</option>
                     </select>
                   </div>
@@ -329,6 +330,12 @@
         await set(newTripRef, data);
         
         elements.tripForm.reset();
+        // Reset Select2 fields
+        $('#driverSelect').val(null).trigger('change');
+        $('#nopol').val(null).trigger('change');
+        $('#asal').val(null).trigger('change');
+        $('#tujuan').val(null).trigger('change');
+
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
         setTimeout(() => {
             elements.statusMsg.textContent = '';
@@ -506,6 +513,27 @@
     elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    });
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+        // Inisialisasi Select2 pada dropdown yang relevan
+        $('#driverSelect').select2({
+          dropdownCssClass: 'select2-dropdown' // Menambahkan class untuk styling dropdown
+        });
+        $('#nopol').select2({
+          dropdownCssClass: 'select2-dropdown'
+        });
+        $('#asal').select2({
+          dropdownCssClass: 'select2-dropdown'
+        });
+        $('#tujuan').select2({
+          dropdownCssClass: 'select2-dropdown'
+        });
     });
   </script>
 </body>
