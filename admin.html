@@ -317,12 +317,13 @@
           <h2 class="card-header">Mode Lockdown Pengguna</h2>
           <div class="card-body">
             <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-              <label for="massLockdownSwitch" style="margin: 0;">Lockdown Semua Pengguna</label>
+              <label for="massLockdownSwitch" style="margin: 0;">Lockdown Semua Pengguna (Kecuali Admin)</label>
               <label class="switch">
                 <input type="checkbox" id="massLockdownSwitch">
                 <span class="slider"></span>
               </label>
             </div>
+            <hr>
             <div class="table-responsive">
               <table>
                 <thead>
@@ -363,7 +364,7 @@
         addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
         performance: { title: '<i class="fas fa-chart-line"></i> Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
         documentation: { title: '<i class="fas fa-file-alt"></i> Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' },
-        lockdown: { title: '<i class="fas fa-lock"></i> Lockdown', subtitle: 'Nonaktifkan sementara akun pengguna bermasalah.' }
+        lockdown: { title: '<i class="fas fa-lock"></i> Lockdown', subtitle: 'Nonaktifkan sementara akun pengguna.' }
     };
 
     const elements = {
@@ -829,6 +830,9 @@
     
     function displayLockdownUsers() {
       elements.lockdownUserList.innerHTML = '';
+      let allLocked = true;
+      let eligibleUsers = 0;
+
       Object.entries(allUsers).forEach(([uid, user]) => {
         const tr = el('tr');
         const nameCell = el('td', user.name || 'N/A');
@@ -838,6 +842,10 @@
         if (user.role === 'super admin' || user.role === 'admin') {
           statusCell.textContent = 'Aktif (Tidak dapat dinonaktifkan)';
         } else {
+          eligibleUsers++;
+          if (!user.locked) {
+            allLocked = false;
+          }
           const switchLabel = el('label', '', { class: 'switch' });
           const switchInput = el('input', '', { type: 'checkbox' });
           switchInput.checked = user.locked || false;
@@ -852,6 +860,9 @@
         tr.append(nameCell, roleCell, statusCell);
         elements.lockdownUserList.appendChild(tr);
       });
+
+      // Update the mass lockdown switch based on the state of all eligible users
+      elements.massLockdownSwitch.checked = eligibleUsers > 0 && allLocked;
     }
 
     elements.massLockdownSwitch.addEventListener('change', async (e) => {
