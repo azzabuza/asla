@@ -157,6 +157,7 @@
       const tripId = tripIdInput.value.trim();
       if (!tripId) return alert('Masukkan kode resi perjalanan.');
       
+      statusMsg.style.display = 'block';
       statusMsg.textContent = 'Memproses...';
       statusMsg.style.color = 'var(--text-secondary)';
 
@@ -202,6 +203,7 @@
         
         scanner.addListener('scan', function(content) {
             tripIdInput.value = content;
+            statusMsg.style.display = 'block';
             statusMsg.style.color = 'var(--info)';
             statusMsg.textContent = '🔍 QR Code terdeteksi: ' + content;
         });
