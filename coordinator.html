@@ -2,12 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta content="width=device-width, initial-scale=1" name="viewport" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta content="width=device-width, initial-scale=1" name="viewport" />
   <title>Koordinator Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
 </head>
 <body>
   <div class="content-wrapper">
@@ -164,8 +163,6 @@
       
     </main>
   </div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
   <script type="module">
     import { 
@@ -173,26 +170,6 @@
       query, orderByChild, equalTo, update, onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
-
-    // Inisialisasi Choices.js di luar lingkup modul
-    const choiceInstances = {};
-    document.addEventListener('DOMContentLoaded', () => {
-      const initChoices = (elementId) => {
-        const element = document.getElementById(elementId);
-        if (element) {
-          choiceInstances[elementId] = new Choices(element, {
-            searchEnabled: true,
-            itemSelectText: 'Pilih',
-          });
-        }
-      };
-      
-      initChoices('driverSelect');
-      initChoices('nopol');
-      initChoices('asal');
-      initChoices('tujuan');
-    });
-
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
@@ -281,39 +258,34 @@
       loadRoutes();
       loadVehicles();
     });
-    
-    // Helper untuk memuat data ke Choices.js
-    const setDataForChoice = (instance, data) => {
-      instance.clearStore();
-      instance.setChoices(data, 'value', 'label', true);
-    };
 
     async function loadVehicles() {
       try {
         const snapshot = await get(ref(db, 'vehicles'));
-        const vehicleData = [{ value: '', label: '-- Pilih Nopol --' }];
+        elements.nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const vehicle = child.val();
-            vehicleData.push({ value: vehicle.nopol, label: `${vehicle.nopol} (${vehicle.type})` });
+            const option = el('option', `${vehicle.nopol} (${vehicle.type})`, { value: vehicle.nopol });
+            elements.nopolSelect.appendChild(option);
           });
         }
-        setDataForChoice(choiceInstances.nopol, vehicleData);
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
 
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
-        const routeData = [{ value: '', label: '-- Pilih Rute --' }];
+        elements.asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
+        elements.tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
-            routeData.push({ value: route.address, label: `${route.code} - ${route.address}` });
+            const option = el('option', `${route.code} - ${route.address}`, { value: route.address });
+            elements.asalSelect.appendChild(option.cloneNode(true));
+            elements.tujuanSelect.appendChild(option);
           });
         }
-        setDataForChoice(choiceInstances.asal, routeData);
-        setDataForChoice(choiceInstances.tujuan, routeData);
       } catch (error) { console.error("Gagal memuat rute:", error); }
     }
 
@@ -321,14 +293,14 @@
         try {
             const q = query(ref(db, 'users'), orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
-            const driverData = [{ value: '', label: '-- Pilih Supir --' }];
+            elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const driver = child.val();
-                    driverData.push({ value: child.key, label: driver.name });
+                    const option = el('option', driver.name, { value: child.key });
+                    elements.driverSelect.appendChild(option);
                 });
             }
-            setDataForChoice(choiceInstances.driverSelect, driverData);
         } catch (error) { console.error("Gagal memuat daftar supir:", error); }
     }
 
@@ -337,15 +309,16 @@
       elements.statusMsg.textContent = 'Mengirim...';
       if (!currentUser) return alert('Anda belum login.');
 
-      const driverId = elements.driverSelect.value;
-      const driverName = elements.driverSelect.options[elements.driverSelect.selectedIndex].text;
+      const selectedDriverOption = elements.driverSelect.options[elements.driverSelect.selectedIndex];
+      const driverId = selectedDriverOption.value;
+      const driverName = selectedDriverOption.text;
       if (!driverId) return alert('Silakan pilih supir terlebih dahulu.');
 
       const data = {
         coorId: currentUser.uid, driverId, driverName,
-        nopol: elements.nopolSelect.value,
-        asal: elements.asalSelect.value,
-        tujuan: elements.tujuanSelect.value,
+        nopol: document.getElementById('nopol').value,
+        asal: document.getElementById('asal').value,
+        tujuan: document.getElementById('tujuan').value,
         muatan: document.getElementById('muatan').value,
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', createdAt: Date.now()
@@ -356,9 +329,6 @@
         await set(newTripRef, data);
         
         elements.tripForm.reset();
-        // Reset Choices.js fields
-        Object.values(choiceInstances).forEach(instance => instance.setChoiceByValue(''));
-
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
         setTimeout(() => {
             elements.statusMsg.textContent = '';
