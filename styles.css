@@ -777,14 +777,16 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 /* === STYLING UNTUK CHOICES.JS (VANILLA JS SEARCHABLE DROPDOWN) === */
 .choices {
   font-size: 1.5rem;
+  margin-bottom: 0; /* Menghapus margin bawah default */
 }
 .choices__inner {
   background-color: var(--bg-primary);
   border: 0.1rem solid var(--border-primary);
   border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: .75rem 1rem !important;
   color: var(--text-primary);
   min-height: auto;
+  font-size: 1.5rem;
 }
 .choices.is-open .choices__inner {
   border-color: var(--border-focus);
@@ -795,9 +797,11 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   border-radius: 0.5rem;
 }
 .choices__input {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   font-size: 1.5rem;
+  padding: 0;
+  margin: 0;
 }
 .choices__list--dropdown .choices__item--selectable.is-highlighted, 
 .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
