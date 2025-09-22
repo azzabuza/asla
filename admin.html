@@ -844,7 +844,7 @@
         const statusCell = el('td');
         
         if (user.role === 'super admin' || user.role === 'admin') {
-          statusCell.textContent = 'Aktif (Tidak dapat dinonaktifkan)';
+          statusCell.textContent = 'Tidak dapat dinonaktifkan';
         } else {
           eligibleUsers++;
           if (!user.locked) {
