@@ -7,7 +7,7 @@
   <title>Koordinator Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
 </head>
 <body>
   <div class="content-wrapper">
@@ -116,25 +116,25 @@
                 <form id="tripForm">
                   <div class="form-group">
                     <label for="driverSelect">Pilih Supir</label>
-                    <select id="driverSelect" class="searchable-dropdown" required style="width: 100%;">
+                    <select id="driverSelect" required>
                       <option value="">Memuat daftar supir...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="nopol">No. Polisi</label>
-                    <select id="nopol" class="searchable-dropdown" required style="width: 100%;">
+                    <select id="nopol" required>
                       <option value="">Memuat nopol...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="asal">Asal</label>
-                    <select id="asal" class="searchable-dropdown" required style="width: 100%;">
+                    <select id="asal" required>
                       <option value="">Memuat rute...</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label for="tujuan">Tujuan</label>
-                    <select id="tujuan" class="searchable-dropdown" required style="width: 100%;">
+                    <select id="tujuan" required>
                       <option value="">Memuat rute...</option>
                     </select>
                   </div>
@@ -164,6 +164,8 @@
       
     </main>
   </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
   <script type="module">
     import { 
@@ -171,6 +173,26 @@
       query, orderByChild, equalTo, update, onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
+
+    // Inisialisasi Choices.js di luar lingkup modul
+    const choiceInstances = {};
+    document.addEventListener('DOMContentLoaded', () => {
+      const initChoices = (elementId) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          choiceInstances[elementId] = new Choices(element, {
+            searchEnabled: true,
+            itemSelectText: 'Pilih',
+          });
+        }
+      };
+      
+      initChoices('driverSelect');
+      initChoices('nopol');
+      initChoices('asal');
+      initChoices('tujuan');
+    });
+
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
@@ -259,34 +281,39 @@
       loadRoutes();
       loadVehicles();
     });
+    
+    // Helper untuk memuat data ke Choices.js
+    const setDataForChoice = (instance, data) => {
+      instance.clearStore();
+      instance.setChoices(data, 'value', 'label', true);
+    };
 
     async function loadVehicles() {
       try {
         const snapshot = await get(ref(db, 'vehicles'));
-        elements.nopolSelect.innerHTML = '<option value="">-- Pilih Nopol --</option>';
+        const vehicleData = [{ value: '', label: '-- Pilih Nopol --' }];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const vehicle = child.val();
-            const option = el('option', `${vehicle.nopol} (${vehicle.type})`, { value: vehicle.nopol });
-            elements.nopolSelect.appendChild(option);
+            vehicleData.push({ value: vehicle.nopol, label: `${vehicle.nopol} (${vehicle.type})` });
           });
         }
+        setDataForChoice(choiceInstances.nopol, vehicleData);
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
 
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
-        elements.asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
-        elements.tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
+        const routeData = [{ value: '', label: '-- Pilih Rute --' }];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
-            const option = el('option', `${route.code} - ${route.address}`, { value: route.address });
-            elements.asalSelect.appendChild(option.cloneNode(true));
-            elements.tujuanSelect.appendChild(option);
+            routeData.push({ value: route.address, label: `${route.code} - ${route.address}` });
           });
         }
+        setDataForChoice(choiceInstances.asal, routeData);
+        setDataForChoice(choiceInstances.tujuan, routeData);
       } catch (error) { console.error("Gagal memuat rute:", error); }
     }
 
@@ -294,14 +321,14 @@
         try {
             const q = query(ref(db, 'users'), orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
-            elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
+            const driverData = [{ value: '', label: '-- Pilih Supir --' }];
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const driver = child.val();
-                    const option = el('option', driver.name, { value: child.key });
-                    elements.driverSelect.appendChild(option);
+                    driverData.push({ value: child.key, label: driver.name });
                 });
             }
+            setDataForChoice(choiceInstances.driverSelect, driverData);
         } catch (error) { console.error("Gagal memuat daftar supir:", error); }
     }
 
@@ -310,16 +337,15 @@
       elements.statusMsg.textContent = 'Mengirim...';
       if (!currentUser) return alert('Anda belum login.');
 
-      const selectedDriverOption = elements.driverSelect.options[elements.driverSelect.selectedIndex];
-      const driverId = selectedDriverOption.value;
-      const driverName = selectedDriverOption.text;
+      const driverId = elements.driverSelect.value;
+      const driverName = elements.driverSelect.options[elements.driverSelect.selectedIndex].text;
       if (!driverId) return alert('Silakan pilih supir terlebih dahulu.');
 
       const data = {
         coorId: currentUser.uid, driverId, driverName,
-        nopol: document.getElementById('nopol').value,
-        asal: document.getElementById('asal').value,
-        tujuan: document.getElementById('tujuan').value,
+        nopol: elements.nopolSelect.value,
+        asal: elements.asalSelect.value,
+        tujuan: elements.tujuanSelect.value,
         muatan: document.getElementById('muatan').value,
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', createdAt: Date.now()
@@ -330,11 +356,8 @@
         await set(newTripRef, data);
         
         elements.tripForm.reset();
-        // Reset Select2 fields
-        $('#driverSelect').val(null).trigger('change');
-        $('#nopol').val(null).trigger('change');
-        $('#asal').val(null).trigger('change');
-        $('#tujuan').val(null).trigger('change');
+        // Reset Choices.js fields
+        Object.values(choiceInstances).forEach(instance => instance.setChoiceByValue(''));
 
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
         setTimeout(() => {
@@ -513,27 +536,6 @@
     elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
         signOut(auth).catch(err => console.error("Logout Gagal:", err));
-    });
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-
-  <script>
-    $(document).ready(function() {
-        // Inisialisasi Select2 pada dropdown yang relevan
-        $('#driverSelect').select2({
-          dropdownCssClass: 'select2-dropdown' // Menambahkan class untuk styling dropdown
-        });
-        $('#nopol').select2({
-          dropdownCssClass: 'select2-dropdown'
-        });
-        $('#asal').select2({
-          dropdownCssClass: 'select2-dropdown'
-        });
-        $('#tujuan').select2({
-          dropdownCssClass: 'select2-dropdown'
-        });
     });
   </script>
 </body>
