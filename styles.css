@@ -629,10 +629,6 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   display: inline-block;
   border: none;
 }
- .hero .button-primary:hover {
-    transform: translateY(-0.3rem);
-    box-shadow: 0 1rem 2rem rgba(0, 210, 255, 0.2);
- }
  
 /* Section Styling */
 .section { padding: 10rem 0; }
