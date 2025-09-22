@@ -306,6 +306,7 @@
 
     elements.tripForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      elements.statusMsg.style.display = 'block';
       elements.statusMsg.textContent = 'Mengirim...';
       if (!currentUser) return alert('Anda belum login.');
 
@@ -332,6 +333,7 @@
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
         setTimeout(() => {
             elements.statusMsg.textContent = '';
+            elements.statusMsg.style.display = 'none';
             document.querySelector('.nav-link[href="#list"]').click();
         }, 2000);
       } catch(err) {
