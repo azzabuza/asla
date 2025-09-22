@@ -774,33 +774,48 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     }
 }
 
-/* === STYLING UNTUK SELECT2 (SEARCHABLE DROPDOWN) === */
-.select2-container--default .select2-selection--single {
+/* === STYLING UNTUK CHOICES.JS (VANILLA JS SEARCHABLE DROPDOWN) === */
+.choices {
+  font-size: 1.5rem;
+}
+.choices__inner {
   background-color: var(--bg-primary);
   border: 0.1rem solid var(--border-primary);
-  height: calc(3rem + 2px); /* Menyesuaikan tinggi */
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  min-height: auto;
+}
+.choices.is-open .choices__inner {
+  border-color: var(--border-focus);
+}
+.choices__list--dropdown, .choices__list[aria-expanded] {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-primary);
   border-radius: 0.5rem;
 }
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-  color: var(--text-primary);
-  line-height: 3rem; /* Menyesuaikan line-height */
-  padding-left: 1rem;
-}
-.select2-container--default .select2-selection--single .select2-selection__arrow {
-  height: 3rem;
-}
-.select2-dropdown {
-  background-color: var(--bg-secondary);
-  border: 0.1rem solid var(--border-primary);
-}
-.select2-container--default .select2-search--dropdown .select2-search__field {
+.choices__input {
   background-color: var(--bg-primary);
-  border-color: var(--border-primary);
   color: var(--text-primary);
+  font-size: 1.5rem;
 }
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
+.choices__list--dropdown .choices__item--selectable.is-highlighted, 
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
   background-color: var(--bg-tertiary);
 }
-.select2-results__option {
+.choices__list--dropdown .choices__item, .choices__list[aria-expanded] .choices__item {
   color: var(--text-secondary);
+  font-size: 1.5rem;
+}
+.choices__list--single .choices__item {
+  color: var(--text-primary);
+}
+.choices[data-type*="select-one"]::after {
+  border-color: var(--text-secondary) transparent transparent;
+  right: 1.5rem;
+  margin-top: -0.5rem;
+}
+.choices.is-open[data-type*="select-one"]::after {
+    border-color: transparent transparent var(--text-secondary);
+    margin-top: -0.75rem;
 }
