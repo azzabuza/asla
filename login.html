@@ -62,6 +62,10 @@
       const userData = snap.val();
       console.log("User data from database:", userData);
 
+      if (userData.locked) {
+        throw new Error('Akun Anda telah dinonaktifkan sementara. Silakan hubungi administrator.');
+      }
+
       const role = userData ? userData.role : null;
       console.log("Login sebagai:", role, "UID:", user.uid);
 
@@ -81,7 +85,7 @@
 
     } catch (err) {
       console.error('Login error:', err);
-      errorMsg.textContent = 'Login gagal. Periksa kembali email dan password Anda.';
+      errorMsg.textContent = 'Login gagal. ' + err.message;
     }
   });
 </script>
