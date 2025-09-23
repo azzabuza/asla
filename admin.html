@@ -507,7 +507,7 @@
           if (snap.exists()) {
               const userData = snap.val();
               if (userData.role === 'admin' && userData.locked) {
-                  alert('Akses Anda telah dinonaktifkan oleh Super Admin. Anda akan dikeluarkan.');
+                  alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                   signOut(auth);
               }
               if (userData.role !== 'admin' && userData.role !== 'super admin') {
