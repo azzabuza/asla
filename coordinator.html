@@ -240,16 +240,14 @@
       currentUser = user;
       const userRef = ref(db, 'users/' + currentUser.uid);
 
-      // --- KODE BARU: PANTAU STATUS LOCKDOWN ---
       onValue(userRef, (snap) => {
         if (snap.exists()) {
             const userData = snap.val();
             if (userData.locked || userData.role !== 'coordinator') {
-                alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
+                alert('Akses Anda telah dinonaktifkan atau role Anda diubah. Anda akan dikeluarkan.');
                 signOut(auth);
             }
         } else {
-
             alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
             signOut(auth);
         }
@@ -285,6 +283,7 @@
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
 
+    // --- FUNGSI DIPERBAIKI ---
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
@@ -293,27 +292,39 @@
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
-            const option = el('option', `${route.code} - ${route.address}`, { value: route.address });
-            elements.asalSelect.appendChild(option.cloneNode(true));
-            elements.tujuanSelect.appendChild(option);
+            const optionText = `${route.code} - ${route.address}`;
+            const optionValue = route.address;
+            // Buat dua elemen option terpisah untuk setiap dropdown
+            const optionAsal = el('option', optionText, { value: optionValue });
+            const optionTujuan = el('option', optionText, { value: optionValue });
+            elements.asalSelect.appendChild(optionAsal);
+            elements.tujuanSelect.appendChild(optionTujuan);
           });
         }
       } catch (error) { console.error("Gagal memuat rute:", error); }
     }
 
+    // --- FUNGSI DIPERBAIKI ---
     async function loadDrivers() {
         try {
             const q = query(ref(db, 'users'), orderByChild('role'), equalTo('driver'));
             const snapshot = await get(q);
-            elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
             if (snapshot.exists()) {
+                elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
                 snapshot.forEach(child => {
                     const driver = child.val();
-                    const option = el('option', driver.name, { value: child.key });
-                    elements.driverSelect.appendChild(option);
+                    if (driver.name && !driver.locked) { // Hanya tampilkan supir yang aktif (tidak di-lockdown)
+                        const option = el('option', driver.name, { value: child.key });
+                        elements.driverSelect.appendChild(option);
+                    }
                 });
+            } else {
+                elements.driverSelect.innerHTML = '<option value="">Tidak ada supir ditemukan</option>';
             }
-        } catch (error) { console.error("Gagal memuat daftar supir:", error); }
+        } catch (error) { 
+            console.error("Gagal memuat daftar supir:", error); 
+            elements.driverSelect.innerHTML = '<option value="">Gagal memuat supir</option>';
+        }
     }
 
     elements.tripForm.addEventListener('submit', async (e) => {
