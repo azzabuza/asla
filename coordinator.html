@@ -245,7 +245,7 @@
         if (snap.exists()) {
             const userData = snap.val();
             if (userData.locked || userData.role !== 'coordinator') {
-                alert('Akses Anda telah dinonaktifkan atau role Anda diubah. Anda akan dikeluarkan.');
+                alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                 signOut(auth);
             }
         } else {
