@@ -1082,7 +1082,11 @@
         } else {
             paginatedLogs.forEach(log => {
                 const tr = el('tr');
-                const logTime = new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                // FIXED: Added a check for timestamp to prevent errors
+                const logTime = log.timestamp 
+                    ? new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+                    : 'Waktu tidak valid';
+                
                 tr.innerHTML = `
                     <td data-label="Waktu">${logTime}</td>
                     <td data-label="Pengguna">${log.userName || 'N/A'}</td>
