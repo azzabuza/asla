@@ -170,36 +170,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 0;
   margin: 2rem 0 0 0;
 }
-.sidebar-partner{
-box-sizing:border-box;
-margin:2rem 0 0 0;
-padding:0;
-}
-.sidebar-partner ul{
-box-sizing:border-box;
-display:flex;
-flex-wrap:wrap;
-justify-content:left;
-gap:2rem;
-padding:0;
-margin:0;
-list-style:none;
-}
-.sidebar-partner li{
-box-sizing:border-box;
-padding:0;
-margin:0;
-flex-shrink:0;
-}
-.sidebar-partner li img{
-box-sizing:border-box;
-height:3rem;
-width:auto;
-object-fit:contain;
-padding:0!important;
-margin:0!important;
-filter:brightness(0) invert(1);
-}
+
 .main-content {
   box-sizing:border-box;
   width: 100%;
