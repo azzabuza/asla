@@ -496,41 +496,38 @@
     }
     setupNavigation();
     
+    // --- KODE DIPERBAIKI ---
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
       const userRef = ref(db, `users/${user.uid}`);
 
-      // --- KODE BARU: PANTAU STATUS LOCKDOWN ---
+      // Listener real-time untuk cek lockdown/perubahan role
       onValue(userRef, (snap) => {
           if (snap.exists()) {
               const userData = snap.val();
-              // Hanya admin biasa yang bisa di-lockdown oleh super admin
               if (userData.role === 'admin' && userData.locked) {
-                  alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
+                  alert('Akses Anda telah dinonaktifkan oleh Super Admin. Anda akan dikeluarkan.');
                   signOut(auth);
               }
-              // Jika role diubah dari admin/super admin
               if (userData.role !== 'admin' && userData.role !== 'super admin') {
                   alert('Role Anda telah diubah. Akses ke panel admin ditolak.');
                   signOut(auth);
               }
           } else {
-              // Jika user dihapus
               alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
               signOut(auth);
           }
       });
-      // --- AKHIR KODE BARU ---
 
+      // Ambil data awal saat login untuk setup UI
       try {
-        const snap = await get(ref(db, `users/${user.uid}`));
-        if (!snap.exists()) return; // Pemeriksaan awal, onValue akan menangani sisanya
+        const initialSnap = await get(userRef);
+        if (!initialSnap.exists()) return; // onValue akan menangani alert & redirect
 
-        currentUserData = snap.val();
+        currentUserData = initialSnap.val();
         if (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin') {
-          // Arahkan ke halaman login jika role tidak sesuai, onValue akan menangani alert
-          return window.location.href = 'index.html';
+          return; // onValue sudah menangani alert
         }
 
         elements.userName.textContent = currentUserData.name || 'Admin';
@@ -545,15 +542,15 @@
             }
         }
 
-        await update(ref(db, `users/${user.uid}`), { lastLogin: Date.now(), online: true });
+        await update(userRef, { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
-        await loadAllUsers(); 
-        await loadRoutes();
+        loadAllUsers(); 
+        loadRoutes();
         loadAllTrips();
         loadVehicles();
         loadRoleStats();
-      } catch (e) { console.error("Error cek admin:", e); }
+      } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
 
     function displayRecentActivity(page) {
@@ -1063,6 +1060,7 @@
         console.log("Memulai proses backup...");
         const dataToBackup = {};
         try {
+            // Karena aturan root read, kita harus mengambil data per-node
             const usersSnap = await get(ref(db, 'users'));
             if(usersSnap.exists()) dataToBackup.users = usersSnap.val();
 
@@ -1091,7 +1089,7 @@
             alert('Backup berhasil diunduh!');
         } catch (error) {
             console.error("Gagal melakukan backup:", error);
-            alert(`Gagal melakukan backup: ${error.message}`);
+            alert(`Gagal melakukan backup: ${error.message}. Pastikan role Anda adalah Super Admin.`);
         }
     }
 
@@ -1117,11 +1115,11 @@
                 elements.restoreStatus.style.display = 'block';
                 elements.restoreStatus.textContent = 'Memulihkan data... Harap jangan tutup halaman ini.';
                 
-                // Validasi sederhana
-                if (!data.users || !data.trips) {
-                    throw new Error("File backup tidak valid atau rusak.");
+                if (!data.users) {
+                    throw new Error("File backup tidak valid atau rusak (tidak ada node 'users').");
                 }
 
+                // Menulis ke root database
                 await set(ref(db), data);
                 
                 elements.restoreStatus.textContent = '✔️ Data berhasil dipulihkan. Halaman akan dimuat ulang.';
