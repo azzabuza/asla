@@ -93,6 +93,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   max-width: 100%;
   margin: 0 auto;
   padding: 0;
+  width: 120rem;
 }
 .sidebar {
   box-sizing: border-box;
