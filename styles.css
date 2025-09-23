@@ -399,6 +399,14 @@ input:focus, select:focus {
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+input::file-selector-button {
+  background: var(--bg-gradient);
+  color: var(--text-inverse);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+    }
 option {
   background-color: var(--bg-primary);
   color: var(--text-primary);
