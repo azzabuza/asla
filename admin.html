@@ -32,7 +32,7 @@
         <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Nopol</a></li>
         <li><a href="#performance" class="nav-link"><i class="fas fa-chart-line"></i> Kinerja Role</a></li>
         <li><a href="#documentation" class="nav-link"><i class="fas fa-file-alt"></i> Dokumentasi Laporan</a></li>
-        <li><a href="#lockdown" class="nav-link"><i class="fas fa-lock"></i> Lockdown</a></li>
+        <li id="lockdown-menu-item" style="display: none;"><a href="#lockdown" class="nav-link"><i class="fas fa-lock"></i> Lockdown</a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
@@ -425,6 +425,7 @@
         exportPdfBtn: document.getElementById('exportPdfBtn'),
         exportExcelBtn: document.getElementById('exportExcelBtn'),
         // Lockdown elements
+        lockdownMenuItem: document.getElementById('lockdown-menu-item'),
         lockdownUserList: document.getElementById('lockdownUserList'),
         massLockdownSwitch: document.getElementById('massLockdownSwitch'),
     };
@@ -477,6 +478,7 @@
         elements.userEmail.textContent = currentUser.email;
 
         if (currentUserData.role === 'super admin') {
+            elements.lockdownMenuItem.style.display = 'block';
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -843,7 +845,7 @@
         const roleCell = el('td', user.role || 'N/A');
         const statusCell = el('td');
         
-        if (user.role === 'super admin' || user.role === 'admin') {
+        if (user.role === 'super admin') {
           statusCell.textContent = 'Tidak dapat dinonaktifkan';
         } else {
           eligibleUsers++;
@@ -870,10 +872,10 @@
 
     elements.massLockdownSwitch.addEventListener('change', async (e) => {
       const lock = e.target.checked;
-      if (confirm(`Anda yakin ingin ${lock ? 'menonaktifkan' : 'mengaktifkan'} semua pengguna (kecuali admin)?`)) {
+      if (confirm(`Anda yakin ingin ${lock ? 'menonaktifkan' : 'mengaktifkan'} semua pengguna (kecuali super admin)?`)) {
         const updates = {};
         Object.entries(allUsers).forEach(([uid, user]) => {
-          if (user.role !== 'super admin' && user.role !== 'admin') {
+          if (user.role !== 'super admin') {
             updates[`/users/${uid}/locked`] = lock;
           }
         });
