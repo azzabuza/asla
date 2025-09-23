@@ -48,6 +48,50 @@
       </header>
       
       <div id="page-dashboard" class="page active">
+        <div id="usage-stats-container" class="card" style="display:none; margin-bottom: 2rem;">
+            <h2 class="card-header">Statistik Penggunaan Sistem</h2>
+            <div class="card-body">
+                <div class="usage-grid">
+                    <div class="gauge-container">
+                        <div class="gauge" id="tripsGauge">
+                            <div class="gauge-fill"></div>
+                            <div class="gauge-cover"><span></span><small>Perjalanan</small></div>
+                        </div>
+                        <div class="gauge-label">
+                            <p><strong><span id="tripsCount">0</span></strong> / <span id="tripsMax">5000</span></p>
+                        </div>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge" id="usersGauge">
+                            <div class="gauge-fill"></div>
+                            <div class="gauge-cover"><span></span><small>Pengguna</small></div>
+                        </div>
+                        <div class="gauge-label">
+                            <p><strong><span id="usersCount">0</span></strong> / <span id="usersMax">500</span></p>
+                        </div>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge" id="routesGauge">
+                            <div class="gauge-fill"></div>
+                            <div class="gauge-cover"><span></span><small>Rute</small></div>
+                        </div>
+                        <div class="gauge-label">
+                           <p><strong><span id="routesCount">0</span></strong> / <span id="routesMax">200</span></p>
+                        </div>
+                    </div>
+                     <div class="gauge-container">
+                        <div class="gauge" id="vehiclesGauge">
+                            <div class="gauge-fill"></div>
+                            <div class="gauge-cover"><span></span><small>Kendaraan</small></div>
+                        </div>
+                        <div class="gauge-label">
+                           <p><strong><span id="vehiclesCount">0</span></strong> / <span id="vehiclesMax">200</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="dashboard-grid">
             <div class="stat-card">
                 <h3>Total Perjalanan</h3>
@@ -461,6 +505,8 @@
         restoreBackupBtn: document.getElementById('restoreBackupBtn'),
         restoreFileInput: document.getElementById('restoreFileInput'),
         restoreStatus: document.getElementById('restoreStatus'),
+         // Usage Stats elements
+        usageStatsContainer: document.getElementById('usage-stats-container'),
     };
 
     let currentUser = null;
@@ -537,6 +583,7 @@
         if (currentUserData.role === 'super admin') {
             elements.lockdownMenuItem.style.display = 'block';
             elements.backupMenuItem.style.display = 'block';
+            elements.usageStatsContainer.style.display = 'block';
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -633,8 +680,50 @@
         if (elements.tripsThisMonth) elements.tripsThisMonth.textContent = thisMonthCount;
         if (elements.tripsLastMonth) elements.tripsLastMonth.textContent = lastMonthCount;
 
+        if (currentUserData && currentUserData.role === 'super admin') {
+            loadUsageStats();
+        }
+
         displayRecentActivity(1);
     }
+     function loadUsageStats() {
+        const limits = {
+            trips: 5000,
+            users: 500,
+            routes: 200,
+            vehicles: 200,
+        };
+
+        const counts = {
+            trips: allTrips.length,
+            users: Object.keys(allUsers).length,
+            routes: allRoutes.length,
+            vehicles: allVehicles.length,
+        };
+
+        function updateGauge(type) {
+            const count = counts[type];
+            const max = limits[type];
+            const percentage = Math.min((count / max) * 100, 100);
+            const rotation = (percentage / 100) * 180;
+
+            const gaugeEl = document.getElementById(`${type}Gauge`);
+            const countEl = document.getElementById(`${type}Count`);
+            const maxEl = document.getElementById(`${type}Max`);
+            const coverTextEl = gaugeEl.querySelector('.gauge-cover span');
+
+            if (gaugeEl) gaugeEl.querySelector('.gauge-fill').style.transform = `rotate(${rotation}deg)`;
+            if (countEl) countEl.textContent = count;
+            if (maxEl) maxEl.textContent = max;
+            if (coverTextEl) coverTextEl.textContent = `${Math.round(percentage)}%`;
+        }
+
+        updateGauge('trips');
+        updateGauge('users');
+        updateGauge('routes');
+        updateGauge('vehicles');
+    }
+
     
     function displayTrips(page) {
       elements.tripList.innerHTML = '';
