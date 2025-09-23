@@ -807,17 +807,6 @@ input:checked + .slider:before {
   transform: translateX(2.6rem);
 }
 
-@media (max-width: 99.2rem) {
-    .problem-solution-grid { grid-template-columns: repeat(2, 1fr); }
-    .workflow-grid { flex-direction: column; }
-    .workflow-arrow { transform: rotate(90deg); margin: 1rem 0; }
-    .roles-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 76.8rem) {
-  .hero h1 { font-size: 2.8rem; }
-  .navbar .nav-links { display: none; }
-}
-
 @keyframes animatedGradient {
     0% {
         background-position: 0% 50%;
