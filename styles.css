@@ -551,8 +551,9 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 
 /* Navbar */
 .navbar {
+  box-sizing: border-box;
   width: 100%;
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -593,7 +594,6 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     border-radius: 0.5rem;
     font-weight: 600;
 }
- .navbar .nav-links a.button:hover { opacity: 0.9; }
 
 /* Hero Section */
 .hero {
