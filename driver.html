@@ -105,12 +105,25 @@
       currentUser = user;
 
       const userRef = ref(db, 'users/' + currentUser.uid);
+      
+      // --- KODE BARU: PANTAU STATUS LOCKDOWN ---
+      onValue(userRef, (snap) => {
+        if (snap.exists()) {
+            const userData = snap.val();
+            if (userData.locked || userData.role !== 'driver') {
+                alert('Akses Anda telah dinonaktifkan atau role Anda diubah. Anda akan dikeluarkan.');
+                signOut(auth);
+            }
+        } else {
+            // Jika data user dihapus saat sedang login
+            alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
+            signOut(auth);
+        }
+      });
+      // --- AKHIR KODE BARU ---
+      
       const snap = await get(userRef);
-
-      if (!snap.exists() || snap.val().role !== 'driver') {
-        alert('Akses ditolak. Hanya untuk driver.');
-        return window.location.href = 'index.html';
-      }
+      if (!snap.exists()) return; // Pemeriksaan awal, onValue akan menangani sisanya
       
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
