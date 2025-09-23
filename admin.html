@@ -507,7 +507,7 @@
               const userData = snap.val();
               // Hanya admin biasa yang bisa di-lockdown oleh super admin
               if (userData.role === 'admin' && userData.locked) {
-                  alert('Akses Anda telah dinonaktifkan oleh Super Admin. Anda akan dikeluarkan.');
+                  alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                   signOut(auth);
               }
               // Jika role diubah dari admin/super admin
