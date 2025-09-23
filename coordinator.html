@@ -283,7 +283,6 @@
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
 
-    // --- FUNGSI DIPERBAIKI ---
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
@@ -294,7 +293,6 @@
             const route = child.val();
             const optionText = `${route.code} - ${route.address}`;
             const optionValue = route.address;
-            // Buat dua elemen option terpisah untuk setiap dropdown
             const optionAsal = el('option', optionText, { value: optionValue });
             const optionTujuan = el('option', optionText, { value: optionValue });
             elements.asalSelect.appendChild(optionAsal);
@@ -307,19 +305,26 @@
     // --- FUNGSI DIPERBAIKI ---
     async function loadDrivers() {
         try {
-            const q = query(ref(db, 'users'), orderByChild('role'), equalTo('driver'));
-            const snapshot = await get(q);
+            // Mengambil semua data pengguna sekali jalan
+            const snapshot = await get(ref(db, 'users'));
             if (snapshot.exists()) {
                 elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
+                let driverFound = false;
+                // Melakukan filter di sisi klien (browser)
                 snapshot.forEach(child => {
-                    const driver = child.val();
-                    if (driver.name && !driver.locked) { // Hanya tampilkan supir yang aktif (tidak di-lockdown)
-                        const option = el('option', driver.name, { value: child.key });
+                    const uid = child.key;
+                    const user = child.val();
+                    if (user.role === 'driver' && user.name && !user.locked) {
+                        const option = el('option', user.name, { value: uid });
                         elements.driverSelect.appendChild(option);
+                        driverFound = true;
                     }
                 });
+                if (!driverFound) {
+                    elements.driverSelect.innerHTML = '<option value="">Tidak ada supir aktif</option>';
+                }
             } else {
-                elements.driverSelect.innerHTML = '<option value="">Tidak ada supir ditemukan</option>';
+                elements.driverSelect.innerHTML = '<option value="">Tidak ada data user</option>';
             }
         } catch (error) { 
             console.error("Gagal memuat daftar supir:", error); 
@@ -336,7 +341,11 @@
       const selectedDriverOption = elements.driverSelect.options[elements.driverSelect.selectedIndex];
       const driverId = selectedDriverOption.value;
       const driverName = selectedDriverOption.text;
-      if (!driverId) return alert('Silakan pilih supir terlebih dahulu.');
+      if (!driverId) {
+        alert('Silakan pilih supir terlebih dahulu.');
+        elements.statusMsg.textContent = '';
+        return;
+      }
 
       const data = {
         coorId: currentUser.uid, driverId, driverName,
@@ -347,6 +356,15 @@
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', createdAt: Date.now()
       };
+      
+      // Validasi input dasar
+      for(const key in data) {
+          if(!data[key] && key !== 'driverName') { // driverName bisa kosong jika user dihapus
+              alert(`Kolom ${key} tidak boleh kosong.`);
+              elements.statusMsg.textContent = '';
+              return;
+          }
+      }
 
       try {
         const newTripRef = push(ref(db, 'trips'));
