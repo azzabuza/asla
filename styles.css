@@ -172,9 +172,8 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar-partner{
 box-sizing:border-box;
-margin:0 0 2rem 0;
+margin:2rem 0 0 0;
 padding:0;
-  display: none;
 }
 .sidebar-partner ul{
 box-sizing:border-box;
