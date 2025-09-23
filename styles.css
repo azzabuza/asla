@@ -403,6 +403,7 @@ input::file-selector-button {
   background: var(--bg-gradient);
   color: var(--text-inverse);
   font-size: 1rem;
+  font-weight: 500;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.25rem;
