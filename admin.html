@@ -775,6 +775,7 @@
             allTrips.reverse();
             displayTrips(1);
             loadDashboardStats();
+            loadRoleStats(); // <-- PERBAIKAN DI SINI
         });
         onValue(ref(db, 'routes'), (snapshot) => {
           allRoutes = [];
