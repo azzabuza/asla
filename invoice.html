@@ -11,7 +11,7 @@
 
   <script type="module">
     import { db, ref, get } from './firebase.js';
-    import { qparam, fmtDate } from './utils.js'; // FIXED: Correctly imports helpers
+    import { qparam, fmtDate } from './utils.js';
 
     const id = qparam('id');
     const content = document.getElementById('content');
@@ -27,14 +27,14 @@
         <h1>PT SLA Trucking</h1>
         <h2>INVOICE</h2>
         <p><strong>Sopir:</strong> ${d.driverName}</p>
-        <p><strong>No. Polisi:</strong> ${d.nopol}</p>
+        <p><strong>No. Kendaraan:</strong> ${d.vehicleNumber}</p>
         <p><strong>Rute:</strong> ${d.asal} → ${d.tujuan}</p>
         <p><strong>Muatan:</strong> ${d.muatan}</p>
         <p><strong>Tanggal:</strong> ${fmtDate(d.tanggal)}</p>
         <hr>
         <p><strong>Total Biaya:</strong> (Data biaya belum tersedia)</p>
       `;
-      // window.print(); // Uncomment to enable auto-print
+      // window.print();
     })();
   </script>
 </body>
