@@ -96,7 +96,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar {
   box-sizing: border-box;
-  width: 40rem;
+  width: 50rem;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   display: flex;
