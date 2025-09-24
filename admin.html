@@ -26,10 +26,10 @@
         <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Pantau Perjalanan</a></li>
         <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
-        <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Nopol</a></li>
+        <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
         <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
         <li><a href="#addrutes" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</a></li>
-        <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Nopol</a></li>
+        <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Kendaraan</a></li>
         <li><a href="#performance" class="nav-link"><i class="fas fa-chart-line"></i> Kinerja Role</a></li>
         <li><a href="#documentation" class="nav-link"><i class="fas fa-file-alt"></i> Dokumentasi Laporan</a></li>
         <li id="lockdown-menu-item" style="display: none;"><a href="#lockdown" class="nav-link"><i class="fas fa-lock"></i> Lockdown</a></li>
@@ -197,7 +197,7 @@
 
       <div id="page-vehicles" class="page">
         <section class="card">
-          <h2 class="card-header">Daftar Nopol Tersimpan</h2>
+          <h2 class="card-header">Daftar Kendaraan Tersimpan</h2>
           <div class="card-body">
             <div class="table-responsive">
               <table>
@@ -259,7 +259,7 @@
       </div>
       <div id="page-addvehicles" class="page">
           <section class="card">
-            <h2 class="card-header">Tambah Nopol Baru</h2>
+            <h2 class="card-header">Tambah Kendaraan Baru</h2>
             <div class="card-body">
               <form id="addVehicleForm">
                 <div class="form-group">
@@ -277,7 +277,7 @@
                     <option value="Sewa">Sewa</option>
                   </select>
                 </div>
-                <button type="submit"><i class="fa-solid fa-car"></i> Tambah Nopol</button>
+                <button type="submit"><i class="fa-solid fa-car"></i> Tambah Kendaraan</button>
               </form>
               <p id="addVehicleStatus" class="form-status"></p>
             </div>
@@ -391,10 +391,10 @@
         monitoring: { title: '<i class="fas fa-truck"></i> Pantau Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
         users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
-        vehicles: { title: '<i class="fas fa-car"></i> Manajemen Nopol', subtitle: 'Kelola daftar nomor polisi kendaraan.' },
+        vehicles: { title: '<i class="fas fa-car"></i> Manajemen Kendaraan', subtitle: 'Kelola daftar kendaraan oprasional.' },
         addusers: { title: '<i class="fas fa-user-plus"></i> Tambah Pengguna', subtitle: 'Buat akun baru untuk pengguna.' },
         addrutes: { title: '<i class="fas fa-plus-circle"></i> Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
-        addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Nopol', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
+        addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Kendaraan', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
         performance: { title: '<i class="fas fa-chart-line"></i> Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
         documentation: { title: '<i class="fas fa-file-alt"></i> Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' },
         lockdown: { title: '<i class="fas fa-lock"></i> Lockdown', subtitle: 'Nonaktifkan sementara pengguna bermasalah.' },
@@ -864,7 +864,7 @@
       elements.vehiclePaginationControls.style.display = allVehicles.length > rowsPerPage ? 'flex' : 'none';
       
       if (allVehicles.length === 0) {
-        elements.vehicleList.innerHTML = '<tr><td colspan="4">Belum ada nopol tersimpan.</td></tr>';
+        elements.vehicleList.innerHTML = '<tr><td colspan="4">Belum ada kedaraan tersimpan.</td></tr>';
       } else {
         paginatedVehicles.forEach(vehicleEntry => {
           const vehicleId = vehicleEntry.id;
@@ -873,7 +873,7 @@
           tr.innerHTML = `<td>${vehicle.nopol}</td><td>${vehicle.unit || '-'}</td><td>${vehicle.ownership || '-'}</td><td></td>`;
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
-            if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
+            if (confirm(`Yakin ingin hapus Kendaraan ${vehicle.nopol}?`)) {
               await set(ref(db, `vehicles/${vehicleId}`), null);
             }
           };
