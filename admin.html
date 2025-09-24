@@ -446,7 +446,7 @@
         userEmail: document.getElementById('userEmail'),
         tripList: document.getElementById('tripList'),
         userList: document.getElementById('userList'),
-        userSystemList: document.querySelector('.usersystm-list'), // Element baru
+        userSystemList: document.querySelector('.usersystm-list'), 
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
         searchName: document.getElementById('searchName'),
@@ -582,14 +582,14 @@
       } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
 
-    // FUNGSI BARU UNTUK MENAMPILKAN DAFTAR PENGGUNA DI SISI KANAN
+    // FUNGSI DIPERBARUI SESUAI FORMAT YANG DIINGINKAN
     function displayUserSystemList() {
         elements.userSystemList.innerHTML = '';
         if (!currentUser) return;
 
         const sortedUsers = Object.entries(allUsers)
-            .filter(([uid, u]) => uid !== currentUser.uid) // Filter untuk menghilangkan user saat ini
-            .sort(([, a], [, b]) => (a.name || '').localeCompare(b.name || '')); // Urutkan berdasarkan nama
+            .filter(([uid, u]) => uid !== currentUser.uid)
+            .sort(([, a], [, b]) => (a.name || '').localeCompare(b.name || ''));
 
         if (sortedUsers.length === 0) {
             elements.userSystemList.innerHTML = '<li class="empty-state">Tidak ada pengguna lain.</li>';
@@ -598,13 +598,15 @@
 
         sortedUsers.forEach(([uid, u]) => {
             const li = el('li');
+            const userIcon = el('i', '', { class: 'fa-solid fa-user' });
+            const userName = el('span', ` ${u.name || '-'}`);
             const statusIndicator = el('i', '', { 
                 class: `fas fa-circle ${u.online ? 'status-online' : 'status-offline'}` 
             });
-            const userName = document.createTextNode(` ${u.name || '-'}`);
             
-            li.appendChild(statusIndicator);
+            li.appendChild(userIcon);
             li.appendChild(userName);
+            li.appendChild(statusIndicator);
             elements.userSystemList.appendChild(li);
         });
     }
@@ -800,7 +802,7 @@
             allUsers = snapshot.val() || {};
             displayUsers(1);
             displayLockdownUsers();
-            displayUserSystemList(); // Panggil fungsi baru di sini
+            displayUserSystemList(); 
             loadDashboardStats();
             loadRoleStats(); 
         });
