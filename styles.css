@@ -170,65 +170,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 0;
   margin: 2rem 0 0 0;
 }
-/* === USER SYSTEM LIST (SISI KANAN) - UPDATED === */
-.user-system {
-  box-sizing: border-box;
-  width: 250px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  border-left: 0.1rem solid var(--border-primary);
-  flex-shrink: 0;
-}
-.usersystm-header {
-  box-sizing: border-box;
-  padding: 2rem;
-  text-align: center;
-  border-bottom: 0.1rem solid var(--border-primary);
-  flex-shrink: 0;
-}
-.usersystm-header h2 {
-  color: var(--text-primary);
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0;
-}
-.usersystm-list {
-  flex-grow: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  list-style: none;
-}
-.usersystm-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Membuat nama dan status terpisah */
-  color: var(--text-secondary);
-  font-size: 1.4rem;
-  padding: 0.8rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s ease;
-}
-.usersystm-list li:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-.usersystm-list li .fa-user {
-  margin-right: 1.2rem; /* Jarak antara ikon user dan nama */
-}
-.usersystm-list li span {
-  flex-grow: 1; /* Membuat nama mengambil sisa ruang */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.usersystm-list li .fa-circle {
-  font-size: 0.8em;
-  margin-left: 1rem; /* Jarak antara nama dan status */
-}
 
 .main-content {
   box-sizing:border-box;
