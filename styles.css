@@ -218,7 +218,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .main-content {
   box-sizing:border-box;
-  max-width: 100%;
+  width: 100%;
   margin: 0;
   padding: 2rem;
   overflow-y: auto;
