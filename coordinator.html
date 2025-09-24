@@ -81,6 +81,22 @@
         <section class="card">
           <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
           <div class="card-body">
+            <div class="table-controls">
+                <div class="form-group">
+                    <label>Filter Status</label>
+                    <select id="filterMyTripStatus">
+                        <option value="all">Semua</option>
+                        <option value="submitted">Menunggu</option>
+                        <option value="approved">Disetujui</option>
+                        <option value="rejected">Ditolak</option>
+                        <option value="arrived">Selesai</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cari Supir / Rute</label>
+                    <input type="text" id="searchMyTrip" />
+                </div>
+            </div>
             <div class="table-responsive">
               <table>
                 <thead>
@@ -155,8 +171,16 @@
       <div id="page-performance" class="page">
         <section class="card">
           <h2 class="card-header">Ringkasan Kinerja Supir</h2>
-          <div class="card-body" id="driverPerformanceStats">
-            <p>Memuat data kinerja...</p>
+          <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label>Cari Nama Supir</label>
+                    <input type="text" id="searchDriverPerformance" />
+                </div>
+            </div>
+            <div id="driverPerformanceStats">
+                <p>Memuat data kinerja...</p>
+            </div>
           </div>
         </section>
       </div>
@@ -193,10 +217,15 @@
       tujuanSelect: document.getElementById('tujuan'),
       logoutBtn: document.getElementById('logoutBtn'),
       statusMsg: document.getElementById('statusMsg'),
+      // Trip List Filters
+      filterMyTripStatus: document.getElementById('filterMyTripStatus'),
+      searchMyTrip: document.getElementById('searchMyTrip'),
       coorPaginationControls: document.getElementById('coor-pagination-controls'),
       prevCoorBtn: document.getElementById('prevCoorBtn'),
       nextCoorBtn: document.getElementById('nextCoorBtn'),
       coorPageInfo: document.getElementById('coorPageInfo'),
+      // Performance Filters
+      searchDriverPerformance: document.getElementById('searchDriverPerformance'),
       driverPerformanceStats: document.getElementById('driverPerformanceStats'),
       // Dashboard Elements
       totalMyTrips: document.getElementById('totalMyTrips'),
@@ -267,9 +296,15 @@
       loadDrivers(); 
       loadRoutes();
       loadVehicles();
+      setupEventListeners();
     });
 
-    // --- FUNGSI DIPERBARUI ---
+    function setupEventListeners() {
+        elements.filterMyTripStatus.onchange = () => displayMyTrips(1);
+        elements.searchMyTrip.oninput = () => displayMyTrips(1);
+        elements.searchDriverPerformance.oninput = () => loadDriverPerformance();
+    }
+
     async function loadVehicles() {
       try {
         const snapshot = await get(ref(db, 'vehicles'));
@@ -284,8 +319,7 @@
         }
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
-    // --- AKHIR PERUBAHAN ---
-
+    
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
@@ -461,15 +495,20 @@
             if (trip.status) performance[trip.driverId][trip.status]++;
         });
 
+        const searchTerm = elements.searchDriverPerformance.value.toLowerCase();
+        const filteredPerformance = Object.values(performance).filter(d => 
+            !searchTerm || (d.name || '').toLowerCase().includes(searchTerm)
+        );
+
         let tableHTML = `<div class="table-responsive"><table><thead><tr>
                             <th>Nama Supir</th><th>Total</th><th>Selesai</th>
                             <th>Jalan</th><th>Menunggu</th><th>Ditolak</th>
                         </tr></thead><tbody>`;
 
-        if (Object.keys(performance).length === 0) {
-            tableHTML += '<tr><td colspan="6" class="empty-state">Belum ada data kinerja.</td></tr>';
+        if (filteredPerformance.length === 0) {
+            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja ditemukan.</td></tr>';
         } else {
-            Object.values(performance).forEach(d => {
+            filteredPerformance.forEach(d => {
                 tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td>
                     <td style="color: #10b981;">${d.arrived || 0}</td><td style="color: #3b82f6;">${d.approved || 0}</td>
                     <td style="color: #ffa500;">${d.submitted || 0}</td><td style="color: #ef4444;">${d.rejected || 0}</td></tr>`;
@@ -482,17 +521,30 @@
       elements.tripList.innerHTML = '';
       currentCoorPage = page;
       
-      const start = (page - 1) * rowsPerPage;
-      const paginatedTrips = allMyTrips.slice(start, start + rowsPerPage);
+      const searchTerm = elements.searchMyTrip.value.toLowerCase();
+      const statusFilter = elements.filterMyTripStatus.value;
+      
+      const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
+          const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+          const searchMatch = !searchTerm ||
+              (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+              (trip.asal || '').toLowerCase().includes(searchTerm) ||
+              (trip.tujuan || '').toLowerCase().includes(searchTerm) ||
+              (trip.nopol || '').toLowerCase().includes(searchTerm);
+          return statusMatch && searchMatch;
+      });
 
-      if (paginatedTrips.length === 0 && allMyTrips.length > 0) {
-        return displayMyTrips(Math.ceil(allMyTrips.length / rowsPerPage));
+      const start = (page - 1) * rowsPerPage;
+      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+
+      if (paginatedTrips.length === 0 && filteredTrips.length > 0) {
+        return displayMyTrips(Math.ceil(filteredTrips.length / rowsPerPage));
       }
 
-      elements.coorPaginationControls.style.display = allMyTrips.length > rowsPerPage ? 'block' : 'none';
+      elements.coorPaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'block' : 'none';
 
-      if (allMyTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data perjalanan yang Anda buat.</td></tr>';
+      if (filteredTrips.length === 0) {
+        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(({id: tripId, data: tripData}) => {
           const tr = el('tr');
@@ -520,14 +572,30 @@
         });
       }
       
-      const totalPages = Math.ceil(allMyTrips.length / rowsPerPage);
+      const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
       elements.coorPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
       elements.prevCoorBtn.disabled = page === 1;
       elements.nextCoorBtn.disabled = page === totalPages;
     }
     
     elements.prevCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage - 1));
-    elements.nextCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage + 1));
+    elements.nextCoorBtn.addEventListener('click', () => {
+        const searchTerm = elements.searchMyTrip.value.toLowerCase();
+        const statusFilter = elements.filterMyTripStatus.value;
+        const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
+            const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+            const searchMatch = !searchTerm ||
+                (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+                (trip.asal || '').toLowerCase().includes(searchTerm) ||
+                (trip.tujuan || '').toLowerCase().includes(searchTerm) ||
+                (trip.nopol || '').toLowerCase().includes(searchTerm);
+            return statusMatch && searchMatch;
+        });
+        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+        if(currentCoorPage < totalPages) {
+            displayMyTrips(currentCoorPage + 1);
+        }
+    });
 
     function loadMyTrips() {
       const tripsRef = query(ref(db, 'trips'), orderByChild('coorId'), equalTo(currentUser.uid));
