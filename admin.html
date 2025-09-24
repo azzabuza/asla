@@ -1,3 +1,4 @@
+user system
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -409,7 +410,8 @@
         <h2>Semua Pengguna</h2>
       </div>
       <ul class="usersystm-list">
-        </ul>
+        list nama user dan status (online / offline)
+      </ul>
     </nav>
     
   </div>
@@ -446,7 +448,6 @@
         userEmail: document.getElementById('userEmail'),
         tripList: document.getElementById('tripList'),
         userList: document.getElementById('userList'),
-        userSystemList: document.querySelector('.usersystm-list'), 
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
         searchName: document.getElementById('searchName'),
@@ -581,35 +582,6 @@
         loadAllData();
       } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
-
-    // FUNGSI DIPERBARUI SESUAI FORMAT YANG DIINGINKAN
-    function displayUserSystemList() {
-        elements.userSystemList.innerHTML = '';
-        if (!currentUser) return;
-
-        const sortedUsers = Object.entries(allUsers)
-            .filter(([uid, u]) => uid !== currentUser.uid)
-            .sort(([, a], [, b]) => (a.name || '').localeCompare(b.name || ''));
-
-        if (sortedUsers.length === 0) {
-            elements.userSystemList.innerHTML = '<li class="empty-state">Tidak ada pengguna lain.</li>';
-            return;
-        }
-
-        sortedUsers.forEach(([uid, u]) => {
-            const li = el('li');
-            const userIcon = el('i', '', { class: 'fa-solid fa-user' });
-            const userName = el('span', ` ${u.name || '-'}`);
-            const statusIndicator = el('i', '', { 
-                class: `fas fa-circle ${u.online ? 'status-online' : 'status-offline'}` 
-            });
-            
-            li.appendChild(userIcon);
-            li.appendChild(userName);
-            li.appendChild(statusIndicator);
-            elements.userSystemList.appendChild(li);
-        });
-    }
 
     function displayRecentActivity(page) {
         elements.recentActivityList.innerHTML = '';
@@ -802,7 +774,6 @@
             allUsers = snapshot.val() || {};
             displayUsers(1);
             displayLockdownUsers();
-            displayUserSystemList(); 
             loadDashboardStats();
             loadRoleStats(); 
         });
