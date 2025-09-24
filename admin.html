@@ -108,6 +108,22 @@
         <section class="card">
           <h2 class="card-header">Daftar Perjalanan</h2>
           <div class="card-body">
+            <div class="table-controls">
+              <div class="form-group">
+                <label>Filter Status</label>
+                <select id="filterTripStatus">
+                  <option value="all">Semua</option>
+                  <option value="submitted">Menunggu</option>
+                  <option value="approved">Disetujui</option>
+                  <option value="rejected">Ditolak</option>
+                  <option value="arrived">Selesai</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Cari Sopir / Rute</label>
+                <input type="text" id="searchTrip" />
+              </div>
+            </div>
             <div class="table-responsive">
               <table id="tripTable">
                 <thead>
@@ -413,6 +429,9 @@
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
         searchName: document.getElementById('searchName'),
+        // Trip Monitoring Filters
+        filterTripStatus: document.getElementById('filterTripStatus'),
+        searchTrip: document.getElementById('searchTrip'),
         logoutBtn: document.getElementById('logoutBtn'),
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
@@ -644,20 +663,33 @@
     function displayTrips(page) {
       elements.tripList.innerHTML = '';
       currentPage = page;
+
+      const searchTerm = elements.searchTrip.value.toLowerCase();
+      const statusFilter = elements.filterTripStatus.value;
+
+      const filteredTrips = allTrips.filter(tripEntry => {
+          const trip = tripEntry.data;
+          const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+          const searchMatch = !searchTerm ||
+              (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+              (trip.asal || '').toLowerCase().includes(searchTerm) ||
+              (trip.tujuan || '').toLowerCase().includes(searchTerm);
+          return statusMatch && searchMatch;
+      });
+
       const start = (currentPage - 1) * rowsPerPage;
       const end = start + rowsPerPage;
-      const paginatedTrips = allTrips.slice(start, end);
-      if (paginatedTrips.length === 0 && allTrips.length > 0) {
-        currentPage = Math.ceil(allTrips.length / rowsPerPage);
+      const paginatedTrips = filteredTrips.slice(start, end);
+      
+      if (paginatedTrips.length === 0 && filteredTrips.length > 0) {
+        currentPage = Math.ceil(filteredTrips.length / rowsPerPage);
         return displayTrips(currentPage);
       }
-      if (allTrips.length > rowsPerPage) {
-        elements.paginationControls.style.display = 'flex';
-      } else {
-        elements.paginationControls.style.display = 'none';
-      }
+      
+      elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
+      
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="7">Belum ada data perjalanan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="7">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
             const tripId = tripEntry.id;
@@ -687,13 +719,31 @@
             elements.tripList.appendChild(tr);
         });
       }
-      const totalPages = Math.ceil(allTrips.length / rowsPerPage);
+      const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
       elements.pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
       elements.prevBtn.disabled = currentPage === 1;
       elements.nextBtn.disabled = currentPage === totalPages;
     }
+
     elements.prevBtn.addEventListener('click', () => { if (currentPage > 1) { displayTrips(currentPage - 1); } });
-    elements.nextBtn.addEventListener('click', () => { const totalPages = Math.ceil(allTrips.length / rowsPerPage); if (currentPage < totalPages) { displayTrips(currentPage + 1); } });
+    elements.nextBtn.addEventListener('click', () => { 
+        const searchTerm = elements.searchTrip.value.toLowerCase();
+        const statusFilter = elements.filterTripStatus.value;
+        const filteredTrips = allTrips.filter(tripEntry => {
+            const trip = tripEntry.data;
+            const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+            const searchMatch = !searchTerm ||
+                (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+                (trip.asal || '').toLowerCase().includes(searchTerm) ||
+                (trip.tujuan || '').toLowerCase().includes(searchTerm);
+            return statusMatch && searchMatch;
+        });
+        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage); 
+        if (currentPage < totalPages) { 
+            displayTrips(currentPage + 1); 
+        } 
+    });
+
     function loadAllTrips() {
       onValue(ref(db, 'trips'), (snapshot) => {
         allTrips = [];
@@ -701,10 +751,11 @@
           snapshot.forEach(child => { allTrips.push({ id: child.key, data: child.val() }); });
         }
         allTrips.reverse();
-        displayTrips(currentPage);
+        displayTrips(1);
         loadDashboardStats();
       });
     }
+
     function displayUsers(page) {
       elements.userList.innerHTML = '';
       currentUserPage = page;
@@ -763,6 +814,7 @@
 
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) { displayUsers(currentUserPage - 1); } });
     elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(Object.keys(allUsers).length / rowsPerPage); if (currentUserPage < totalPages) { displayUsers(currentUserPage + 1); } });
+    
     function loadAllUsers() {
         return new Promise((resolve) => {
             onValue(ref(db, 'users'), (snapshot) => {
@@ -774,8 +826,11 @@
             });
             elements.filterRole.onchange = () => displayUsers(1);
             elements.searchName.oninput = () => displayUsers(1);
+            elements.filterTripStatus.onchange = () => displayTrips(1);
+            elements.searchTrip.oninput = () => displayTrips(1);
         });
     }
+
     elements.userList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-user-btn')) {
             const { uid, name } = e.target.dataset;
