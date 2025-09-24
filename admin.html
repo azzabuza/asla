@@ -188,6 +188,12 @@
         <section class="card">
           <h2 class="card-header">Daftar Rute Tersimpan</h2>
           <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+              <div class="form-group">
+                <label>Cari Kode / Alamat Rute</label>
+                <input type="text" id="searchRoute" />
+              </div>
+            </div>
             <div class="table-responsive">
               <table>
                 <thead>
@@ -432,6 +438,8 @@
         // Trip Monitoring Filters
         filterTripStatus: document.getElementById('filterTripStatus'),
         searchTrip: document.getElementById('searchTrip'),
+        // Route Management Filters
+        searchRoute: document.getElementById('searchRoute'),
         logoutBtn: document.getElementById('logoutBtn'),
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
@@ -828,6 +836,7 @@
             elements.searchName.oninput = () => displayUsers(1);
             elements.filterTripStatus.onchange = () => displayTrips(1);
             elements.searchTrip.oninput = () => displayTrips(1);
+            elements.searchRoute.oninput = () => displayRoutes(1);
         });
     }
 
@@ -865,20 +874,28 @@
     function displayRoutes(page) {
       elements.routeList.innerHTML = '';
       currentRoutePage = page;
+
+      const searchTerm = elements.searchRoute.value.toLowerCase();
+      const filteredRoutes = allRoutes.filter(routeEntry => {
+          const route = routeEntry.data;
+          return !searchTerm ||
+              (route.code || '').toLowerCase().includes(searchTerm) ||
+              (route.address || '').toLowerCase().includes(searchTerm);
+      });
+
       const start = (currentRoutePage - 1) * rowsPerPage;
       const end = start + rowsPerPage;
-      const paginatedRoutes = allRoutes.slice(start, end);
-      if (paginatedRoutes.length === 0 && allRoutes.length > 0) {
-        currentRoutePage = Math.ceil(allRoutes.length / rowsPerPage);
+      const paginatedRoutes = filteredRoutes.slice(start, end);
+
+      if (paginatedRoutes.length === 0 && filteredRoutes.length > 0) {
+        currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage);
         return displayRoutes(currentRoutePage);
       }
-      if (allRoutes.length > rowsPerPage) {
-        elements.routePaginationControls.style.display = 'flex';
-      } else {
-        elements.routePaginationControls.style.display = 'none';
-      }
+
+      elements.routePaginationControls.style.display = filteredRoutes.length > rowsPerPage ? 'flex' : 'none';
+      
       if (paginatedRoutes.length === 0) {
-        elements.routeList.innerHTML = '<tr><td colspan="3">Belum ada rute tersimpan.</td></tr>';
+        elements.routeList.innerHTML = '<tr><td colspan="3">Tidak ada rute ditemukan.</td></tr>';
       } else {
         paginatedRoutes.forEach(routeEntry => {
           const routeId = routeEntry.id;
@@ -895,13 +912,26 @@
           elements.routeList.appendChild(tr);
         });
       }
-      const totalPages = Math.ceil(allRoutes.length / rowsPerPage);
+      const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage);
       elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
       elements.prevRouteBtn.disabled = currentRoutePage === 1;
       elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
     }
+
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) { displayRoutes(currentRoutePage - 1); } });
-    elements.nextRouteBtn.addEventListener('click', () => { const totalPages = Math.ceil(allRoutes.length / rowsPerPage); if (currentRoutePage < totalPages) { displayRoutes(currentRoutePage + 1); } });
+    elements.nextRouteBtn.addEventListener('click', () => { 
+        const searchTerm = elements.searchRoute.value.toLowerCase();
+        const filteredRoutes = allRoutes.filter(routeEntry => {
+            const route = routeEntry.data;
+            return !searchTerm ||
+                (route.code || '').toLowerCase().includes(searchTerm) ||
+                (route.address || '').toLowerCase().includes(searchTerm);
+        });
+        const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage); 
+        if (currentRoutePage < totalPages) { 
+            displayRoutes(currentRoutePage + 1); 
+        } 
+    });
     
     // --- FUNGSI DIPERBARUI ---
     function displayVehicles(page) {
