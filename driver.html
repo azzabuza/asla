@@ -7,7 +7,6 @@
   <title>Panel Driver</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Override beberapa style agar lebih pas di layout baru */
     .main-content { margin-left: 0; width: 100%; }
     #preview {
       width: 100%;
@@ -48,7 +47,7 @@
                   <tr>
                     <th>Rute</th>
                     <th>Muatan</th>
-                    <th>No. Polisi</th>
+                    <th>No. Kendaraan</th>
                     <th>Kode Resi</th>
                     <th>Status</th>
                   </tr>
@@ -103,10 +102,8 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
-
       const userRef = ref(db, 'users/' + currentUser.uid);
       
-      // --- KODE BARU: PANTAU STATUS LOCKDOWN ---
       onValue(userRef, (snap) => {
         if (snap.exists()) {
             const userData = snap.val();
@@ -115,19 +112,16 @@
                 signOut(auth);
             }
         } else {
-            // Jika data user dihapus saat sedang login
             alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
             signOut(auth);
         }
       });
-      // --- AKHIR KODE BARU ---
       
       const snap = await get(userRef);
-      if (!snap.exists()) return; // Pemeriksaan awal, onValue akan menangani sisanya
+      if (!snap.exists()) return;
       
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-
       loadTrips();
       startScanner();
     });
@@ -135,11 +129,9 @@
     function loadTrips() {
       const tripsRef = ref(db, 'trips');
       const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
-
       onValue(q, (snapshot) => {
         jobList.innerHTML = '';
         let hasJobs = false;
-
         snapshot.forEach(child => {
           const job = child.val();
           if (job.status === 'approved' || job.status === 'arrived') {
@@ -147,18 +139,16 @@
             const tr = el('tr');
             const statusCell = el('td');
             statusCell.appendChild(badge(job.status));
-
             tr.innerHTML = `
               <td data-label="Rute"><strong>${job.asal} → ${job.tujuan}</strong><br><small>${fmtDate(job.tanggal)}</small></td>
               <td data-label="Muatan">${job.muatan}</td>
-              <td data-label="No. Polisi">${job.nopol}</td>
+              <td data-label="No. Kendaraan">${job.vehicleNumber}</td>
               <td data-label="Kode Resi"><code>${child.key}</code></td>
             `;
             tr.appendChild(statusCell);
             jobList.appendChild(tr);
           }
         });
-
         if (!hasJobs) {
           jobList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada tugas perjalanan untuk Anda.</td></tr>';
         }
@@ -177,34 +167,25 @@
       try {
         const tripRef = ref(db, 'trips/' + tripId);
         const tripSnap = await get(tripRef);
-
         if (!tripSnap.exists()) {
           statusMsg.style.color = 'var(--danger)';
           statusMsg.textContent = '❌ Perjalanan dengan resi tersebut tidak ditemukan.';
           return;
         }
-
         if (tripSnap.val().driverId !== currentUser.uid) {
             statusMsg.style.color = 'var(--danger)';
             statusMsg.textContent = '❌ Anda tidak ditugaskan untuk perjalanan ini.';
             return;
         }
-        
         if (tripSnap.val().status === 'arrived') {
             statusMsg.style.color = 'var(--warning)';
             statusMsg.textContent = 'ℹ️ Perjalanan ini sudah dikonfirmasi sebelumnya.';
             return;
         }
-
-        await update(tripRef, {
-          status: 'arrived',
-          arrivedAt: Date.now(),
-        });
-
+        await update(tripRef, { status: 'arrived', arrivedAt: Date.now() });
         statusMsg.style.color = 'var(--success)';
         statusMsg.textContent = "✔️ Perjalanan dengan resi " + tripId + " berhasil dikonfirmasi sampai tujuan.";
         arriveForm.reset();
-        
       } catch (err) {
         statusMsg.style.color = 'var(--danger)';
         statusMsg.textContent = 'Gagal konfirmasi: ' + err.message;
@@ -213,14 +194,12 @@
 
     function startScanner() {
         let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
-        
         scanner.addListener('scan', function(content) {
             tripIdInput.value = content;
             statusMsg.style.display = 'block';
             statusMsg.style.color = 'var(--info)';
             statusMsg.textContent = '🔍 QR Code terdeteksi: ' + content;
         });
-
         Instascan.Camera.getCameras().then(function (cameras) {
             if (cameras.length > 0) {
                 scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
