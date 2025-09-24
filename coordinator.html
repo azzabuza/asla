@@ -269,6 +269,7 @@
       loadVehicles();
     });
 
+    // --- FUNGSI DIPERBARUI ---
     async function loadVehicles() {
       try {
         const snapshot = await get(ref(db, 'vehicles'));
@@ -276,12 +277,14 @@
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const vehicle = child.val();
-            const option = el('option', `${vehicle.nopol} (${vehicle.type})`, { value: vehicle.nopol });
+            const optionText = `${vehicle.nopol} (${vehicle.unit || 'N/A'})`;
+            const option = el('option', optionText, { value: vehicle.nopol });
             elements.nopolSelect.appendChild(option);
           });
         }
       } catch (error) { console.error("Gagal memuat nopol:", error); }
     }
+    // --- AKHIR PERUBAHAN ---
 
     async function loadRoutes() {
       try {
@@ -302,15 +305,12 @@
       } catch (error) { console.error("Gagal memuat rute:", error); }
     }
 
-    // --- FUNGSI DIPERBAIKI ---
     async function loadDrivers() {
         try {
-            // Mengambil semua data pengguna sekali jalan
             const snapshot = await get(ref(db, 'users'));
             if (snapshot.exists()) {
                 elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
                 let driverFound = false;
-                // Melakukan filter di sisi klien (browser)
                 snapshot.forEach(child => {
                     const uid = child.key;
                     const user = child.val();
@@ -357,9 +357,8 @@
         status: 'submitted', createdAt: Date.now()
       };
       
-      // Validasi input dasar
       for(const key in data) {
-          if(!data[key] && key !== 'driverName') { // driverName bisa kosong jika user dihapus
+          if(!data[key] && key !== 'driverName') { 
               alert(`Kolom ${key} tidak boleh kosong.`);
               elements.statusMsg.textContent = '';
               return;
