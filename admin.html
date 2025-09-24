@@ -409,8 +409,7 @@
         <h2>Semua Pengguna</h2>
       </div>
       <ul class="usersystm-list">
-        list nama user dan status (online / offline)
-      </ul>
+        </ul>
     </nav>
     
   </div>
@@ -447,6 +446,7 @@
         userEmail: document.getElementById('userEmail'),
         tripList: document.getElementById('tripList'),
         userList: document.getElementById('userList'),
+        userSystemList: document.querySelector('.usersystm-list'), // Element baru
         roleStats: document.getElementById('roleStats'),
         filterRole: document.getElementById('filterRole'),
         searchName: document.getElementById('searchName'),
@@ -581,6 +581,33 @@
         loadAllData();
       } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
+
+    // FUNGSI BARU UNTUK MENAMPILKAN DAFTAR PENGGUNA DI SISI KANAN
+    function displayUserSystemList() {
+        elements.userSystemList.innerHTML = '';
+        if (!currentUser) return;
+
+        const sortedUsers = Object.entries(allUsers)
+            .filter(([uid, u]) => uid !== currentUser.uid) // Filter untuk menghilangkan user saat ini
+            .sort(([, a], [, b]) => (a.name || '').localeCompare(b.name || '')); // Urutkan berdasarkan nama
+
+        if (sortedUsers.length === 0) {
+            elements.userSystemList.innerHTML = '<li class="empty-state">Tidak ada pengguna lain.</li>';
+            return;
+        }
+
+        sortedUsers.forEach(([uid, u]) => {
+            const li = el('li');
+            const statusIndicator = el('i', '', { 
+                class: `fas fa-circle ${u.online ? 'status-online' : 'status-offline'}` 
+            });
+            const userName = document.createTextNode(` ${u.name || '-'}`);
+            
+            li.appendChild(statusIndicator);
+            li.appendChild(userName);
+            elements.userSystemList.appendChild(li);
+        });
+    }
 
     function displayRecentActivity(page) {
         elements.recentActivityList.innerHTML = '';
@@ -773,6 +800,7 @@
             allUsers = snapshot.val() || {};
             displayUsers(1);
             displayLockdownUsers();
+            displayUserSystemList(); // Panggil fungsi baru di sini
             loadDashboardStats();
             loadRoleStats(); 
         });
