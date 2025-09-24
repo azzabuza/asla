@@ -204,12 +204,13 @@
                 <thead>
                   <tr>
                     <th>No. Polisi</th>
-                    <th>Tipe/Keterangan</th>
+                    <th>Unit</th>
+                    <th>Kepemilikan</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="vehicleList">
-                  <tr><td colspan="3">Memuat data...</td></tr>
+                  <tr><td colspan="4">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -266,8 +267,15 @@
                   <input type="text" id="vehicleNopol" required>
                 </div>
                 <div class="form-group">
-                  <label for="vehicleType">Tipe/Keterangan Kendaraan</label>
-                  <input type="text" id="vehicleType" required>
+                  <label for="vehicleUnit">Unit</label>
+                  <input type="text" id="vehicleUnit" required placeholder="Contoh: Hino Dutro, Mitsubishi Fuso">
+                </div>
+                <div class="form-group">
+                  <label for="vehicleOwnership">Kepemilikan</label>
+                  <select id="vehicleOwnership" required>
+                    <option value="Milik Perusahaan">Milik Perusahaan</option>
+                    <option value="Sewa">Sewa</option>
+                  </select>
                 </div>
                 <button type="submit"><i class="fa-solid fa-car"></i> Tambah Nopol</button>
               </form>
@@ -497,13 +505,11 @@
     }
     setupNavigation();
     
-    // --- KODE DIPERBAIKI ---
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
       currentUser = user;
       const userRef = ref(db, `users/${user.uid}`);
 
-      // Listener real-time untuk cek lockdown/perubahan role
       onValue(userRef, (snap) => {
           if (snap.exists()) {
               const userData = snap.val();
@@ -521,14 +527,13 @@
           }
       });
 
-      // Ambil data awal saat login untuk setup UI
       try {
         const initialSnap = await get(userRef);
-        if (!initialSnap.exists()) return; // onValue akan menangani alert & redirect
+        if (!initialSnap.exists()) return;
 
         currentUserData = initialSnap.val();
         if (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin') {
-          return; // onValue sudah menangani alert
+          return;
         }
 
         elements.userName.textContent = currentUserData.name || 'Admin';
@@ -700,21 +705,16 @@
         loadDashboardStats();
       });
     }
-
-    // --- FUNGSI DIPERBARUI ---
     function displayUsers(page) {
       elements.userList.innerHTML = '';
       currentUserPage = page;
       
-      // Definisikan urutan role
       const roleOrder = ['super admin', 'admin', 'coordinator', 'driver'];
       
-      // Urutkan pengguna berdasarkan role
       const sortedUsers = Object.entries(allUsers).sort(([, a], [, b]) => {
         return roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role);
       });
 
-      // Filter pengguna setelah diurutkan
       const filteredUsers = sortedUsers.filter(([uid, u]) => {
         const nameMatch = !elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase());
         const roleMatch = elements.filterRole.value === 'all' || u.role === elements.filterRole.value;
@@ -760,7 +760,6 @@
       elements.prevUserBtn.disabled = currentUserPage === 1;
       elements.nextUserBtn.disabled = currentUserPage === totalPages;
     }
-    // --- AKHIR PERUBAHAN ---
 
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) { displayUsers(currentUserPage - 1); } });
     elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(Object.keys(allUsers).length / rowsPerPage); if (currentUserPage < totalPages) { displayUsers(currentUserPage + 1); } });
@@ -849,36 +848,36 @@
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) { displayRoutes(currentRoutePage - 1); } });
     elements.nextRouteBtn.addEventListener('click', () => { const totalPages = Math.ceil(allRoutes.length / rowsPerPage); if (currentRoutePage < totalPages) { displayRoutes(currentRoutePage + 1); } });
     
+    // --- FUNGSI DIPERBARUI ---
     function displayVehicles(page) {
       elements.vehicleList.innerHTML = '';
       currentVehiclePage = page;
       const start = (currentVehiclePage - 1) * rowsPerPage;
       const end = start + rowsPerPage;
       const paginatedVehicles = allVehicles.slice(start, end);
+      
       if (paginatedVehicles.length === 0 && allVehicles.length > 0) {
         currentVehiclePage = Math.ceil(allVehicles.length / rowsPerPage);
         return displayVehicles(currentVehiclePage);
       }
-      if (allVehicles.length > rowsPerPage) {
-        elements.vehiclePaginationControls.style.display = 'flex';
-      } else {
-        elements.vehiclePaginationControls.style.display = 'none';
-      }
-      if (paginatedVehicles.length === 0) {
-        elements.vehicleList.innerHTML = '<tr><td colspan="3">Belum ada nopol tersimpan.</td></tr>';
+      
+      elements.vehiclePaginationControls.style.display = allVehicles.length > rowsPerPage ? 'flex' : 'none';
+      
+      if (allVehicles.length === 0) {
+        elements.vehicleList.innerHTML = '<tr><td colspan="4">Belum ada nopol tersimpan.</td></tr>';
       } else {
         paginatedVehicles.forEach(vehicleEntry => {
           const vehicleId = vehicleEntry.id;
           const vehicle = vehicleEntry.data;
           const tr = el('tr');
-          tr.innerHTML = `<td>${vehicle.nopol}</td><td>${vehicle.type}</td><td></td>`;
+          tr.innerHTML = `<td>${vehicle.nopol}</td><td>${vehicle.unit || '-'}</td><td>${vehicle.ownership || '-'}</td><td></td>`;
           const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus nopol ${vehicle.nopol}?`)) {
               await set(ref(db, `vehicles/${vehicleId}`), null);
             }
           };
-          tr.cells[2].appendChild(deleteBtn);
+          tr.cells[3].appendChild(deleteBtn);
           elements.vehicleList.appendChild(tr);
         });
       }
@@ -887,6 +886,8 @@
       elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
       elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
     }
+    // --- AKHIR PERUBAHAN ---
+
     elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) { displayVehicles(currentVehiclePage - 1); } });
     elements.nextVehicleBtn.addEventListener('click', () => { const totalPages = Math.ceil(allVehicles.length / rowsPerPage); if (currentVehiclePage < totalPages) { displayVehicles(currentVehiclePage + 1); } });
     function loadVehicles() {
@@ -897,22 +898,43 @@
         loadDashboardStats();
       });
     }
-    elements.addVehicleForm.addEventListener('submit', async (e) => { e.preventDefault(); const nopol = document.getElementById('vehicleNopol').value.toUpperCase(); const type = document.getElementById('vehicleType').value; elements.addVehicleStatus.style.display = 'block'; elements.addVehicleStatus.textContent = 'Menambahkan...'; try { await push(ref(db, 'vehicles'), { nopol, type }); elements.addVehicleStatus.textContent = '✔️ Nopol berhasil ditambahkan.'; elements.addVehicleForm.reset(); setTimeout(() => { elements.addVehicleStatus.textContent = ''; elements.addVehicleStatus.style.display = 'none'; }, 3000); } catch (error) { elements.addVehicleStatus.textContent = 'Gagal: ' + error.message; } });
+    
+    // --- EVENT LISTENER DIPERBARUI ---
+    elements.addVehicleForm.addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        const nopol = document.getElementById('vehicleNopol').value.toUpperCase(); 
+        const unit = document.getElementById('vehicleUnit').value; 
+        const ownership = document.getElementById('vehicleOwnership').value;
+        
+        elements.addVehicleStatus.style.display = 'block'; 
+        elements.addVehicleStatus.textContent = 'Menambahkan...'; 
+        
+        try { 
+            await push(ref(db, 'vehicles'), { nopol, unit, ownership }); 
+            elements.addVehicleStatus.textContent = '✔️ Nopol berhasil ditambahkan.'; 
+            elements.addVehicleForm.reset(); 
+            setTimeout(() => { 
+                elements.addVehicleStatus.textContent = ''; 
+                elements.addVehicleStatus.style.display = 'none'; 
+            }, 3000); 
+        } catch (error) { 
+            elements.addVehicleStatus.textContent = 'Gagal: ' + error.message; 
+        } 
+    });
+    // --- AKHIR PERUBAHAN ---
+
     elements.addRouteForm.addEventListener('submit', async (e) => { e.preventDefault(); const code = document.getElementById('routeCode').value.toUpperCase(); const address = document.getElementById('routeAddress').value; elements.addRouteStatus.style.display = 'block'; elements.addRouteStatus.textContent = 'Menambahkan...'; try { await push(ref(db, 'routes'), { code, address }); elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.'; elements.addRouteForm.reset(); setTimeout(() => { elements.addRouteStatus.textContent = ''; elements.addRouteStatus.style.display = 'none'; }, 3000); } catch (error) { elements.addRouteStatus.textContent = 'Gagal: ' + error.message; } });
     elements.addUserForm.addEventListener('submit', async (e) => { e.preventDefault(); elements.addUserStatus.style.display = 'block'; elements.addUserStatus.textContent = 'Menambahkan...'; const name = document.getElementById('newUserName').value; const email = document.getElementById('newUserEmail').value; const password = document.getElementById('newUserPassword').value; const role = document.getElementById('newUserRole').value; const tempAppName = 'temp-app-' + Date.now(); let tempApp; try { tempApp = initializeApp(firebaseConfig, tempAppName); const cred = await createUserWithEmailAndPassword(getAuth(tempApp), email, password); await set(ref(db, `users/${cred.user.uid}`), { name, role, online: false, lastLogin: null }); elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`; elements.addUserForm.reset(); setTimeout(() => { elements.addUserStatus.textContent = ''; elements.addUserStatus.style.display = 'none'; }, 3000); } catch (error) { elements.addUserStatus.textContent = 'Gagal: ' + error.message; } finally { if (tempApp) await deleteApp(tempApp); } });
     elements.tripList.addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-trip')) { const { tripId, tripInfo } = e.target.dataset; if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) { try { await set(ref(db, `trips/${tripId}`), null); alert(`Perjalanan berhasil dihapus.`); } catch (error) { alert(`Gagal: ${error.message}`); } } } });
     function loadRoleStats() { onValue(ref(db, 'trips'), (snapshot) => { if (!snapshot.exists() || !Object.keys(allUsers).length) { elements.roleStats.textContent = "Belum ada data untuk ditampilkan."; return; } let activities = { admin: [], coordinator: [], driver: [] }; snapshot.forEach(child => { const t = child.val(); const tripId = child.key; const tripInfo = `${t.asal} ke ${t.tujuan}`; if (t.approvedBy && t.approvedAt) { const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus'; activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${coorName}`, tripId: tripId }); } if (t.rejectedBy && t.rejectedAt) { const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus'; activities.admin.push({ userId: t.rejectedBy, time: t.rejectedAt, action: `Menolak trip dari ${coorName}`, tripId: tripId }); } if (t.coorId && t.createdAt) { const driverName = t.driverName || 'Supir Tidak Dikenal'; activities.coordinator.push({ userId: t.coorId, time: t.createdAt, action: `Membuat trip untuk ${driverName}`, tripId: tripId }); } if (t.driverId && t.arrivedAt) { activities.driver.push({ userId: t.driverId, time: t.arrivedAt, action: `Menyelesaikan trip ${tripInfo}`, tripId: tripId }); } }); const createActivityTable = (role, title) => { let tableHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`; if (activities[role].length === 0) { return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p>`; } const sortedActivities = activities[role].sort((a, b) => b.time - a.time).slice(0, 15); tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`; sortedActivities.forEach(act => { const userName = allUsers[act.userId]?.name || 'User Dihapus'; const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`; }); tableHtml += '</tbody></table></div>'; return tableHtml; }; elements.roleStats.innerHTML = `${createActivityTable('admin', 'Aktivitas Admin')}<hr>${createActivityTable('coordinator', 'Aktivitas Koordinator')}<hr>${createActivityTable('driver', 'Aktivitas Supir')}`; }); }
     
-    // --- FUNGSI DIPERBARUI ---
     function displayLockdownUsers() {
       elements.lockdownUserList.innerHTML = '';
       let allLocked = true;
       let eligibleUsers = 0;
       
-      // Definisikan urutan role
       const roleOrder = ['super admin', 'admin', 'coordinator', 'driver'];
 
-      // Urutkan pengguna berdasarkan role
       const sortedUsers = Object.entries(allUsers).sort(([, a], [, b]) => {
         return roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role);
       });
@@ -947,8 +969,6 @@
 
       elements.massLockdownSwitch.checked = eligibleUsers > 0 && allLocked;
     }
-    // --- AKHIR PERUBAHAN ---
-
 
     elements.massLockdownSwitch.addEventListener('change', async (e) => {
       const lock = e.target.checked;
