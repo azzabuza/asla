@@ -170,7 +170,52 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 0;
   margin: 2rem 0 0 0;
 }
-
+.user-system {
+  box-sizing: border-box;
+  width: 40rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  top: 0;
+  left: 0;
+  border-right: 0.1rem solid var(--border-primary);
+}
+.usersystm-header {
+  box-sizing: border-box;
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 0.1rem solid var(--border-primary);
+}
+.usersystm-header h3 {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.usersystm-list {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+.usersystm-list li a {
+  display: block;
+  padding: 1rem 2rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+.usersystm-list li a:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.usersystm-list li a.active {
+  background: var(--bg-gradient);
+  color: var(--text-inverse);
+}
 .main-content {
   box-sizing:border-box;
   width: 100%;
