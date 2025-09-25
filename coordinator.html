@@ -2,11 +2,113 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
   <title>Koordinator Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  
+  <style>
+    /* Tambahan CSS untuk Fitur Baru */
+    .sidebar-menu .notification-badge {
+        background-color: var(--color-danger);
+        color: var(--text-primary);
+        border-radius: 50%;
+        padding: 0.2rem 0.6rem;
+        font-size: 1rem;
+        margin-left: 1rem;
+        vertical-align: middle;
+    }
+    .availability-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    .resource-card {
+        background-color: var(--bg-tertiary);
+        border-radius: 0.8rem;
+        padding: 1.5rem;
+        border: 1px solid var(--border-primary);
+    }
+    .resource-card h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .resource-card p {
+        font-size: 1.4rem;
+        color: var(--text-secondary);
+        margin: 0.5rem 0;
+    }
+    .status-dot {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.8rem;
+    }
+    .status-dot.available { background-color: var(--color-success); }
+    .status-dot.in-trip { background-color: var(--color-warn); }
+    .report-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    .report-buttons button {
+        width: auto;
+    }
+    /* CSS untuk Modal Peta */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6);
+        animation: fadeIn 0.3s;
+    }
+    .modal-content {
+        background-color: var(--bg-secondary);
+        margin: 10% auto;
+        padding: 2rem;
+        border: 1px solid var(--border-primary);
+        width: 80%;
+        max-width: 800px;
+        border-radius: 1rem;
+        position: relative;
+    }
+    .close-modal {
+        color: var(--text-secondary);
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        font-size: 2.5rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close-modal:hover { color: var(--text-primary); }
+    #map-placeholder {
+        height: 400px;
+        background-color: var(--bg-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 1rem;
+        border-radius: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 1.6rem;
+        text-align: center;
+    }
+  </style>
 </head>
 <body>
   <div class="content-wrapper">
@@ -23,10 +125,13 @@
         <li><a href="#list" class="nav-link"><i class="fas fa-list-alt"></i> Daftar Perjalanan</a></li>
         <li><a href="#add" class="nav-link"><i class="fas fa-plus"></i> Tambah Perjalanan</a></li>
         <li><a href="#performance" class="nav-link"><i class="fas fa-chart-bar"></i> Kinerja Supir</a></li>
+        <li><a href="#availability" class="nav-link"><i class="fas fa-users-cog"></i> Ketersediaan</a></li>
+        <li><a href="#reports" class="nav-link"><i class="fas fa-file-download"></i> Laporan</a></li>
+        <li><a href="#notifications" class="nav-link"><i class="fas fa-bell"></i> Notifikasi <span id="notificationCount" class="notification-badge" style="display:none;">0</span></a></li>
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-        <p>V.3.0.4 (BETA)</p>
+        <p>V.3.1.0 (BETA)</p>
       </div>
     </nav>
 
@@ -104,14 +209,13 @@
                     <th>Rute</th>
                     <th>Supir</th>
                     <th>No. Kendaraan</th>
-                    <th>Muatan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
-                    <th>Aksi Cetak</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="tripList">
-                  <tr><td colspan="7">Memuat data...</td></tr>
+                  <tr><td colspan="6">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -185,8 +289,75 @@
         </section>
       </div>
       
+      <div id="page-availability" class="page">
+        <section class="card">
+          <h2 class="card-header">Papan Pantau Ketersediaan</h2>
+          <div class="card-body">
+            <h4><i class="fas fa-user-tie"></i> Status Supir</h4>
+            <div id="driverAvailability" class="availability-grid" style="margin-bottom: 2rem;">
+              <p>Memuat status supir...</p>
+            </div>
+            <h4><i class="fas fa-truck"></i> Status Kendaraan</h4>
+            <div id="vehicleAvailability" class="availability-grid">
+              <p>Memuat status kendaraan...</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-reports" class="page">
+        <section class="card">
+          <h2 class="card-header">Unduh Laporan Sederhana</h2>
+          <div class="card-body">
+            <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 2rem;">
+              Anda dapat mengunduh data perjalanan yang telah Anda buat atau data kinerja supir dalam format PDF atau Excel.
+            </p>
+            <div class="form-group">
+              <label for="reportType">Pilih Jenis Laporan</label>
+              <select id="reportType">
+                <option value="my_trips">Laporan Perjalanan Saya</option>
+                <option value="driver_performance">Laporan Kinerja Supir</option>
+              </select>
+            </div>
+            <div class="report-buttons">
+              <button id="exportPdfBtn" class="btn-sm danger"><i class="fas fa-file-pdf"></i> Unduh PDF</button>
+              <button id="exportExcelBtn" class="btn-sm success"><i class="fas fa-file-excel"></i> Unduh Excel</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-notifications" class="page">
+        <section class="card">
+          <h2 class="card-header">Pusat Notifikasi</h2>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead><tr><th>Waktu</th><th>Pesan</th><th>Status</th></tr></thead>
+                <tbody id="notificationList">
+                  <tr><td colspan="3">Memuat notifikasi...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+      
     </main>
   </div>
+
+  <div id="mapModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="mapModalTitle">Lokasi Perjalanan</h2>
+      <div id="map-placeholder">
+        <i class="fas fa-map-marked-alt fa-3x"></i>
+        <p>Fitur pelacakan peta sedang dalam pengembangan.</p>
+        <p>Di sini akan ditampilkan lokasi supir secara real-time.</p>
+      </div>
+    </div>
+  </div>
+
 
   <script type="module">
     import { 
@@ -199,7 +370,10 @@
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
         list: { title: '<i class="fas fa-list-alt"></i> Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
         add: { title: '<i class="fas fa-plus"></i> Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
-        performance: { title: '<i class="fas fa-chart-bar"></i> Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
+        performance: { title: '<i class="fas fa-chart-bar"></i> Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' },
+        availability: { title: '<i class="fas fa-users-cog"></i> Ketersediaan', subtitle: 'Pantau status supir dan kendaraan secara real-time.' },
+        reports: { title: '<i class="fas fa-file-download"></i> Laporan', subtitle: 'Unduh data perjalanan dan kinerja dalam format PDF atau Excel.' },
+        notifications: { title: '<i class="fas fa-bell"></i> Notifikasi', subtitle: 'Lihat semua pembaruan penting terkait perjalanan Anda.' }
     };
 
     const elements = {
@@ -233,10 +407,25 @@
       prevCoorActivityBtn: document.getElementById('prevCoorActivityBtn'),
       nextCoorActivityBtn: document.getElementById('nextCoorActivityBtn'),
       coorActivityPageInfo: document.getElementById('coorActivityPageInfo'),
+      // Elemen baru
+      driverAvailability: document.getElementById('driverAvailability'),
+      vehicleAvailability: document.getElementById('vehicleAvailability'),
+      notificationCount: document.getElementById('notificationCount'),
+      notificationList: document.getElementById('notificationList'),
+      exportPdfBtn: document.getElementById('exportPdfBtn'),
+      exportExcelBtn: document.getElementById('exportExcelBtn'),
+      reportType: document.getElementById('reportType'),
+      mapModal: document.getElementById('mapModal'),
+      mapModalTitle: document.getElementById('mapModalTitle'),
+      closeModal: document.querySelector('.close-modal')
     };
     
     let currentUser = null;
     let allMyTrips = [];
+    let allDrivers = [];
+    let allVehicles = [];
+    let allUsers = {};
+    let notifications = [];
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
     const coorActivityRowsPerPage = 5;
@@ -253,6 +442,10 @@
                 link.classList.add('active');
                 elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
+
+                if(targetId === 'notifications') {
+                  markNotificationsAsRead();
+                }
             });
         });
     }
@@ -281,6 +474,8 @@
       elements.userEmail.textContent = currentUser.email;
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+      
+      loadAllUsers(); // Muat data semua user untuk info nama admin
       loadMyTrips();
       loadDrivers(); 
       loadRoutes();
@@ -292,20 +487,38 @@
         elements.filterMyTripStatus.onchange = () => displayMyTrips(1);
         elements.searchMyTrip.oninput = () => displayMyTrips(1);
         elements.searchDriverPerformance.oninput = () => loadDriverPerformance();
+        elements.exportPdfBtn.onclick = () => handleExport('pdf');
+        elements.exportExcelBtn.onclick = () => handleExport('excel');
+        elements.closeModal.onclick = () => elements.mapModal.style.display = 'none';
+        window.onclick = (event) => {
+          if (event.target == elements.mapModal) {
+            elements.mapModal.style.display = "none";
+          }
+        }
+    }
+
+    async function loadAllUsers() {
+      onValue(ref(db, 'users'), (snapshot) => {
+          allUsers = snapshot.val() || {};
+      });
     }
 
     async function loadVehicles() {
       try {
-        const snapshot = await get(ref(db, 'vehicles'));
-        elements.vehicleNumberSelect.innerHTML = '<option value="">-- Pilih Kendaraan --</option>';
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            const vehicle = child.val();
-            const optionText = `${vehicle.vehicleNumber} (${vehicle.unit || 'N/A'})`;
-            const option = el('option', optionText, { value: vehicle.vehicleNumber });
-            elements.vehicleNumberSelect.appendChild(option);
-          });
-        }
+        onValue(ref(db, 'vehicles'), (snapshot) => {
+          allVehicles = [];
+          elements.vehicleNumberSelect.innerHTML = '<option value="">-- Pilih Kendaraan --</option>';
+          if (snapshot.exists()) {
+            snapshot.forEach(child => {
+              const vehicle = { id: child.key, ...child.val() };
+              allVehicles.push(vehicle);
+              const optionText = `${vehicle.vehicleNumber} (${vehicle.unit || 'N/A'})`;
+              const option = el('option', optionText, { value: vehicle.vehicleNumber });
+              elements.vehicleNumberSelect.appendChild(option);
+            });
+          }
+          displayAvailability();
+        });
       } catch (error) { console.error("Gagal memuat kendaraan:", error); }
     }
     
@@ -330,25 +543,28 @@
 
     async function loadDrivers() {
         try {
-            const snapshot = await get(ref(db, 'users'));
-            if (snapshot.exists()) {
+            onValue(ref(db, 'users'), (snapshot) => {
+                allDrivers = [];
                 elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
-                let driverFound = false;
-                snapshot.forEach(child => {
-                    const uid = child.key;
-                    const user = child.val();
-                    if (user.role === 'driver' && user.name && !user.locked) {
-                        const option = el('option', user.name, { value: uid });
-                        elements.driverSelect.appendChild(option);
-                        driverFound = true;
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const user = { uid: child.key, ...child.val() };
+                        if (user.role === 'driver' && !user.locked) {
+                            allDrivers.push(user);
+                            if (user.name) {
+                                const option = el('option', user.name, { value: user.uid });
+                                elements.driverSelect.appendChild(option);
+                            }
+                        }
+                    });
+                    if (allDrivers.length === 0) {
+                        elements.driverSelect.innerHTML = '<option value="">Tidak ada supir aktif</option>';
                     }
-                });
-                if (!driverFound) {
-                    elements.driverSelect.innerHTML = '<option value="">Tidak ada supir aktif</option>';
+                } else {
+                    elements.driverSelect.innerHTML = '<option value="">Tidak ada data user</option>';
                 }
-            } else {
-                elements.driverSelect.innerHTML = '<option value="">Tidak ada data user</option>';
-            }
+                displayAvailability();
+            });
         } catch (error) { 
             console.error("Gagal memuat daftar supir:", error); 
             elements.driverSelect.innerHTML = '<option value="">Gagal memuat supir</option>';
@@ -369,22 +585,47 @@
         elements.statusMsg.textContent = '';
         return;
       }
+      
+      const vehicleNumber = document.getElementById('vehicleNumberSelect').value;
+
+      // Cek ketersediaan
+      const activeTrips = allMyTrips.map(t => t.data);
+      const isDriverBusy = activeTrips.some(t => t.driverId === driverId && t.status === 'approved');
+      const isVehicleBusy = activeTrips.some(t => t.vehicleNumber === vehicleNumber && t.status === 'approved');
+
+      if(isDriverBusy) {
+          alert(`Supir ${driverName} sedang dalam perjalanan lain.`);
+          elements.statusMsg.textContent = '';
+          return;
+      }
+      if(isVehicleBusy) {
+          alert(`Kendaraan ${vehicleNumber} sedang digunakan dalam perjalanan lain.`);
+          elements.statusMsg.textContent = '';
+          return;
+      }
 
       const data = {
         coorId: currentUser.uid, 
         driverId, 
         driverName,
-        vehicleNumber: document.getElementById('vehicleNumberSelect').value,
+        vehicleNumber: vehicleNumber,
         asal: document.getElementById('asal').value,
         tujuan: document.getElementById('tujuan').value,
         muatan: document.getElementById('muatan').value,
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', 
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        // Tambahkan properti untuk notifikasi
+        approvedBy: null,
+        approvedAt: null,
+        rejectedBy: null,
+        rejectedAt: null,
+        arrivedAt: null,
+        isRead_coor: false // Status notifikasi untuk koordinator
       };
       
       for(const key in data) {
-          if(!data[key] && key !== 'driverName') { 
+          if(!data[key] && key !== 'driverName' && key.indexOf('By') === -1 && key.indexOf('At') === -1 && key.indexOf('isRead') === -1) { 
               alert(`Kolom ${key} tidak boleh kosong.`);
               elements.statusMsg.textContent = '';
               return;
@@ -503,25 +744,31 @@
       }
       elements.coorPaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'block' : 'none';
       if (filteredTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(({id: tripId, data: tripData}) => {
           const tr = el('tr');
-          const actionsCell = el('td', '', {'data-label': 'Aksi Cetak'});
-          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start' });
+          const actionsCell = el('td', '', {'data-label': 'Aksi'});
+          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start; gap: 0.5rem;' });
+          
           if (tripData.status === 'approved') {
-            const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
-            const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
+            const sjButton = el('button', '<i class="fas fa-print"></i> SJ', { class: 'btn-sm info' });
+            const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
+            const mapButton = el('button', '<i class="fas fa-map-marker-alt"></i> Lacak', { class: 'btn-sm success' });
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
             invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
-            actionsContainer.append(sjButton, invButton);
+            mapButton.onclick = () => {
+              elements.mapModalTitle.textContent = `Lokasi Perjalanan: ${tripData.driverName}`;
+              elements.mapModal.style.display = 'block';
+            };
+            actionsContainer.append(sjButton, invButton, mapButton);
           } else {
             actionsContainer.textContent = '-';
           }
           actionsCell.appendChild(actionsContainer);
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
-          tr.innerHTML = `<td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td><td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Kendaraan">${tripData.vehicleNumber}</td><td data-label="Muatan">${tripData.muatan||'-'}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
+          tr.innerHTML = `<td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td><td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Kendaraan">${tripData.vehicleNumber}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
           tr.append(statusCell, actionsCell);
           elements.tripList.appendChild(tr);
         });
@@ -550,6 +797,7 @@
     function loadMyTrips() {
       const tripsRef = query(ref(db, 'trips'), orderByChild('coorId'), equalTo(currentUser.uid));
       onValue(tripsRef, (snapshot) => {
+        const previousTrips = new Map(allMyTrips.map(trip => [trip.id, trip.data]));
         allMyTrips = [];
         if (snapshot.exists()) {
           snapshot.forEach(child => {
@@ -557,10 +805,176 @@
           });
         }
         allMyTrips.reverse(); 
+
+        checkForNotifications(previousTrips, new Map(allMyTrips.map(trip => [trip.id, trip.data])));
+        
         displayMyTrips(1);
         loadDriverPerformance();
         loadCoordinatorDashboardStats();
+        displayAvailability();
       });
+    }
+
+    // --- FITUR BARU ---
+    function displayAvailability() {
+        elements.driverAvailability.innerHTML = '';
+        elements.vehicleAvailability.innerHTML = '';
+        const activeTrips = allMyTrips.map(t => t.data).filter(t => t.status === 'approved');
+
+        // Status Supir
+        if(allDrivers.length === 0) {
+            elements.driverAvailability.innerHTML = '<p class="empty-state">Tidak ada data supir.</p>';
+        } else {
+            allDrivers.forEach(driver => {
+                const isBusy = activeTrips.some(trip => trip.driverId === driver.uid);
+                const status = isBusy ? 'in-trip' : 'available';
+                const statusText = isBusy ? 'Dalam Perjalanan' : 'Tersedia';
+                const card = el('div', '', { class: 'resource-card' });
+                card.innerHTML = `
+                    <h4><span class="status-dot ${status}"></span>${driver.name}</h4>
+                    <p>${statusText}</p>
+                `;
+                elements.driverAvailability.appendChild(card);
+            });
+        }
+
+        // Status Kendaraan
+        if(allVehicles.length === 0) {
+            elements.vehicleAvailability.innerHTML = '<p class="empty-state">Tidak ada data kendaraan.</p>';
+        } else {
+            allVehicles.forEach(vehicle => {
+                const isBusy = activeTrips.some(trip => trip.vehicleNumber === vehicle.vehicleNumber);
+                const status = isBusy ? 'in-trip' : 'available';
+                const statusText = isBusy ? 'Digunakan' : 'Tersedia';
+                const card = el('div', '', { class: 'resource-card' });
+                card.innerHTML = `
+                    <h4><span class="status-dot ${status}"></span>${vehicle.vehicleNumber}</h4>
+                    <p>${vehicle.unit || 'N/A'}</p>
+                    <p>${statusText}</p>
+                `;
+                elements.vehicleAvailability.appendChild(card);
+            });
+        }
+    }
+
+    function checkForNotifications(previousTrips, currentTrips) {
+        currentTrips.forEach((trip, id) => {
+            const oldTrip = previousTrips.get(id);
+            if (oldTrip && oldTrip.status !== trip.status && !trip.isRead_coor) {
+                let message = '';
+                let timestamp = null;
+                const adminName = allUsers[trip.approvedBy || trip.rejectedBy]?.name || 'Admin';
+                const driverName = trip.driverName || 'Supir';
+                
+                if (trip.status === 'approved') {
+                    message = `Perjalanan untuk <strong>${driverName}</strong> telah disetujui oleh <strong>${adminName}</strong>.`;
+                    timestamp = trip.approvedAt;
+                } else if (trip.status === 'rejected') {
+                    message = `Perjalanan untuk <strong>${driverName}</strong> ditolak oleh <strong>${adminName}</strong>.`;
+                    timestamp = trip.rejectedAt;
+                } else if (trip.status === 'arrived') {
+                    message = `<strong>${driverName}</strong> telah tiba di tujuan.`;
+                    timestamp = trip.arrivedAt;
+                }
+
+                if (message) {
+                    notifications.unshift({ id, message, timestamp, status: trip.status, isRead: false });
+                }
+            }
+        });
+        updateNotificationUI();
+    }
+    
+    function updateNotificationUI() {
+        const unreadCount = notifications.filter(n => !n.isRead).length;
+        if(unreadCount > 0) {
+            elements.notificationCount.textContent = unreadCount;
+            elements.notificationCount.style.display = 'inline-block';
+        } else {
+            elements.notificationCount.style.display = 'none';
+        }
+
+        elements.notificationList.innerHTML = '';
+        if(notifications.length === 0) {
+            elements.notificationList.innerHTML = '<tr><td colspan="3" class="empty-state">Tidak ada notifikasi baru.</td></tr>';
+        } else {
+            notifications.slice(0, 50).forEach(n => { // Batasi 50 notif
+                const tr = el('tr', '', { style: n.isRead ? '' : 'font-weight: bold;' });
+                const time = n.timestamp ? new Date(n.timestamp).toLocaleString('id-ID') : '-';
+                const statusCell = el('td');
+                statusCell.appendChild(badge(n.status));
+                tr.innerHTML = `<td>${time}</td><td>${n.message}</td>`;
+                tr.appendChild(statusCell);
+                elements.notificationList.appendChild(tr);
+            });
+        }
+    }
+
+    function markNotificationsAsRead() {
+        const unreadNotifs = notifications.filter(n => !n.isRead);
+        if(unreadNotifs.length > 0) {
+            const updates = {};
+            unreadNotifs.forEach(n => {
+                updates[`/trips/${n.id}/isRead_coor`] = true;
+                n.isRead = true; // Update lokal juga
+            });
+            update(ref(db), updates);
+        }
+        updateNotificationUI(); // Perbarui UI setelah ditandai dibaca
+    }
+
+    function handleExport(format) {
+      const { jsPDF } = window.jspdf;
+      const type = elements.reportType.value;
+      
+      let data, headers, filename, title;
+
+      if (type === 'my_trips') {
+          title = 'Laporan Perjalanan Saya';
+          filename = 'laporan_perjalanan_saya';
+          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
+          data = allMyTrips.map(({data: t}) => ({
+              'Rute': `${t.asal} → ${t.tujuan}`, 'Supir': t.driverName,
+              'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
+              'Tanggal': t.tanggal, 'Status': t.status
+          }));
+      } else { // driver_performance
+          title = 'Laporan Kinerja Supir';
+          filename = 'laporan_kinerja_supir';
+          headers = ["Nama Supir", "Total", "Selesai", "Jalan", "Menunggu", "Ditolak"];
+          const performance = {};
+          allMyTrips.forEach(({data: trip}) => {
+              if (trip.driverId) {
+                  if (!performance[trip.driverId]) {
+                      performance[trip.driverId] = { name: trip.driverName, total: 0, arrived: 0, approved: 0, submitted: 0, rejected: 0 };
+                  }
+                  performance[trip.driverId].total++;
+                  if (trip.status) performance[trip.driverId][trip.status]++;
+              }
+          });
+          data = Object.values(performance).map(d => ({
+              'Nama Supir': d.name, 'Total': d.total, 'Selesai': d.arrived || 0,
+              'Jalan': d.approved || 0, 'Menunggu': d.submitted || 0, 'Ditolak': d.rejected || 0
+          }));
+      }
+
+      if (data.length === 0) {
+          alert('Tidak ada data untuk diekspor.');
+          return;
+      }
+      
+      if (format === 'excel') {
+          const worksheet = XLSX.utils.json_to_sheet(data);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
+          XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
+      } else { // pdf
+          const doc = new jsPDF();
+          doc.text(title, 14, 16);
+          const body = data.map(Object.values);
+          doc.autoTable({ head: [headers], body: body, startY: 20 });
+          doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
+      }
     }
 
     elements.logoutBtn.addEventListener('click', async () => {
