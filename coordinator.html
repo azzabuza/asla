@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -264,9 +264,10 @@
   <div id="barcodeModal" class="modal">
     <div class="modal-content barcode-modal-content">
         <span class="close-modal" id="closeBarcodeModal">&times;</span>
-        <h2>Barcode Trip ID</h2>
+        <h2>QR Code Trip ID</h2>
         <div class="barcode-container">
-            <svg id="barcode"></svg>
+            <div id="qrcode"></div>
+            <code id="qrcode-text"></code>
         </div>
         <div class="barcode-actions">
             <button id="downloadBarcodeBtn" class="btn-sm success"><i class="fas fa-download"></i> Unduh</button>
@@ -336,6 +337,8 @@
       closeModal: document.querySelector('#mapModal .close-modal'),
       barcodeModal: document.getElementById('barcodeModal'),
       closeBarcodeModal: document.getElementById('closeBarcodeModal'),
+      qrcodeContainer: document.getElementById('qrcode'),
+      qrcodeText: document.getElementById('qrcode-text'),
       downloadBarcodeBtn: document.getElementById('downloadBarcodeBtn'),
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
     };
@@ -346,6 +349,7 @@
     let allVehicles = [];
     let allUsers = {};
     let notifications = [];
+    let qrcodeGenerator = null;
     let currentTripIdForBarcode = null;
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
@@ -429,35 +433,33 @@
         }
 
         elements.downloadBarcodeBtn.onclick = () => {
-            const svg = document.getElementById('barcode');
-            const serializer = new XMLSerializer();
-            const source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svg);
-            const image = new Image();
-            image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
-            const canvas = document.createElement("canvas");
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
-            const context = canvas.getContext("2d");
-            image.onload = function() {
-                context.fillStyle = "#FFFFFF";
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                context.drawImage(image, 0, 0);
+            const canvas = elements.qrcodeContainer.querySelector('canvas');
+            if (canvas) {
                 const a = document.createElement("a");
-                a.download = `${currentTripIdForBarcode}-barcode.png`;
+                a.download = `${currentTripIdForBarcode}-qrcode.png`;
                 a.href = canvas.toDataURL("image/png");
                 a.click();
-            };
+            }
         };
 
         elements.printBarcodeBtn.onclick = () => {
-            const svg = document.getElementById('barcode').outerHTML;
-            const printWindow = window.open('', '', 'height=400,width=800');
-            printWindow.document.write('<html><head><title>Print Barcode</title></head><body>');
-            printWindow.document.write(svg);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
+            const qrCodeImage = elements.qrcodeContainer.querySelector('img');
+            const tripIdText = elements.qrcodeText.textContent;
+            if (qrCodeImage) {
+                const printWindow = window.open('', '', 'height=400,width=400');
+                printWindow.document.write('<html><head><title>Print QR Code</title>');
+                printWindow.document.write('<style>body { text-align: center; font-family: sans-serif; }</style>');
+                printWindow.document.write('</head><body>');
+                printWindow.document.write('<img src="' + qrCodeImage.src + '" style="width: 250px;">');
+                printWindow.document.write('<h3>' + tripIdText + '</h3>');
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.onload = function() {
+                    printWindow.print();
+                    printWindow.close();
+                };
+            }
         };
     }
 
@@ -710,28 +712,27 @@
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start; gap: 0.5rem;' });
           
+          const barcodeButton = el('button', '<i class="fas fa-qrcode"></i>', { class: 'btn-sm' });
+          barcodeButton.onclick = () => {
+              currentTripIdForBarcode = tripId;
+              elements.qrcodeContainer.innerHTML = '';
+              new QRCode(elements.qrcodeContainer, {
+                  text: tripId,
+                  width: 256,
+                  height: 256,
+                  colorDark : "#e0e5f5",
+                  colorLight : "#1a2235",
+                  correctLevel : QRCode.CorrectLevel.H
+              });
+              elements.qrcodeText.textContent = tripId;
+              elements.barcodeModal.style.display = 'block';
+          };
+          
           if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
-            const barcodeButton = el('button', '<i class="fa-solid fa-barcode"></i>', { class: 'btn-sm' });
             const sjButton = el('button', '<i class="fas fa-print"></i> SJ', { class: 'btn-sm info' });
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
             const mapButton = el('button', '<i class="fas fa-map-marker-alt"></i> Lacak', { class: 'btn-sm success' });
             
-            barcodeButton.onclick = () => {
-                currentTripIdForBarcode = tripId;
-                JsBarcode("#barcode", tripId, {
-                    format: "CODE128",
-                    lineColor: "#e0e5f5",
-                    background: "transparent",
-                    width: 2,
-                    height: 80,
-                    displayValue: true,
-                    fontOptions: "bold",
-                    font: "Inter",
-                    fontSize: 18,
-                    textColor: "#e0e5f5"
-                });
-                elements.barcodeModal.style.display = 'block';
-            };
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
             invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
             mapButton.onclick = () => {
@@ -740,7 +741,7 @@
             };
             actionsContainer.append(barcodeButton, sjButton, invButton, mapButton);
           } else {
-            actionsContainer.textContent = '-';
+            actionsContainer.append(barcodeButton);
           }
           actionsCell.appendChild(actionsContainer);
           const statusCell = el('td', '', {'data-label': 'Status'});
