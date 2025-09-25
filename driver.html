@@ -36,6 +36,10 @@
           <p id="activeTripsCount">0</p>
         </div>
         <div class="stat-card">
+          <h3>Tugas Selesai</h3>
+          <p id="completedTripsCount">0</p>
+        </div>
+        <div class="stat-card">
           <h3>Total Perjalanan</h3>
           <p id="totalTripsCount">0</p>
         </div>
@@ -121,6 +125,7 @@
     const elements = {
       driverName: document.getElementById('driverName'),
       activeTripsCount: document.getElementById('activeTripsCount'),
+      completedTripsCount: document.getElementById('completedTripsCount'), // Elemen baru
       totalTripsCount: document.getElementById('totalTripsCount'),
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
@@ -192,18 +197,23 @@
       onValue(q, (snapshot) => {
         let activeJobs = [];
         let historyJobs = [];
+        let completedJobs = 0;
 
         snapshot.forEach(child => {
           const job = { id: child.key, ...child.val() };
-          // Tugas aktif adalah yang disetujui, dalam perjalanan, atau hampir sampai
           if (['approved', 'delivering', 'arriving_soon'].includes(job.status)) {
             activeJobs.push(job);
           } else if (['arrived', 'rejected'].includes(job.status)) {
             historyJobs.push(job);
+            if(job.status === 'arrived'){
+              completedJobs++;
+            }
           }
         });
 
+        // Update stat cards
         elements.activeTripsCount.textContent = activeJobs.length;
+        elements.completedTripsCount.textContent = completedJobs;
         elements.totalTripsCount.textContent = activeJobs.length + historyJobs.length;
 
         displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
@@ -240,18 +250,16 @@
                 </div>
                 ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
             `;
-
-            // Membuat card header dan body bisa diklik untuk melihat detail
+            
             card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
             card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
             
-            // Menambahkan event listener untuk tombol aksi
             const actionButton = card.querySelector('.trip-card-actions button');
             if (actionButton) {
                 actionButton.onclick = (e) => {
-                    e.stopPropagation(); // Mencegah modal detail terbuka saat tombol diklik
-                    const tripId = e.target.dataset.tripid;
-                    const newStatus = e.target.dataset.status;
+                    e.stopPropagation();
+                    const tripId = e.target.closest('button').dataset.tripid;
+                    const newStatus = e.target.closest('button').dataset.status;
                     handleTripAction(tripId, newStatus);
                 };
             }
@@ -264,7 +272,6 @@
         const tripRef = ref(db, `trips/${tripId}`);
         try {
             await update(tripRef, { status: newStatus });
-            // Notifikasi bisa ditambahkan di sini jika perlu
         } catch (error) {
             console.error("Gagal memperbarui status:", error);
             alert("Gagal memperbarui status perjalanan. Silakan coba lagi.");
