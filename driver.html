@@ -337,9 +337,15 @@
         let scanner = new Instascan.Scanner({ video: elements.previewVideo, scanPeriod: 5, mirror: false });
         
         scanner.addListener('scan', function(content) {
+            // Set input value from scan
             elements.tripIdInput.value = content;
-            closeConfirmationModal(); 
-            openConfirmationModal(activeTripIdForConfirmation); 
+            
+            // Stop scanner and hide video preview without resetting form
+            if (currentScanner) {
+                currentScanner.stop();
+                currentScanner = null;
+            }
+            elements.previewVideo.style.display = 'none';
         });
 
         Instascan.Camera.getCameras().then(function (cameras) {
