@@ -580,7 +580,7 @@
         currentActivityPage = page;
         const start = (page - 1) * activityRowsPerPage;
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
-        elements.activityPaginationControls.style.display = allTrips.length > activityRowsPerPage ? 'flex' : 'none';
+        elements.activityPaginationControls.style.display = allTrips.length >= 20 ? 'flex' : 'none';
         if (allTrips.length === 0) {
             elements.recentActivityList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
