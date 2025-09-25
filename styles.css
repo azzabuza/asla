@@ -465,6 +465,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .badge.danger { background-color: var(--color-danger); }
 .badge.info { background-color: var(--color-info); }
 .badge.inprogress { background-color: var(--color-inprogress); }
+.badge.super-admin { background-color: var(--color-super-admin); }
 .role-admin { background-color: var(--color-danger); }
 .role-super-admin { background-color: var(--color-super-admin); }
 .role-coordinator { background-color: var(--color-success); }
@@ -1022,5 +1023,5 @@ input:checked + .slider:before {
     width: 100%;
     max-width: 400px;
     border-radius: 0.5rem;
-    display: none; /* Disembunyikan secara default */
+    display: none;
 }
