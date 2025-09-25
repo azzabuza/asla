@@ -333,13 +333,11 @@
     const coorActivityRowsPerPage = 5;
     const rowsPerPage = 10;
 
-    // --- FUNGSI BARU UNTUK MEMBUAT TRIP ID ---
     function generateTripId() {
         const now = new Date();
         const year = String(now.getFullYear()).slice(-2);
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        // Menghasilkan 4 karakter acak alfanumerik
         const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
         return `TRP-${year}${month}${day}-${randomChars}`;
     }
@@ -773,19 +771,29 @@
             const oldTrip = previousTrips.get(id);
             if (oldTrip && oldTrip.status !== trip.status && !trip.isRead_coor) {
                 let message = '';
-                let timestamp = null;
+                let timestamp = Date.now();
                 const adminName = allUsers[trip.approvedBy || trip.rejectedBy]?.name || 'Admin';
                 const driverName = trip.driverName || 'Supir';
                 
-                if (trip.status === 'approved') {
-                    message = `Perjalanan untuk <strong>${driverName}</strong> telah disetujui oleh <strong>${adminName}</strong>.`;
-                    timestamp = trip.approvedAt;
-                } else if (trip.status === 'rejected') {
-                    message = `Perjalanan untuk <strong>${driverName}</strong> ditolak oleh <strong>${adminName}</strong>.`;
-                    timestamp = trip.rejectedAt;
-                } else if (trip.status === 'arrived') {
-                    message = `<strong>${driverName}</strong> telah tiba di tujuan.`;
-                    timestamp = trip.arrivedAt;
+                switch(trip.status) {
+                    case 'approved':
+                        message = `Perjalanan untuk <strong>${driverName}</strong> telah disetujui oleh <strong>${adminName}</strong>.`;
+                        timestamp = trip.approvedAt;
+                        break;
+                    case 'rejected':
+                        message = `Perjalanan untuk <strong>${driverName}</strong> ditolak oleh <strong>${adminName}</strong>.`;
+                        timestamp = trip.rejectedAt;
+                        break;
+                    case 'delivering':
+                        message = `<strong>${driverName}</strong> telah memulai perjalanan.`;
+                        break;
+                    case 'arriving_soon':
+                        message = `<strong>${driverName}</strong> dilaporkan hampir sampai tujuan.`;
+                        break;
+                    case 'arrived':
+                        message = `<strong>${driverName}</strong> telah tiba di tujuan.`;
+                        timestamp = trip.arrivedAt;
+                        break;
                 }
 
                 if (message) {
