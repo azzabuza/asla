@@ -43,6 +43,9 @@ export function badge(status) {
   const statusMap = {
     submitted: ["Menunggu", "warn"],
     approved: ["Disetujui", "success"],
+    delivering: ["Dalam Perjalanan", "inprogress"],
+    arriving_soon: ["Hampir Sampai", "info"],
+    arrived: ["Selesai", "success"],
     rejected: ["Ditolak", "danger"],
   };
   const [label, cls] = statusMap[status] || [String(status), ""];
