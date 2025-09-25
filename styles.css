@@ -988,6 +988,10 @@ input:checked + .slider:before {
     background: var(--color-warn);
     color: var(--text-inverse);
 }
+.trip-card-actions button.confirm {
+    background: var(--color-success);
+    color: var(--text-primary);
+}
 .modal-content .detail-grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
@@ -1000,4 +1004,23 @@ input:checked + .slider:before {
 }
 .modal-content .detail-grid .value {
     color: var(--text-primary);
+}
+.confirmation-modal-body .input-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.confirmation-modal-body input {
+    flex-grow: 1;
+}
+.confirmation-modal-body #scanBtn {
+    width: auto;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+.confirmation-modal-body video {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 0.5rem;
+    display: none; /* Disembunyikan secara default */
 }
