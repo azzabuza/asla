@@ -333,6 +333,17 @@
     const coorActivityRowsPerPage = 5;
     const rowsPerPage = 10;
 
+    // --- FUNGSI BARU UNTUK MEMBUAT TRIP ID ---
+    function generateTripId() {
+        const now = new Date();
+        const year = String(now.getFullYear()).slice(-2);
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        // Menghasilkan 4 karakter acak alfanumerik
+        const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `TRP-${year}${month}${day}-${randomChars}`;
+    }
+
     function setupCoordinatorNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -377,7 +388,7 @@
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
       
-      loadAllUsers(); // Muat data semua user untuk info nama admin
+      loadAllUsers(); 
       loadMyTrips();
       loadDrivers(); 
       loadRoutes();
@@ -489,8 +500,6 @@
       }
       
       const vehicleNumber = document.getElementById('vehicleNumberSelect').value;
-
-      // Cek ketersediaan
       const activeTrips = allMyTrips.map(t => t.data);
       const isDriverBusy = activeTrips.some(t => t.driverId === driverId && t.status === 'approved');
       const isVehicleBusy = activeTrips.some(t => t.vehicleNumber === vehicleNumber && t.status === 'approved');
@@ -517,13 +526,8 @@
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', 
         createdAt: Date.now(),
-        // Tambahkan properti untuk notifikasi
-        approvedBy: null,
-        approvedAt: null,
-        rejectedBy: null,
-        rejectedAt: null,
-        arrivedAt: null,
-        isRead_coor: false // Status notifikasi untuk koordinator
+        approvedBy: null, approvedAt: null, rejectedBy: null,
+        rejectedAt: null, arrivedAt: null, isRead_coor: false
       };
       
       for(const key in data) {
@@ -535,7 +539,8 @@
       }
 
       try {
-        const newTripRef = push(ref(db, 'trips'));
+        const newTripId = generateTripId();
+        const newTripRef = ref(db, 'trips/' + newTripId);
         await set(newTripRef, data);
         elements.tripForm.reset();
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
@@ -724,13 +729,11 @@
       });
     }
 
-    // --- FITUR BARU ---
     function displayAvailability() {
         elements.driverAvailability.innerHTML = '';
         elements.vehicleAvailability.innerHTML = '';
         const activeTrips = allMyTrips.map(t => t.data).filter(t => ['approved', 'delivering', 'arriving_soon'].includes(t.status));
 
-        // Status Supir
         if(allDrivers.length === 0) {
             elements.driverAvailability.innerHTML = '<p class="empty-state">Tidak ada data supir.</p>';
         } else {
@@ -747,7 +750,6 @@
             });
         }
 
-        // Status Kendaraan
         if(allVehicles.length === 0) {
             elements.vehicleAvailability.innerHTML = '<p class="empty-state">Tidak ada data kendaraan.</p>';
         } else {
@@ -807,7 +809,7 @@
         if(notifications.length === 0) {
             elements.notificationList.innerHTML = '<tr><td colspan="3" class="empty-state">Tidak ada notifikasi baru.</td></tr>';
         } else {
-            notifications.slice(0, 50).forEach(n => { // Batasi 50 notif
+            notifications.slice(0, 50).forEach(n => { 
                 const tr = el('tr', '', { style: n.isRead ? '' : 'font-weight: bold;' });
                 const time = n.timestamp ? new Date(n.timestamp).toLocaleString('id-ID') : '-';
                 const statusCell = el('td');
@@ -825,11 +827,11 @@
             const updates = {};
             unreadNotifs.forEach(n => {
                 updates[`/trips/${n.id}/isRead_coor`] = true;
-                n.isRead = true; // Update lokal juga
+                n.isRead = true; 
             });
             update(ref(db), updates);
         }
-        updateNotificationUI(); // Perbarui UI setelah ditandai dibaca
+        updateNotificationUI(); 
     }
 
     function handleExport(format) {
@@ -847,7 +849,7 @@
               'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
               'Tanggal': t.tanggal, 'Status': t.status
           }));
-      } else { // driver_performance
+      } else { 
           title = 'Laporan Kinerja Supir';
           filename = 'laporan_kinerja_supir';
           headers = ["Nama Supir", "Total", "Selesai", "Jalan", "Menunggu", "Ditolak"];
@@ -877,7 +879,7 @@
           const workbook = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
           XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
-      } else { // pdf
+      } else { 
           const doc = new jsPDF();
           doc.text(title, 14, 16);
           const body = data.map(Object.values);
