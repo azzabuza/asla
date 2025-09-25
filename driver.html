@@ -44,7 +44,7 @@
       <div class="tabs">
         <div class="tab-link active" data-tab="active">Tugas Aktif</div>
         <div class="tab-link" data-tab="history">Riwayat Perjalanan</div>
-        <div class="tab-link" data-tab="confirm">Konfirmasi Kedatangan</div>
+        <div class="tab-link" data-tab="confirm">Konfirmasi Tiba</div>
       </div>
 
       <div id="tab-active" class="tab-content active">
@@ -61,8 +61,11 @@
 
       <div id="tab-confirm" class="tab-content">
         <section class="card">
-          <h2 class="card-header">Konfirmasi Kedatangan</h2>
+          <h2 class="card-header">Konfirmasi Tiba di Tujuan</h2>
           <div class="card-body">
+            <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 2rem;">
+              Gunakan form ini untuk konfirmasi akhir setelah Anda sampai di lokasi tujuan dengan memindai QR Code atau memasukkan kode resi manual.
+            </p>
             <form id="arriveForm">
               <div class="form-group">
                 <label for="tripId">Kode Resi Perjalanan (Trip ID)</label>
@@ -98,7 +101,22 @@
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
-    import { fmtDate, badge, el } from './utils.js';
+    import { fmtDate, el } from './utils.js';
+
+    // Versi lokal dari fungsi badge untuk mendukung status baru
+    function badge(status) {
+      const statusMap = {
+        submitted: ["Menunggu", "warn"],
+        approved: ["Disetujui", "success"],
+        delivering: ["Dalam Perjalanan", "inprogress"],
+        arriving_soon: ["Hampir Sampai", "info"],
+        arrived: ["Selesai", "success"],
+        rejected: ["Ditolak", "danger"],
+      };
+      const [label, cls] = statusMap[status] || [String(status), ""];
+      const badgeElement = el("span", label, { class: `badge ${cls}` });
+      return badgeElement;
+    }
 
     const elements = {
       driverName: document.getElementById('driverName'),
@@ -172,17 +190,15 @@
       const tripsRef = ref(db, 'trips');
       const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
       onValue(q, (snapshot) => {
-        elements.activeJobsList.innerHTML = '';
-        elements.historyJobsList.innerHTML = '';
-        
         let activeJobs = [];
         let historyJobs = [];
 
         snapshot.forEach(child => {
           const job = { id: child.key, ...child.val() };
-          if (job.status === 'approved') {
+          // Tugas aktif adalah yang disetujui, dalam perjalanan, atau hampir sampai
+          if (['approved', 'delivering', 'arriving_soon'].includes(job.status)) {
             activeJobs.push(job);
-          } else if (job.status === 'arrived' || job.status === 'rejected') {
+          } else if (['arrived', 'rejected'].includes(job.status)) {
             historyJobs.push(job);
           }
         });
@@ -206,6 +222,13 @@
             const card = el('div', '', { class: 'trip-card' });
             const statusBadge = badge(job.status);
             
+            let actionButtonsHTML = '';
+            if (job.status === 'approved') {
+                actionButtonsHTML = `<button class="start" data-tripid="${job.id}" data-status="delivering"><i class="fas fa-play"></i> Mulai Perjalanan</button>`;
+            } else if (job.status === 'delivering') {
+                actionButtonsHTML = `<button class="arriving" data-tripid="${job.id}" data-status="arriving_soon"><i class="fas fa-flag-checkered"></i> Hampir Sampai</button>`;
+            }
+            
             card.innerHTML = `
                 <div class="trip-card-header">
                     <h3>${job.asal} <i class="fas fa-arrow-right"></i> ${job.tujuan}</h3>
@@ -215,11 +238,37 @@
                     <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
                     <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
                 </div>
+                ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
             `;
 
-            card.onclick = () => showTripDetails(job);
+            // Membuat card header dan body bisa diklik untuk melihat detail
+            card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
+            card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
+            
+            // Menambahkan event listener untuk tombol aksi
+            const actionButton = card.querySelector('.trip-card-actions button');
+            if (actionButton) {
+                actionButton.onclick = (e) => {
+                    e.stopPropagation(); // Mencegah modal detail terbuka saat tombol diklik
+                    const tripId = e.target.dataset.tripid;
+                    const newStatus = e.target.dataset.status;
+                    handleTripAction(tripId, newStatus);
+                };
+            }
+            
             container.appendChild(card);
         });
+    }
+
+    async function handleTripAction(tripId, newStatus) {
+        const tripRef = ref(db, `trips/${tripId}`);
+        try {
+            await update(tripRef, { status: newStatus });
+            // Notifikasi bisa ditambahkan di sini jika perlu
+        } catch (error) {
+            console.error("Gagal memperbarui status:", error);
+            alert("Gagal memperbarui status perjalanan. Silakan coba lagi.");
+        }
     }
 
     function showTripDetails(job) {
@@ -255,17 +304,13 @@
         }
         if (tripData.status === 'arrived') {
             elements.statusMsg.style.color = 'var(--color-warn)';
-            throw new Error('Perjalanan ini sudah dikonfirmasi sebelumnya.');
-        }
-        if (tripData.status !== 'approved') {
-            throw new Error('Perjalanan ini belum disetujui atau sudah ditolak.');
+            throw new Error('Perjalanan ini sudah dikonfirmasi selesai.');
         }
 
         await update(tripRef, { status: 'arrived', arrivedAt: Date.now() });
         elements.statusMsg.style.color = 'var(--color-success)';
         elements.statusMsg.textContent = "✔️ Konfirmasi berhasil! Perjalanan telah ditandai selesai.";
         arriveForm.reset();
-        // Pindah ke tab riwayat setelah berhasil
         document.querySelector('.tab-link[data-tab="history"]').click();
       } catch (err) {
         elements.statusMsg.style.color = 'var(--color-danger)';
@@ -284,7 +329,6 @@
             });
             Instascan.Camera.getCameras().then(function (cameras) {
                 if (cameras.length > 0) {
-                    // Coba kamera belakang dulu jika ada (biasanya index 1)
                     scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
                 } else {
                     console.error('No cameras found.');
