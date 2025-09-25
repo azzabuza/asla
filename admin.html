@@ -680,8 +680,8 @@
             if (trip.status === 'submitted') {
                 const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                 const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
-                approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
-                rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid });
+                approveBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid, isRead_coor: false });
+                rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid, isRead_coor: false });
                 actionsContainer.append(approveBtn, rejectBtn);
             }
             if (currentUserData && currentUserData.role === 'super admin') {
@@ -786,7 +786,7 @@
             allTrips.reverse();
             displayTrips(1);
             loadDashboardStats();
-            loadRoleStats(); // <-- PERBAIKAN DI SINI
+            loadRoleStats(); 
         });
         onValue(ref(db, 'routes'), (snapshot) => {
           allRoutes = [];
