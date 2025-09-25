@@ -105,27 +105,12 @@
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
-    import { fmtDate, el } from './utils.js';
-
-    // Versi lokal dari fungsi badge untuk mendukung status baru
-    function badge(status) {
-      const statusMap = {
-        submitted: ["Menunggu", "warn"],
-        approved: ["Disetujui", "success"],
-        delivering: ["Dalam Perjalanan", "inprogress"],
-        arriving_soon: ["Hampir Sampai", "info"],
-        arrived: ["Selesai", "success"],
-        rejected: ["Ditolak", "danger"],
-      };
-      const [label, cls] = statusMap[status] || [String(status), ""];
-      const badgeElement = el("span", label, { class: `badge ${cls}` });
-      return badgeElement;
-    }
+    import { badge, fmtDate, el } from './utils.js';
 
     const elements = {
       driverName: document.getElementById('driverName'),
       activeTripsCount: document.getElementById('activeTripsCount'),
-      completedTripsCount: document.getElementById('completedTripsCount'), // Elemen baru
+      completedTripsCount: document.getElementById('completedTripsCount'),
       totalTripsCount: document.getElementById('totalTripsCount'),
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
@@ -211,7 +196,6 @@
           }
         });
 
-        // Update stat cards
         elements.activeTripsCount.textContent = activeJobs.length;
         elements.completedTripsCount.textContent = completedJobs;
         elements.totalTripsCount.textContent = activeJobs.length + historyJobs.length;
@@ -250,14 +234,14 @@
                 </div>
                 ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
             `;
-            
+
             card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
             card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
             
             const actionButton = card.querySelector('.trip-card-actions button');
             if (actionButton) {
                 actionButton.onclick = (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); 
                     const tripId = e.target.closest('button').dataset.tripid;
                     const newStatus = e.target.closest('button').dataset.status;
                     handleTripAction(tripId, newStatus);
@@ -271,7 +255,7 @@
     async function handleTripAction(tripId, newStatus) {
         const tripRef = ref(db, `trips/${tripId}`);
         try {
-            await update(tripRef, { status: newStatus });
+            await update(tripRef, { status: newStatus, isRead_coor: false });
         } catch (error) {
             console.error("Gagal memperbarui status:", error);
             alert("Gagal memperbarui status perjalanan. Silakan coba lagi.");
@@ -314,7 +298,7 @@
             throw new Error('Perjalanan ini sudah dikonfirmasi selesai.');
         }
 
-        await update(tripRef, { status: 'arrived', arrivedAt: Date.now() });
+        await update(tripRef, { status: 'arrived', arrivedAt: Date.now(), isRead_coor: false });
         elements.statusMsg.style.color = 'var(--color-success)';
         elements.statusMsg.textContent = "✔️ Konfirmasi berhasil! Perjalanan telah ditandai selesai.";
         arriveForm.reset();
@@ -348,7 +332,7 @@
         }
     }
 
-    logoutBtn.addEventListener('click', async () => {
+    elements.logoutBtn.addEventListener('click', async () => {
         if (currentUser) {
             await update(ref(db, 'users/' + currentUser.uid), { online: false });
         }
