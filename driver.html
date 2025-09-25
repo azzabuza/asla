@@ -2,11 +2,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
   <title>Panel Driver</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* Mengatur agar konten tidak tertutup oleh sidebar (yang tidak ada di halaman ini) */
     .main-content { margin-left: 0; width: 100%; }
     #preview {
       width: 100%;
@@ -15,51 +17,49 @@
       border: 1px solid var(--border-color);
       border-radius: 8px;
     }
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2.5rem;
-    }
-    .header-container .logout-button {
-      width: auto;
-    }
   </style>
 </head>
 <body>
   <div class="content-wrapper">
     <main class="main-content">
-      <div class="header-container">
+      <div class="driver-header">
         <header class="main-header" style="margin-bottom: 0;">
-          <h1>Panel Driver</h1>
+          <h1 id="driverName">Halo, ...</h1>
           <p>Selamat bekerja! Lihat tugas dan konfirmasi kedatangan di sini.</p>
         </header>
-        <button id="logoutBtn" class="logout-button">Logout</button>
+        <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Keluar</button>
       </div>
 
-      <div class="page active">
-        <section class="card">
-          <h2 class="card-header">Daftar Tugas Perjalanan</h2>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rute</th>
-                    <th>Muatan</th>
-                    <th>No. Kendaraan</th>
-                    <th>Kode Resi</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="jobList">
-                  <tr><td colspan="5">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+      <div class="driver-dashboard-grid">
+        <div class="stat-card">
+          <h3>Tugas Aktif</h3>
+          <p id="activeTripsCount">0</p>
+        </div>
+        <div class="stat-card">
+          <h3>Total Perjalanan</h3>
+          <p id="totalTripsCount">0</p>
+        </div>
+      </div>
 
+      <div class="tabs">
+        <div class="tab-link active" data-tab="active">Tugas Aktif</div>
+        <div class="tab-link" data-tab="history">Riwayat Perjalanan</div>
+        <div class="tab-link" data-tab="confirm">Konfirmasi Kedatangan</div>
+      </div>
+
+      <div id="tab-active" class="tab-content active">
+        <div id="activeJobsList">
+          <p class="empty-state">Memuat tugas aktif...</p>
+        </div>
+      </div>
+
+      <div id="tab-history" class="tab-content">
+        <div id="historyJobsList">
+          <p class="empty-state">Memuat riwayat perjalanan...</p>
+        </div>
+      </div>
+
+      <div id="tab-confirm" class="tab-content">
         <section class="card">
           <h2 class="card-header">Konfirmasi Kedatangan</h2>
           <div class="card-body">
@@ -68,19 +68,28 @@
                 <label for="tripId">Kode Resi Perjalanan (Trip ID)</label>
                 <input type="text" id="tripId" placeholder="Masukkan atau scan kode resi" required>
               </div>
-              
               <div class="form-group">
                 <label>Scan Barcode / QR Code</label>
                 <video id="preview" playsinline></video>
               </div>
-
-              <button type="submit" style="width: auto;">Konfirmasi Sampai Tujuan</button>
+              <button type="submit" style="width: 100%;">Konfirmasi Sampai Tujuan</button>
             </form>
             <p id="statusMsg" class="form-status" style="text-align: left;"></p>
           </div>
         </section>
       </div>
+
     </main>
+  </div>
+
+  <div id="tripDetailModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Detail Perjalanan</h2>
+      <hr>
+      <div id="modalBody" class="detail-grid">
+        </div>
+    </div>
   </div>
   
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.3/adapter.min.js"></script>
@@ -91,11 +100,22 @@
     import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
     import { fmtDate, badge, el } from './utils.js';
 
-    const jobList = document.getElementById('jobList');
-    const tripIdInput = document.getElementById('tripId');
-    const arriveForm = document.getElementById('arriveForm');
-    const statusMsg = document.getElementById('statusMsg');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const elements = {
+      driverName: document.getElementById('driverName'),
+      activeTripsCount: document.getElementById('activeTripsCount'),
+      totalTripsCount: document.getElementById('totalTripsCount'),
+      activeJobsList: document.getElementById('activeJobsList'),
+      historyJobsList: document.getElementById('historyJobsList'),
+      tripIdInput: document.getElementById('tripId'),
+      arriveForm: document.getElementById('arriveForm'),
+      statusMsg: document.getElementById('statusMsg'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      tabs: document.querySelectorAll('.tab-link'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      modal: document.getElementById('tripDetailModal'),
+      modalBody: document.getElementById('modalBody'),
+      closeModal: document.querySelector('.close-modal'),
+    };
 
     let currentUser = null;
 
@@ -111,6 +131,7 @@
                 alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                 signOut(auth);
             }
+            elements.driverName.textContent = `Halo, ${userData.name || 'Driver'}!`;
         } else {
             alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
             signOut(auth);
@@ -122,95 +143,158 @@
       
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+      
       loadTrips();
       startScanner();
+      setupEventListeners();
     });
+
+    function setupEventListeners() {
+        elements.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                elements.tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                elements.tabContents.forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${target}`).classList.add('active');
+            });
+        });
+
+        elements.closeModal.onclick = () => elements.modal.style.display = 'none';
+        window.onclick = (event) => {
+            if (event.target == elements.modal) {
+                elements.modal.style.display = "none";
+            }
+        };
+    }
 
     function loadTrips() {
       const tripsRef = ref(db, 'trips');
       const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
       onValue(q, (snapshot) => {
-        jobList.innerHTML = '';
-        let hasJobs = false;
+        elements.activeJobsList.innerHTML = '';
+        elements.historyJobsList.innerHTML = '';
+        
+        let activeJobs = [];
+        let historyJobs = [];
+
         snapshot.forEach(child => {
-          const job = child.val();
-          if (job.status === 'approved' || job.status === 'arrived') {
-            hasJobs = true;
-            const tr = el('tr');
-            const statusCell = el('td');
-            statusCell.appendChild(badge(job.status));
-            tr.innerHTML = `
-              <td data-label="Rute"><strong>${job.asal} → ${job.tujuan}</strong><br><small>${fmtDate(job.tanggal)}</small></td>
-              <td data-label="Muatan">${job.muatan}</td>
-              <td data-label="No. Kendaraan">${job.vehicleNumber}</td>
-              <td data-label="Kode Resi"><code>${child.key}</code></td>
-            `;
-            tr.appendChild(statusCell);
-            jobList.appendChild(tr);
+          const job = { id: child.key, ...child.val() };
+          if (job.status === 'approved') {
+            activeJobs.push(job);
+          } else if (job.status === 'arrived' || job.status === 'rejected') {
+            historyJobs.push(job);
           }
         });
-        if (!hasJobs) {
-          jobList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada tugas perjalanan untuk Anda.</td></tr>';
-        }
+
+        elements.activeTripsCount.textContent = activeJobs.length;
+        elements.totalTripsCount.textContent = activeJobs.length + historyJobs.length;
+
+        displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
+        displayJobs(elements.historyJobsList, historyJobs, 'Belum ada riwayat perjalanan.');
       });
+    }
+    
+    function displayJobs(container, jobs, emptyMessage) {
+        container.innerHTML = '';
+        if (jobs.length === 0) {
+            container.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
+            return;
+        }
+
+        jobs.sort((a,b) => b.createdAt - a.createdAt).forEach(job => {
+            const card = el('div', '', { class: 'trip-card' });
+            const statusBadge = badge(job.status);
+            
+            card.innerHTML = `
+                <div class="trip-card-header">
+                    <h3>${job.asal} <i class="fas fa-arrow-right"></i> ${job.tujuan}</h3>
+                    ${statusBadge.outerHTML}
+                </div>
+                <div class="trip-card-body">
+                    <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
+                    <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
+                </div>
+            `;
+
+            card.onclick = () => showTripDetails(job);
+            container.appendChild(card);
+        });
+    }
+
+    function showTripDetails(job) {
+        elements.modalBody.innerHTML = `
+            <span class="label">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
+            <span class="label">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
+            <span class="label">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
+            <span class="label">Kendaraan:</span><span class="value">${job.vehicleNumber}</span>
+            <span class="label">Muatan:</span><span class="value">${job.muatan || '-'}</span>
+            <span class="label">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
+        `;
+        elements.modal.style.display = 'block';
     }
 
     arriveForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const tripId = tripIdInput.value.trim();
+      const tripId = elements.tripIdInput.value.trim();
       if (!tripId) return alert('Masukkan kode resi perjalanan.');
       
-      statusMsg.style.display = 'block';
-      statusMsg.textContent = 'Memproses...';
-      statusMsg.style.color = 'var(--text-secondary)';
+      elements.statusMsg.style.display = 'block';
+      elements.statusMsg.textContent = 'Memproses...';
+      elements.statusMsg.style.color = 'var(--text-secondary)';
 
       try {
         const tripRef = ref(db, 'trips/' + tripId);
         const tripSnap = await get(tripRef);
         if (!tripSnap.exists()) {
-          statusMsg.style.color = 'var(--danger)';
-          statusMsg.textContent = '❌ Perjalanan dengan resi tersebut tidak ditemukan.';
-          return;
+          throw new Error('Perjalanan dengan resi tersebut tidak ditemukan.');
         }
-        if (tripSnap.val().driverId !== currentUser.uid) {
-            statusMsg.style.color = 'var(--danger)';
-            statusMsg.textContent = '❌ Anda tidak ditugaskan untuk perjalanan ini.';
-            return;
+        const tripData = tripSnap.val();
+        if (tripData.driverId !== currentUser.uid) {
+            throw new Error('Anda tidak ditugaskan untuk perjalanan ini.');
         }
-        if (tripSnap.val().status === 'arrived') {
-            statusMsg.style.color = 'var(--warning)';
-            statusMsg.textContent = 'ℹ️ Perjalanan ini sudah dikonfirmasi sebelumnya.';
-            return;
+        if (tripData.status === 'arrived') {
+            elements.statusMsg.style.color = 'var(--color-warn)';
+            throw new Error('Perjalanan ini sudah dikonfirmasi sebelumnya.');
         }
+        if (tripData.status !== 'approved') {
+            throw new Error('Perjalanan ini belum disetujui atau sudah ditolak.');
+        }
+
         await update(tripRef, { status: 'arrived', arrivedAt: Date.now() });
-        statusMsg.style.color = 'var(--success)';
-        statusMsg.textContent = "✔️ Perjalanan dengan resi " + tripId + " berhasil dikonfirmasi sampai tujuan.";
+        elements.statusMsg.style.color = 'var(--color-success)';
+        elements.statusMsg.textContent = "✔️ Konfirmasi berhasil! Perjalanan telah ditandai selesai.";
         arriveForm.reset();
+        // Pindah ke tab riwayat setelah berhasil
+        document.querySelector('.tab-link[data-tab="history"]').click();
       } catch (err) {
-        statusMsg.style.color = 'var(--danger)';
-        statusMsg.textContent = 'Gagal konfirmasi: ' + err.message;
+        elements.statusMsg.style.color = 'var(--color-danger)';
+        elements.statusMsg.textContent = '❌ Gagal: ' + err.message;
       }
     });
 
     function startScanner() {
-        let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
-        scanner.addListener('scan', function(content) {
-            tripIdInput.value = content;
-            statusMsg.style.display = 'block';
-            statusMsg.style.color = 'var(--info)';
-            statusMsg.textContent = '🔍 QR Code terdeteksi: ' + content;
-        });
-        Instascan.Camera.getCameras().then(function (cameras) {
-            if (cameras.length > 0) {
-                scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
-            } else {
-                console.error('No cameras found.');
-                alert('Tidak ada kamera terdeteksi.');
-            }
-        }).catch(function (e) {
-            console.error(e);
-            alert('Error saat mengakses kamera: ' + e.message);
-        });
+        try {
+            let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
+            scanner.addListener('scan', function(content) {
+                elements.tripIdInput.value = content;
+                elements.statusMsg.style.display = 'block';
+                elements.statusMsg.style.color = 'var(--color-info)';
+                elements.statusMsg.textContent = '🔍 Kode terdeteksi: ' + content;
+            });
+            Instascan.Camera.getCameras().then(function (cameras) {
+                if (cameras.length > 0) {
+                    // Coba kamera belakang dulu jika ada (biasanya index 1)
+                    scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
+                } else {
+                    console.error('No cameras found.');
+                }
+            }).catch(function (e) {
+                console.error(e);
+            });
+        } catch (e) {
+            console.error("Gagal memulai scanner: ", e);
+        }
     }
 
     logoutBtn.addEventListener('click', async () => {
