@@ -41,12 +41,12 @@ export function qparam(name) {
 
 export function badge(status) {
   const statusMap = {
-    submitted: ["Menunggu", "warn"],
-    approved: ["Disetujui", "success"],
-    delivering: ["Dalam Perjalanan", "inprogress"],
-    arriving_soon: ["Hampir Sampai", "info"],
-    arrived: ["Selesai", "success"],
-    rejected: ["Ditolak", "danger"],
+    submitted: ["Menunggu", "warn"],             // Oranye
+    approved: ["Disetujui", "info"],              // Biru
+    delivering: ["Dalam Perjalanan", "inprogress"], // Ungu Muda
+    arriving_soon: ["Hampir Sampai", "super-admin"], // Ungu Tua
+    arrived: ["Selesai", "success"],            // Hijau
+    rejected: ["Ditolak", "danger"],              // Merah
   };
   const [label, cls] = statusMap[status] || [String(status), ""];
   const badgeElement = el("span", label, { class: `badge ${cls}` });
