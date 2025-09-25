@@ -296,6 +296,7 @@
         elements.previewVideo.style.display = 'none';
         elements.arriveForm.reset();
         elements.statusMsg.textContent = '';
+        elements.statusMsg.style.display = 'none';
         elements.confirmModal.style.display = 'none';
         activeTripIdForConfirmation = null;
     }
@@ -304,14 +305,19 @@
       e.preventDefault();
       const enteredTripId = elements.tripIdInput.value.trim();
       
-      if (!enteredTripId) return alert('Masukkan kode resi perjalanan.');
+      elements.statusMsg.style.display = 'block';
+
+      if (!enteredTripId) {
+        elements.statusMsg.style.color = 'var(--color-warn)';
+        elements.statusMsg.textContent = 'Harap masukkan kode resi perjalanan.';
+        return;
+      }
       if (enteredTripId !== activeTripIdForConfirmation) {
         elements.statusMsg.style.color = 'var(--color-danger)';
         elements.statusMsg.textContent = '❌ Kode Resi tidak cocok dengan perjalanan yang dipilih.';
         return;
       }
       
-      elements.statusMsg.style.display = 'block';
       elements.statusMsg.textContent = 'Memproses...';
       elements.statusMsg.style.color = 'var(--text-secondary)';
 
@@ -342,14 +348,20 @@
         
         scanner.addListener('scan', function(content) {
             elements.tripIdInput.value = content;
-            elements.previewVideo.style.display = 'none';
-            scanner.stop();
-            currentScanner = null;
+            closeConfirmationModal(); // Tutup modal setelah scan berhasil
+            openConfirmationModal(activeTripIdForConfirmation); // Buka lagi untuk refresh state
         });
 
         Instascan.Camera.getCameras().then(function (cameras) {
             if (cameras.length > 0) {
-                scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
+                // --- PERBAIKAN LOGIKA KAMERA ---
+                let rearCamera = cameras.find(c => c.name.toLowerCase().includes('back'));
+                if (rearCamera) {
+                    scanner.start(rearCamera);
+                } else {
+                    // Fallback ke kamera terakhir jika tidak ada yang bernama 'back'
+                    scanner.start(cameras[cameras.length - 1]);
+                }
                 currentScanner = scanner;
             } else {
                 console.error('No cameras found.');
