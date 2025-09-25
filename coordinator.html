@@ -10,6 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -260,6 +261,20 @@
     </div>
   </div>
 
+  <div id="barcodeModal" class="modal">
+    <div class="modal-content barcode-modal-content">
+        <span class="close-modal" id="closeBarcodeModal">&times;</span>
+        <h2>Barcode Trip ID</h2>
+        <div class="barcode-container">
+            <svg id="barcode"></svg>
+        </div>
+        <div class="barcode-actions">
+            <button id="downloadBarcodeBtn" class="btn-sm success"><i class="fas fa-download"></i> Unduh</button>
+            <button id="printBarcodeBtn" class="btn-sm info"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+  </div>
+
 
   <script type="module">
     import { 
@@ -309,7 +324,6 @@
       prevCoorActivityBtn: document.getElementById('prevCoorActivityBtn'),
       nextCoorActivityBtn: document.getElementById('nextCoorActivityBtn'),
       coorActivityPageInfo: document.getElementById('coorActivityPageInfo'),
-      // Elemen baru
       driverAvailability: document.getElementById('driverAvailability'),
       vehicleAvailability: document.getElementById('vehicleAvailability'),
       notificationCount: document.getElementById('notificationCount'),
@@ -319,7 +333,11 @@
       reportType: document.getElementById('reportType'),
       mapModal: document.getElementById('mapModal'),
       mapModalTitle: document.getElementById('mapModalTitle'),
-      closeModal: document.querySelector('.close-modal')
+      closeModal: document.querySelector('#mapModal .close-modal'),
+      barcodeModal: document.getElementById('barcodeModal'),
+      closeBarcodeModal: document.getElementById('closeBarcodeModal'),
+      downloadBarcodeBtn: document.getElementById('downloadBarcodeBtn'),
+      printBarcodeBtn: document.getElementById('printBarcodeBtn'),
     };
     
     let currentUser = null;
@@ -328,6 +346,7 @@
     let allVehicles = [];
     let allUsers = {};
     let notifications = [];
+    let currentTripIdForBarcode = null;
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
     const coorActivityRowsPerPage = 5;
@@ -400,12 +419,46 @@
         elements.searchDriverPerformance.oninput = () => loadDriverPerformance();
         elements.exportPdfBtn.onclick = () => handleExport('pdf');
         elements.exportExcelBtn.onclick = () => handleExport('excel');
+        
         elements.closeModal.onclick = () => elements.mapModal.style.display = 'none';
+        elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
+
         window.onclick = (event) => {
-          if (event.target == elements.mapModal) {
-            elements.mapModal.style.display = "none";
-          }
+          if (event.target == elements.mapModal) elements.mapModal.style.display = "none";
+          if (event.target == elements.barcodeModal) elements.barcodeModal.style.display = "none";
         }
+
+        elements.downloadBarcodeBtn.onclick = () => {
+            const svg = document.getElementById('barcode');
+            const serializer = new XMLSerializer();
+            const source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svg);
+            const image = new Image();
+            image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const canvas = document.createElement("canvas");
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
+            const context = canvas.getContext("2d");
+            image.onload = function() {
+                context.fillStyle = "#FFFFFF";
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(image, 0, 0);
+                const a = document.createElement("a");
+                a.download = `${currentTripIdForBarcode}-barcode.png`;
+                a.href = canvas.toDataURL("image/png");
+                a.click();
+            };
+        };
+
+        elements.printBarcodeBtn.onclick = () => {
+            const svg = document.getElementById('barcode').outerHTML;
+            const printWindow = window.open('', '', 'height=400,width=800');
+            printWindow.document.write('<html><head><title>Print Barcode</title></head><body>');
+            printWindow.document.write(svg);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        };
     }
 
     async function loadAllUsers() {
@@ -657,17 +710,35 @@
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start; gap: 0.5rem;' });
           
-          if (tripData.status === 'approved') {
+          if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
+            const barcodeButton = el('button', '<i class="fa-solid fa-barcode"></i>', { class: 'btn-sm' });
             const sjButton = el('button', '<i class="fas fa-print"></i> SJ', { class: 'btn-sm info' });
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
             const mapButton = el('button', '<i class="fas fa-map-marker-alt"></i> Lacak', { class: 'btn-sm success' });
+            
+            barcodeButton.onclick = () => {
+                currentTripIdForBarcode = tripId;
+                JsBarcode("#barcode", tripId, {
+                    format: "CODE128",
+                    lineColor: "#e0e5f5",
+                    background: "transparent",
+                    width: 2,
+                    height: 80,
+                    displayValue: true,
+                    fontOptions: "bold",
+                    font: "Inter",
+                    fontSize: 18,
+                    textColor: "#e0e5f5"
+                });
+                elements.barcodeModal.style.display = 'block';
+            };
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
             invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
             mapButton.onclick = () => {
               elements.mapModalTitle.textContent = `Lokasi Perjalanan: ${tripData.driverName}`;
               elements.mapModal.style.display = 'block';
             };
-            actionsContainer.append(sjButton, invButton, mapButton);
+            actionsContainer.append(barcodeButton, sjButton, invButton, mapButton);
           } else {
             actionsContainer.textContent = '-';
           }
