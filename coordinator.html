@@ -613,7 +613,7 @@
         currentCoorActivityPage = page;
         const start = (page - 1) * coorActivityRowsPerPage;
         const paginatedActivities = allMyTrips.slice(start, start + coorActivityRowsPerPage);
-        elements.coorActivityPaginationControls.style.display = allMyTrips.length > coorActivityRowsPerPage ? 'block' : 'none';
+        elements.coorActivityPaginationControls.style.display = allMyTrips.length >= 20 ? 'flex' : 'none';
         if (allMyTrips.length === 0) {
             elements.recentActivityCoordinatorList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
