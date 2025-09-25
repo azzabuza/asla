@@ -31,6 +31,7 @@
   --color-info: #3b82f6;
   --color-warn: #f97316;
   --color-super-admin: #9333ea;
+  --color-inprogress: #8b5cf6; /* Warna baru untuk 'Dalam Perjalanan' */
 
   /* Font Families */
   --font-main: 'Inter', sans-serif;
@@ -463,6 +464,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .badge.warn { background-color: var(--color-warn); }
 .badge.danger { background-color: var(--color-danger); }
 .badge.info { background-color: var(--color-info); }
+.badge.inprogress { background-color: var(--color-inprogress); }
 .role-admin { background-color: var(--color-danger); }
 .role-super-admin { background-color: var(--color-super-admin); }
 .role-coordinator { background-color: var(--color-success); }
@@ -935,10 +937,9 @@ input:checked + .slider:before {
     border-radius: 1rem;
     margin-bottom: 1.5rem;
     padding: 1.5rem;
-    cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.trip-card:hover {
+.trip-card.has-actions:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 15px rgba(0, 210, 255, 0.1);
 }
@@ -947,11 +948,16 @@ input:checked + .slider:before {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    cursor: pointer;
 }
 .trip-card-header h3 {
     font-size: 1.8rem;
     margin: 0;
     color: var(--text-primary);
+}
+.trip-card-body {
+    padding-bottom: 1.5rem;
+    cursor: pointer;
 }
 .trip-card-body p {
     font-size: 1.4rem;
@@ -963,6 +969,24 @@ input:checked + .slider:before {
 }
 .trip-card-body i {
     color: var(--text-accent);
+}
+.trip-card-actions {
+    border-top: 1px solid var(--border-primary);
+    padding-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+.trip-card-actions button {
+    width: 100%;
+    font-size: 1.4rem;
+}
+.trip-card-actions button.start {
+    background: var(--color-info);
+    color: var(--text-primary);
+}
+.trip-card-actions button.arriving {
+    background: var(--color-warn);
+    color: var(--text-inverse);
 }
 .modal-content .detail-grid {
     display: grid;
