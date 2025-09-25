@@ -7,6 +7,10 @@
   <title>Panel Driver</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Mengatur agar konten tidak tertutup oleh sidebar (yang tidak ada di halaman ini) */
+    .main-content { margin-left: 0; width: 100%; }
+  </style>
 </head>
 <body>
   <div class="content-wrapper">
@@ -27,10 +31,6 @@
         <div class="stat-card">
           <h3>Tugas Selesai</h3>
           <p id="completedTripsCount">0</p>
-        </div>
-        <div class="stat-card">
-          <h3>Total Perjalanan</h3>
-          <p id="totalTripsCount">0</p>
         </div>
       </div>
 
@@ -96,7 +96,6 @@
       driverName: document.getElementById('driverName'),
       activeTripsCount: document.getElementById('activeTripsCount'),
       completedTripsCount: document.getElementById('completedTripsCount'),
-      totalTripsCount: document.getElementById('totalTripsCount'),
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
       logoutBtn: document.getElementById('logoutBtn'),
@@ -195,7 +194,6 @@
 
         elements.activeTripsCount.textContent = activeJobs.length;
         elements.completedTripsCount.textContent = completedJobs;
-        elements.totalTripsCount.textContent = activeJobs.length + historyJobs.length;
 
         displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
         displayJobs(elements.historyJobsList, historyJobs, 'Belum ada riwayat perjalanan.');
@@ -344,18 +342,16 @@
         
         scanner.addListener('scan', function(content) {
             elements.tripIdInput.value = content;
-            closeConfirmationModal(); // Tutup modal setelah scan berhasil
-            openConfirmationModal(activeTripIdForConfirmation); // Buka lagi untuk refresh state
+            closeConfirmationModal(); 
+            openConfirmationModal(activeTripIdForConfirmation); 
         });
 
         Instascan.Camera.getCameras().then(function (cameras) {
             if (cameras.length > 0) {
-                // --- PERBAIKAN LOGIKA KAMERA ---
                 let rearCamera = cameras.find(c => c.name.toLowerCase().includes('back'));
                 if (rearCamera) {
                     scanner.start(rearCamera);
                 } else {
-                    // Fallback ke kamera terakhir jika tidak ada yang bernama 'back'
                     scanner.start(cameras[cameras.length - 1]);
                 }
                 currentScanner = scanner;
