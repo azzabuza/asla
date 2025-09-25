@@ -10,13 +10,6 @@
   <style>
     /* Mengatur agar konten tidak tertutup oleh sidebar (yang tidak ada di halaman ini) */
     .main-content { margin-left: 0; width: 100%; }
-    #preview {
-      width: 100%;
-      max-width: 400px;
-      margin-top: 1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
@@ -48,7 +41,6 @@
       <div class="tabs">
         <div class="tab-link active" data-tab="active">Tugas Aktif</div>
         <div class="tab-link" data-tab="history">Riwayat Perjalanan</div>
-        <div class="tab-link" data-tab="confirm">Konfirmasi Tiba</div>
       </div>
 
       <div id="tab-active" class="tab-content active">
@@ -63,29 +55,6 @@
         </div>
       </div>
 
-      <div id="tab-confirm" class="tab-content">
-        <section class="card">
-          <h2 class="card-header">Konfirmasi Tiba di Tujuan</h2>
-          <div class="card-body">
-            <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 2rem;">
-              Gunakan form ini untuk konfirmasi akhir setelah Anda sampai di lokasi tujuan dengan memindai QR Code atau memasukkan kode resi manual.
-            </p>
-            <form id="arriveForm">
-              <div class="form-group">
-                <label for="tripId">Kode Resi Perjalanan (Trip ID)</label>
-                <input type="text" id="tripId" placeholder="Masukkan atau scan kode resi" required>
-              </div>
-              <div class="form-group">
-                <label>Scan Barcode / QR Code</label>
-                <video id="preview" playsinline></video>
-              </div>
-              <button type="submit" style="width: 100%;">Konfirmasi Sampai Tujuan</button>
-            </form>
-            <p id="statusMsg" class="form-status" style="text-align: left;"></p>
-          </div>
-        </section>
-      </div>
-
     </main>
   </div>
 
@@ -94,8 +63,28 @@
       <span class="close-modal">&times;</span>
       <h2>Detail Perjalanan</h2>
       <hr>
-      <div id="modalBody" class="detail-grid">
-        </div>
+      <div id="modalBody" class="detail-grid"></div>
+    </div>
+  </div>
+
+  <div id="confirmationModal" class="modal">
+    <div class="modal-content">
+      <span class="close-confirm-modal">&times;</span>
+      <h2>Konfirmasi Tiba di Tujuan</h2>
+      <p style="font-size: 1.5rem; color: var(--text-secondary); margin: 1rem 0 2rem 0;">
+        Masukkan kode resi perjalanan untuk menyelesaikan tugas ini.
+      </p>
+      <div id="confirmationModalBody" class="confirmation-modal-body">
+        <form id="arriveForm">
+            <div class="input-group">
+              <input type="text" id="tripIdInput" placeholder="Ketik atau scan kode resi" required>
+              <button type="button" id="scanBtn"><i class="fas fa-qrcode"></i> Scan</button>
+            </div>
+            <video id="preview" playsinline></video>
+            <p id="statusMsg" class="form-status" style="text-align: left;"></p>
+            <button type="submit" style="width: 100%; margin-top: 1.5rem;">Konfirmasi</button>
+        </form>
+      </div>
     </div>
   </div>
   
@@ -114,18 +103,27 @@
       totalTripsCount: document.getElementById('totalTripsCount'),
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
-      tripIdInput: document.getElementById('tripId'),
-      arriveForm: document.getElementById('arriveForm'),
-      statusMsg: document.getElementById('statusMsg'),
       logoutBtn: document.getElementById('logoutBtn'),
       tabs: document.querySelectorAll('.tab-link'),
       tabContents: document.querySelectorAll('.tab-content'),
-      modal: document.getElementById('tripDetailModal'),
-      modalBody: document.getElementById('modalBody'),
-      closeModal: document.querySelector('.close-modal'),
+      
+      detailModal: document.getElementById('tripDetailModal'),
+      detailModalBody: document.getElementById('modalBody'),
+      closeDetailModal: document.querySelector('#tripDetailModal .close-modal'),
+
+      confirmModal: document.getElementById('confirmationModal'),
+      confirmModalBody: document.getElementById('confirmationModalBody'),
+      closeConfirmModal: document.querySelector('#confirmationModal .close-confirm-modal'),
+      arriveForm: document.getElementById('arriveForm'),
+      tripIdInput: document.getElementById('tripIdInput'),
+      scanBtn: document.getElementById('scanBtn'),
+      previewVideo: document.getElementById('preview'),
+      statusMsg: document.getElementById('statusMsg'),
     };
 
     let currentUser = null;
+    let currentScanner = null;
+    let activeTripIdForConfirmation = null;
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
@@ -153,7 +151,6 @@
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
       
       loadTrips();
-      startScanner();
       setupEventListeners();
     });
 
@@ -168,12 +165,16 @@
             });
         });
 
-        elements.closeModal.onclick = () => elements.modal.style.display = 'none';
+        elements.closeDetailModal.onclick = () => elements.detailModal.style.display = 'none';
+        elements.closeConfirmModal.onclick = () => closeConfirmationModal();
+
         window.onclick = (event) => {
-            if (event.target == elements.modal) {
-                elements.modal.style.display = "none";
-            }
+            if (event.target == elements.detailModal) elements.detailModal.style.display = "none";
+            if (event.target == elements.confirmModal) closeConfirmationModal();
         };
+
+        elements.scanBtn.addEventListener('click', startScanner);
+        elements.arriveForm.addEventListener('submit', handleArriveConfirmation);
     }
 
     function loadTrips() {
@@ -221,6 +222,8 @@
                 actionButtonsHTML = `<button class="start" data-tripid="${job.id}" data-status="delivering"><i class="fas fa-play"></i> Mulai Perjalanan</button>`;
             } else if (job.status === 'delivering') {
                 actionButtonsHTML = `<button class="arriving" data-tripid="${job.id}" data-status="arriving_soon"><i class="fas fa-flag-checkered"></i> Hampir Sampai</button>`;
+            } else if (job.status === 'arriving_soon') {
+                actionButtonsHTML = `<button class="confirm" data-tripid="${job.id}" data-action="confirm"><i class="fas fa-check-circle"></i> Konfirmasi Tiba</button>`;
             }
             
             card.innerHTML = `
@@ -241,10 +244,16 @@
             const actionButton = card.querySelector('.trip-card-actions button');
             if (actionButton) {
                 actionButton.onclick = (e) => {
-                    e.stopPropagation(); 
-                    const tripId = e.target.closest('button').dataset.tripid;
-                    const newStatus = e.target.closest('button').dataset.status;
-                    handleTripAction(tripId, newStatus);
+                    e.stopPropagation();
+                    const button = e.target.closest('button');
+                    const tripId = button.dataset.tripid;
+                    const action = button.dataset.action;
+                    const newStatus = button.dataset.status;
+                    if(action === 'confirm'){
+                        openConfirmationModal(tripId);
+                    } else {
+                        handleTripAction(tripId, newStatus);
+                    }
                 };
             }
             
@@ -263,7 +272,7 @@
     }
 
     function showTripDetails(job) {
-        elements.modalBody.innerHTML = `
+        elements.detailModalBody.innerHTML = `
             <span class="label">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
             <span class="label">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
             <span class="label">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
@@ -271,65 +280,85 @@
             <span class="label">Muatan:</span><span class="value">${job.muatan || '-'}</span>
             <span class="label">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
         `;
-        elements.modal.style.display = 'block';
+        elements.detailModal.style.display = 'block';
     }
 
-    arriveForm.addEventListener('submit', async (e) => {
+    function openConfirmationModal(tripId) {
+        activeTripIdForConfirmation = tripId;
+        elements.confirmModal.style.display = 'block';
+    }
+
+    function closeConfirmationModal() {
+        if (currentScanner) {
+            currentScanner.stop();
+            currentScanner = null;
+        }
+        elements.previewVideo.style.display = 'none';
+        elements.arriveForm.reset();
+        elements.statusMsg.textContent = '';
+        elements.confirmModal.style.display = 'none';
+        activeTripIdForConfirmation = null;
+    }
+
+    async function handleArriveConfirmation(e) {
       e.preventDefault();
-      const tripId = elements.tripIdInput.value.trim();
-      if (!tripId) return alert('Masukkan kode resi perjalanan.');
+      const enteredTripId = elements.tripIdInput.value.trim();
+      
+      if (!enteredTripId) return alert('Masukkan kode resi perjalanan.');
+      if (enteredTripId !== activeTripIdForConfirmation) {
+        elements.statusMsg.style.color = 'var(--color-danger)';
+        elements.statusMsg.textContent = '❌ Kode Resi tidak cocok dengan perjalanan yang dipilih.';
+        return;
+      }
       
       elements.statusMsg.style.display = 'block';
       elements.statusMsg.textContent = 'Memproses...';
       elements.statusMsg.style.color = 'var(--text-secondary)';
 
       try {
-        const tripRef = ref(db, 'trips/' + tripId);
-        const tripSnap = await get(tripRef);
-        if (!tripSnap.exists()) {
-          throw new Error('Perjalanan dengan resi tersebut tidak ditemukan.');
-        }
-        const tripData = tripSnap.val();
-        if (tripData.driverId !== currentUser.uid) {
-            throw new Error('Anda tidak ditugaskan untuk perjalanan ini.');
-        }
-        if (tripData.status === 'arrived') {
-            elements.statusMsg.style.color = 'var(--color-warn)';
-            throw new Error('Perjalanan ini sudah dikonfirmasi selesai.');
-        }
-
+        const tripRef = ref(db, 'trips/' + activeTripIdForConfirmation);
         await update(tripRef, { status: 'arrived', arrivedAt: Date.now(), isRead_coor: false });
         elements.statusMsg.style.color = 'var(--color-success)';
-        elements.statusMsg.textContent = "✔️ Konfirmasi berhasil! Perjalanan telah ditandai selesai.";
-        arriveForm.reset();
-        document.querySelector('.tab-link[data-tab="history"]').click();
+        elements.statusMsg.textContent = "✔️ Konfirmasi berhasil!";
+        
+        setTimeout(() => {
+            closeConfirmationModal();
+            document.querySelector('.tab-link[data-tab="history"]').click();
+        }, 1500);
       } catch (err) {
         elements.statusMsg.style.color = 'var(--color-danger)';
         elements.statusMsg.textContent = '❌ Gagal: ' + err.message;
       }
-    });
+    }
 
     function startScanner() {
-        try {
-            let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
-            scanner.addListener('scan', function(content) {
-                elements.tripIdInput.value = content;
-                elements.statusMsg.style.display = 'block';
-                elements.statusMsg.style.color = 'var(--color-info)';
-                elements.statusMsg.textContent = '🔍 Kode terdeteksi: ' + content;
-            });
-            Instascan.Camera.getCameras().then(function (cameras) {
-                if (cameras.length > 0) {
-                    scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
-                } else {
-                    console.error('No cameras found.');
-                }
-            }).catch(function (e) {
-                console.error(e);
-            });
-        } catch (e) {
-            console.error("Gagal memulai scanner: ", e);
+        if (currentScanner) {
+            currentScanner.stop();
+            currentScanner = null;
         }
+
+        elements.previewVideo.style.display = 'block';
+        let scanner = new Instascan.Scanner({ video: elements.previewVideo, scanPeriod: 5, mirror: false });
+        
+        scanner.addListener('scan', function(content) {
+            elements.tripIdInput.value = content;
+            elements.previewVideo.style.display = 'none';
+            scanner.stop();
+            currentScanner = null;
+        });
+
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[cameras.length > 1 ? 1 : 0]);
+                currentScanner = scanner;
+            } else {
+                console.error('No cameras found.');
+                elements.previewVideo.style.display = 'none';
+            }
+        }).catch(function (e) {
+            console.error(e);
+            elements.previewVideo.style.display = 'none';
+        });
     }
 
     elements.logoutBtn.addEventListener('click', async () => {
