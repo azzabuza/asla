@@ -99,7 +99,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Cari Supir / Rute</label>
+                    <label>Cari Supir / Rute / Trip ID</label>
                     <input type="text" id="searchMyTrip" />
                 </div>
             </div>
@@ -107,6 +107,7 @@
               <table>
                 <thead>
                   <tr>
+                    <th>Trip ID</th>
                     <th>Rute</th>
                     <th>Supir</th>
                     <th>No. Kendaraan</th>
@@ -116,7 +117,7 @@
                   </tr>
                 </thead>
                 <tbody id="tripList">
-                  <tr><td colspan="6">Memuat data...</td></tr>
+                  <tr><td colspan="7">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -632,6 +633,7 @@
       const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
           const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
           const searchMatch = !searchTerm ||
+              (id || '').toLowerCase().includes(searchTerm) ||
               (trip.driverName || '').toLowerCase().includes(searchTerm) ||
               (trip.asal || '').toLowerCase().includes(searchTerm) ||
               (trip.tujuan || '').toLowerCase().includes(searchTerm) ||
@@ -645,7 +647,7 @@
       }
       elements.coorPaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'block' : 'none';
       if (filteredTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(({id: tripId, data: tripData}) => {
           const tr = el('tr');
@@ -669,7 +671,13 @@
           actionsCell.appendChild(actionsContainer);
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
-          tr.innerHTML = `<td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td><td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Kendaraan">${tripData.vehicleNumber}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
+          tr.innerHTML = `
+            <td data-label="Trip ID"><code>${tripId}</code></td>
+            <td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td>
+            <td data-label="Driver">${tripData.driverName||'-'}</td>
+            <td data-label="No. Kendaraan">${tripData.vehicleNumber}</td>
+            <td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>
+          `;
           tr.append(statusCell, actionsCell);
           elements.tripList.appendChild(tr);
         });
@@ -720,7 +728,7 @@
     function displayAvailability() {
         elements.driverAvailability.innerHTML = '';
         elements.vehicleAvailability.innerHTML = '';
-        const activeTrips = allMyTrips.map(t => t.data).filter(t => t.status === 'approved');
+        const activeTrips = allMyTrips.map(t => t.data).filter(t => ['approved', 'delivering', 'arriving_soon'].includes(t.status));
 
         // Status Supir
         if(allDrivers.length === 0) {
@@ -833,9 +841,9 @@
       if (type === 'my_trips') {
           title = 'Laporan Perjalanan Saya';
           filename = 'laporan_perjalanan_saya';
-          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
-          data = allMyTrips.map(({data: t}) => ({
-              'Rute': `${t.asal} → ${t.tujuan}`, 'Supir': t.driverName,
+          headers = ["Trip ID", "Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
+          data = allMyTrips.map(({id, data: t}) => ({
+              'Trip ID': id, 'Rute': `${t.asal} → ${t.tujuan}`, 'Supir': t.driverName,
               'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
               'Tanggal': t.tanggal, 'Status': t.status
           }));
