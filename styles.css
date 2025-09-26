@@ -610,7 +610,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   line-height: 1.1;
 }
 .hero h1 span {
-  background-color: var(--bg-gradient);
+  background: var(--bg-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
