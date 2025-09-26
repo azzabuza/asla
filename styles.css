@@ -1044,3 +1044,81 @@ input:checked + .slider:before {
     border-radius: 0.5rem;
     display: none;
 }
+
+/* === DRIVER MOBILE NAV & PROFILE === */
+body {
+  /* Memberi ruang di bagian bawah agar konten tidak tertutup nav */
+  padding-bottom: 7rem; 
+}
+
+.main-content.page {
+  padding: 2rem; /* Atur ulang padding */
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  padding: 0.5rem 0;
+  z-index: 1000;
+}
+
+.bottom-nav .nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease-in-out;
+  flex-grow: 1;
+}
+
+.bottom-nav .nav-link i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.bottom-nav .nav-link span {
+  font-size: 1.2rem;
+}
+
+.bottom-nav .nav-link:hover {
+  color: var(--text-primary);
+}
+
+.bottom-nav .nav-link.active {
+  color: var(--text-accent);
+}
+
+.profile-card {
+    background-color: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border-primary);
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.profile-info h3 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.profile-info p {
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
