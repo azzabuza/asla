@@ -54,7 +54,7 @@ body {
   max-width: 100%;
   margin: 0;
   padding: 0;
-  background-color: #121828;
+  background-color: var(--bg-primary);
   font-family: 'Inter', sans-serif;
   text-align: left;
   user-select:none;
@@ -74,7 +74,7 @@ body {
   background-color: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   border-radius: 0.5rem;
 }
 h1, h2, h3, h4 {
@@ -156,7 +156,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   color: var(--text-primary);
 }
 .sidebar-menu li a.active {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   color: var(--text-inverse);
 }
 .sidebar-footer {
@@ -265,7 +265,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* === TOMBOL (BUTTONS) === */
 button, .button {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   color: var(--text-inverse);
   padding: 1rem 2rem;
   margin: 0;
@@ -277,7 +277,7 @@ button, .button {
 }
 .logout-button {
   box-sizing:border-box;
-  background: transparent;
+  background-color: transparent;
   padding: 1rem 2rem;
   color: var(--color-danger);
   font-size: 1.5rem;
@@ -297,21 +297,21 @@ button, .button {
   border-radius: 0.5rem;
 }
 .btn-sm.success {
-  background: var(--color-success);
+  background-color: var(--color-success);
   color: var(--text-primary);
 }
 .btn-sm.danger {
-  background: var(--color-danger);
+  background-color: var(--color-danger);
   color: var(--text-primary);
 }
 .btn-sm.info {
-  background: var(--color-info);
+  background-color: var(--color-info);
   color: var(--text-primary);
 }
 
 .delete-user-btn, .btn-delete-trip {
   box-sizing: border-box;
-  background: var(--color-danger);
+  background-color: var(--color-danger);
   color: var(--text-primary);
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -372,7 +372,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 input::file-selector-button {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   color: var(--text-inverse);
   font-size: 1rem;
   font-weight: 500;
@@ -395,7 +395,7 @@ option {
 table { width: 100%; border-collapse: collapse;}
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
 th {
-  background: var(--bg-tertiary);
+  background-color: var(--bg-tertiary);
   font-weight: 600;
   text-transform: uppercase;
   font-size: 1.5rem;
@@ -403,7 +403,7 @@ th {
   border-bottom: 0.1rem solid var(--border-primary);
 }
 td {
-  background: var(--bg-secondary);
+  background-color: var(--bg-secondary);
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--text-secondary);
@@ -532,7 +532,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   top: 0;
   left: 0;
   z-index: 1000;
-  background: transparent;
+  background-color: transparent;
   transition: background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out;
 }
 .navbar.scrolled {
@@ -562,7 +562,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   color: var(--text-accent);
 }
 .navbar .nav-links a.button {
-    background: var(--bg-gradient);
+    background-color: var(--bg-gradient);
     color: var(--text-inverse);
     padding: 1rem 2rem;
     border-radius: 0.5rem;
@@ -585,7 +585,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(18, 24, 40, 0.8), rgba(18, 24, 40, 0.6));
+  background-color: linear-gradient(to bottom, rgba(18, 24, 40, 0.8), rgba(18, 24, 40, 0.6));
   z-index: 0;
 }
 .hero-video {
@@ -611,7 +611,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   line-height: 1.1;
 }
 .hero h1 span {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -622,7 +622,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   margin: 0 auto 2rem auto;
 }
 .hero .button-primary {
-  background: var(--bg-gradient);
+  background-color: var(--bg-gradient);
   color: var(--text-inverse);
   padding: 1rem 2rem;
   font-size: 1.5rem;
@@ -646,7 +646,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     gap: 2rem;
 }
 .problem-card, .solution-card {
-    background: var(--bg-secondary);
+    background-color: var(--bg-secondary);
     border-radius: 1rem;
     padding: 2rem;
     border: 0.1rem solid var(--border-primary);
@@ -683,7 +683,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     position: relative;
 }
 .workflow-step {
-    background: var(--bg-secondary);
+    background-color: var(--bg-secondary);
     border: 0.1rem solid var(--border-primary);
     border-radius: 1rem;
     padding: 2rem;
@@ -696,7 +696,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: 50%;
-    background: var(--bg-gradient);
+    background-color: var(--bg-gradient);
     color: var(--text-inverse);
     display: inline-block;
 }
@@ -731,14 +731,14 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 
 /* CTA Section */
 .cta-section {
-    background: var(--bg-gradient);
+    background-color: var(--bg-gradient);
     border-radius: 1rem;
     padding: 5rem;
     text-align: center;
 }
 .cta-section .section-title, .cta-section .section-subtitle { color: var(--text-inverse); }
 .cta-section .button-secondary {
-    background: var(--bg-primary);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
     padding: 1rem 2rem;
     font-size: 1.5rem;
@@ -1006,15 +1006,15 @@ input:checked + .slider:before {
     font-size: 1.4rem;
 }
 .trip-card-actions button.start {
-    background: var(--color-info);
+    background-color: var(--color-info);
     color: var(--text-primary);
 }
 .trip-card-actions button.arriving {
-    background: var(--color-warn);
+    background-color: var(--color-warn);
     color: var(--text-inverse);
 }
 .trip-card-actions button.confirm {
-    background: var(--color-success);
+    background-color: var(--color-success);
     color: var(--text-primary);
 }
 .modal-content .detail-grid {
@@ -1040,7 +1040,7 @@ input:checked + .slider:before {
 }
 .confirmation-modal-body #scanBtn {
     width: auto;
-    background: var(--bg-tertiary);
+    background-color: var(--bg-tertiary);
     color: var(--text-primary);
 }
 .confirmation-modal-body video {
