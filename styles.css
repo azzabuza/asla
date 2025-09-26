@@ -52,8 +52,8 @@ body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: var(--bg-primary);
-  font-family: var(--font-main);
+  background-color: #121828;
+  font-family: 'Inter', sans-serif;
   text-align: left;
   user-select:none;
   text-size-adjust: none;
@@ -61,7 +61,6 @@ body {
   -webkit-tap-highlight-color: transparent !important;
   -webkit-font-smoothing: antialiased;
   position: relative;
-  overflow-x: hidden;
 }
 /* SCROLLBAR */
 ::-webkit-scrollbar {
