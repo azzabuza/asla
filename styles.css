@@ -82,7 +82,6 @@ h1, h2, h3, h4 {
 }
 ul { list-style: none; }
 a { text-decoration: none; color: var(--text-link); transition: color 0.2s ease; }
-a:hover { color: var(--text-link-hover); }
 button { cursor: pointer; border: none; font-family: inherit; }
 hr { border: 0; height: 0; margin: 2rem 0; }
 
