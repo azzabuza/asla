@@ -560,14 +560,6 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .navbar .nav-links a:hover {
   color: var(--text-accent);
 }
-.navbar .nav-links a.button {
-    background: var(--bg-gradient);
-    color: var(--text-inverse);
-    padding: 1rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-}
-
 /* Hero Section */
 .hero {
   position: relative;
