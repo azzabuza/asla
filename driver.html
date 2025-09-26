@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" />
   <title>Panel Driver</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="content-wrapper">
-    <main class="main-content">
-      <div class="driver-header">
-        <header class="main-header" style="margin-bottom: 0;">
-          <h1 id="driverName">Halo, ...</h1>
-          <p>Selamat bekerja! Lihat tugas dan konfirmasi kedatangan di sini.</p>
-        </header>
-        <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Keluar</button>
-      </div>
-
+    <main id="page-beranda" class="main-content page active">
+      <header class="main-header" style="margin-bottom: 2rem;">
+        <h1 id="driverName">Halo, ...</h1>
+        <p>Selamat bekerja! Lihat tugas dan konfirmasi kedatangan di sini.</p>
+      </header>
       <div class="driver-dashboard-grid">
         <div class="stat-card">
           <h3>Tugas Aktif</h3>
@@ -29,26 +25,64 @@
           <p id="completedTripsCount">0</p>
         </div>
       </div>
+       <div class="card" style="margin-top: 2rem;">
+            <h2 class="card-header">Tugas Terbaru</h2>
+            <div id="recentJobCard" class="card-body">
+                <p class="empty-state">Memuat tugas...</p>
+            </div>
+        </div>
+    </main>
 
+    <main id="page-tugas" class="main-content page">
       <div class="tabs">
         <div class="tab-link active" data-tab="active">Tugas Aktif</div>
         <div class="tab-link" data-tab="history">Riwayat Perjalanan</div>
       </div>
-
       <div id="tab-active" class="tab-content active">
         <div id="activeJobsList">
           <p class="empty-state">Memuat tugas aktif...</p>
         </div>
       </div>
-
       <div id="tab-history" class="tab-content">
         <div id="historyJobsList">
           <p class="empty-state">Memuat riwayat perjalanan...</p>
         </div>
       </div>
-
     </main>
+
+    <main id="page-profil" class="main-content page">
+        <header class="main-header">
+            <h1>Profil Saya</h1>
+            <p>Informasi akun Anda.</p>
+        </header>
+        <div class="profile-card">
+            <div class="profile-info">
+                <i class="fas fa-user-circle fa-3x"></i>
+                <div>
+                    <h3 id="profileName">Memuat...</h3>
+                    <p id="profileEmail">Memuat...</p>
+                </div>
+            </div>
+             <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
+    </main>
+
   </div>
+
+  <nav class="bottom-nav">
+    <a href="#beranda" class="nav-link active" data-page="beranda">
+      <i class="fas fa-home"></i>
+      <span>Beranda</span>
+    </a>
+    <a href="#tugas" class="nav-link" data-page="tugas">
+      <i class="fas fa-truck"></i>
+      <span>Tugas</span>
+    </a>
+    <a href="#profil" class="nav-link" data-page="profil">
+      <i class="fas fa-user"></i>
+      <span>Profil</span>
+    </a>
+  </nav>
 
   <div id="tripDetailModal" class="modal">
     <div class="modal-content">
@@ -89,15 +123,28 @@
     import { badge, fmtDate, el } from './utils.js';
 
     const elements = {
+      // Elemen halaman utama
       driverName: document.getElementById('driverName'),
       activeTripsCount: document.getElementById('activeTripsCount'),
       completedTripsCount: document.getElementById('completedTripsCount'),
+      recentJobCard: document.getElementById('recentJobCard'),
+      
+      // Elemen halaman tugas
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
-      logoutBtn: document.getElementById('logoutBtn'),
       tabs: document.querySelectorAll('.tab-link'),
       tabContents: document.querySelectorAll('.tab-content'),
       
+      // Elemen halaman profil
+      profileName: document.getElementById('profileName'),
+      profileEmail: document.getElementById('profileEmail'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      
+      // Navigasi
+      bottomNavLinks: document.querySelectorAll('.bottom-nav .nav-link'),
+      pages: document.querySelectorAll('.page'),
+
+      // Modal
       detailModal: document.getElementById('tripDetailModal'),
       detailModalBody: document.getElementById('modalBody'),
       closeDetailModal: document.querySelector('#tripDetailModal .close-modal'),
@@ -128,7 +175,10 @@
                 alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                 signOut(auth);
             }
+            // Update nama di semua halaman yang relevan
             elements.driverName.textContent = `Halo, ${userData.name || 'Driver'}!`;
+            elements.profileName.textContent = userData.name || 'Driver';
+            elements.profileEmail.textContent = currentUser.email;
         } else {
             alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
             signOut(auth);
@@ -146,6 +196,21 @@
     });
 
     function setupEventListeners() {
+        // Event listener untuk navigasi bawah
+        elements.bottomNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetPageId = `page-${link.dataset.page}`;
+                
+                elements.pages.forEach(p => p.classList.remove('active'));
+                document.getElementById(targetPageId).classList.add('active');
+
+                elements.bottomNavLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+        
+        // Event listener untuk tab di halaman tugas
         elements.tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const target = tab.dataset.tab;
@@ -166,6 +231,12 @@
 
         elements.scanBtn.addEventListener('click', startScanner);
         elements.arriveForm.addEventListener('submit', handleArriveConfirmation);
+        elements.logoutBtn.addEventListener('click', async () => {
+            if (currentUser) {
+                await update(ref(db, 'users/' + currentUser.uid), { online: false });
+            }
+            signOut(auth).catch(err => console.error("Logout Gagal:", err));
+        });
     }
 
     function loadTrips() {
@@ -187,13 +258,74 @@
             }
           }
         });
+        
+        // Urutkan pekerjaan berdasarkan waktu dibuat (terbaru dulu)
+        activeJobs.sort((a,b) => b.createdAt - a.createdAt);
+        historyJobs.sort((a,b) => b.createdAt - a.createdAt);
 
+        // Update stat di Beranda
         elements.activeTripsCount.textContent = activeJobs.length;
         elements.completedTripsCount.textContent = completedJobs;
 
+        // Tampilkan daftar pekerjaan di Halaman Tugas
         displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
         displayJobs(elements.historyJobsList, historyJobs, 'Belum ada riwayat perjalanan.');
+        
+        // Tampilkan tugas aktif terbaru di Beranda
+        displayRecentJob(activeJobs.length > 0 ? activeJobs[0] : null);
       });
+    }
+    
+    function displayRecentJob(job){
+        elements.recentJobCard.innerHTML = '';
+        if(!job) {
+             elements.recentJobCard.innerHTML = `<p class="empty-state">Tidak ada tugas aktif saat ini.</p>`;
+             return;
+        }
+        
+        const card = el('div', '', { class: 'trip-card' });
+        const statusBadge = badge(job.status);
+        
+        let actionButtonsHTML = '';
+        if (job.status === 'approved') {
+            actionButtonsHTML = `<button class="start" data-tripid="${job.id}" data-status="delivering"><i class="fas fa-play"></i> Mulai Perjalanan</button>`;
+        } else if (job.status === 'delivering') {
+            actionButtonsHTML = `<button class="arriving" data-tripid="${job.id}" data-status="arriving_soon"><i class="fas fa-flag-checkered"></i> Hampir Sampai</button>`;
+        } else if (job.status === 'arriving_soon') {
+            actionButtonsHTML = `<button class="confirm" data-tripid="${job.id}" data-action="confirm"><i class="fas fa-check-circle"></i> Konfirmasi Tiba</button>`;
+        }
+        
+        card.innerHTML = `
+            <div class="trip-card-header">
+                <h3>${job.asal} <i class="fas fa-arrow-right"></i> ${job.tujuan}</h3>
+                ${statusBadge.outerHTML}
+            </div>
+            <div class="trip-card-body">
+                <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
+                <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
+            </div>
+            ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
+        `;
+
+        card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
+        card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
+        
+        const actionButton = card.querySelector('.trip-card-actions button');
+        if (actionButton) {
+            actionButton.onclick = (e) => {
+                e.stopPropagation();
+                const button = e.target.closest('button');
+                const tripId = button.dataset.tripid;
+                const action = button.dataset.action;
+                const newStatus = button.dataset.status;
+                if(action === 'confirm'){
+                    openConfirmationModal(tripId);
+                } else {
+                    handleTripAction(tripId, newStatus);
+                }
+            };
+        }
+        elements.recentJobCard.appendChild(card);
     }
     
     function displayJobs(container, jobs, emptyMessage) {
@@ -203,7 +335,7 @@
             return;
         }
 
-        jobs.sort((a,b) => b.createdAt - a.createdAt).forEach(job => {
+        jobs.forEach(job => {
             const card = el('div', '', { class: 'trip-card' });
             const statusBadge = badge(job.status);
             
@@ -319,6 +451,7 @@
         
         setTimeout(() => {
             closeConfirmationModal();
+            // Pindahkan ke tab riwayat
             document.querySelector('.tab-link[data-tab="history"]').click();
         }, 1500);
       } catch (err) {
@@ -337,10 +470,7 @@
         let scanner = new Instascan.Scanner({ video: elements.previewVideo, scanPeriod: 5, mirror: false });
         
         scanner.addListener('scan', function(content) {
-            // Set input value from scan
             elements.tripIdInput.value = content;
-            
-            // Stop scanner and hide video preview without resetting form
             if (currentScanner) {
                 currentScanner.stop();
                 currentScanner = null;
@@ -351,11 +481,7 @@
         Instascan.Camera.getCameras().then(function (cameras) {
             if (cameras.length > 0) {
                 let rearCamera = cameras.find(c => c.name.toLowerCase().includes('back'));
-                if (rearCamera) {
-                    scanner.start(rearCamera);
-                } else {
-                    scanner.start(cameras[cameras.length - 1]);
-                }
+                scanner.start(rearCamera || cameras[cameras.length - 1]);
                 currentScanner = scanner;
             } else {
                 console.error('No cameras found.');
@@ -366,13 +492,6 @@
             elements.previewVideo.style.display = 'none';
         });
     }
-
-    elements.logoutBtn.addEventListener('click', async () => {
-        if (currentUser) {
-            await update(ref(db, 'users/' + currentUser.uid), { online: false });
-        }
-        signOut(auth).catch(err => console.error("Logout Gagal:", err));
-    });
   </script>
 </body>
 </html>
