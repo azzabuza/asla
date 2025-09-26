@@ -11,6 +11,7 @@
   --bg-disabled: #555555;
 
   /* Background Gradient */
+  --bg-gradient: linear-gradient(90deg, #121828, #1a2235);
   --bg-btn-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
 
   /* Text Colors */
@@ -586,6 +587,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   top: 0;
   left: 0;
   right: 0;
+  background: var(--bg-gradient);
   bottom: 0;
   z-index: 0;
 }
