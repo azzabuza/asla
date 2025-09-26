@@ -7,9 +7,11 @@
   --bg-primary: #121828;
   --bg-secondary: #1a2235;
   --bg-tertiary: #242f48;
-  --bg-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
   --bg-scrolled: rgba(18, 24, 40, 0.8);
   --bg-disabled: #555555;
+
+  /* Background Gradient */
+  --bg-btn-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
 
   /* Text Colors */
   --text-primary: #e0e5f5;
@@ -74,7 +76,7 @@ body {
   background-color: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   border-radius: 0.5rem;
 }
 h1, h2, h3, h4 {
@@ -156,7 +158,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   color: var(--text-primary);
 }
 .sidebar-menu li a.active {
-  background-color: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   color: var(--text-inverse);
 }
 .sidebar-footer {
@@ -265,7 +267,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* === TOMBOL (BUTTONS) === */
 button, .button {
-  background-color: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   color: var(--text-inverse);
   padding: 1rem 2rem;
   margin: 0;
@@ -372,7 +374,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 input::file-selector-button {
-  background-color: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   color: var(--text-inverse);
   font-size: 1rem;
   font-weight: 500;
@@ -562,7 +564,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   color: var(--text-accent);
 }
 .navbar .nav-links a.button {
-    background-color: var(--bg-gradient);
+    background: var(--bg-btn-gradient);
     color: var(--text-inverse);
     padding: 1rem 2rem;
     border-radius: 0.5rem;
@@ -610,7 +612,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   line-height: 1.1;
 }
 .hero h1 span {
-  background: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -621,7 +623,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   margin: 0 auto 2rem auto;
 }
 .hero .button-primary {
-  background-color: var(--bg-gradient);
+  background: var(--bg-btn-gradient);
   color: var(--text-inverse);
   padding: 1rem 2rem;
   font-size: 1.5rem;
@@ -695,7 +697,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: 50%;
-    background-color: var(--bg-gradient);
+    background: var(--bg-btn-gradient);
     color: var(--text-inverse);
     display: inline-block;
 }
@@ -730,7 +732,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 
 /* CTA Section */
 .cta-section {
-    background-color: var(--bg-gradient);
+    background: var(--bg-btn-gradient);
     border-radius: 1rem;
     padding: 5rem;
     text-align: center;
