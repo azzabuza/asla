@@ -526,7 +526,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .navbar {
   box-sizing: border-box;
   width: 100%;
-  padding: 1rem 2rem;
+  padding: 2rem;
   position: fixed;
   top: 0;
   left: 0;
