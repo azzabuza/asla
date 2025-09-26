@@ -280,7 +280,7 @@ button, .button {
 }
 .logout-button {
   box-sizing:border-box;
-  background-color: transparent;
+  background: transparent;
   padding: 1rem 2rem;
   color: var(--color-danger);
   font-size: 1.5rem;
@@ -535,7 +535,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   top: 0;
   left: 0;
   z-index: 1000;
-  background-color: transparent;
+  background: transparent;
   transition: background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out;
 }
 .navbar.scrolled {
