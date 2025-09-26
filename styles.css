@@ -617,7 +617,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 }
 .hero p {
   font-size: 2rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   max-width: 75rem;
   margin: 0 auto 2rem auto;
 }
