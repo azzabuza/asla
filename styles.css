@@ -618,16 +618,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   margin: 0 auto 2rem auto;
 }
 .hero .button {
-  background: var(--bg-btn-gradient);
-  color: var(--text-inverse);
-  padding: 1rem 2rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 0.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: inline-block;
-  border: none;
+  width: auto;
 }
  
 /* Section Styling */
