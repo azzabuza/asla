@@ -564,13 +564,6 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
 .navbar .nav-links a:hover {
   color: var(--text-accent);
 }
-.navbar .nav-links a.button {
-    background: var(--bg-btn-gradient);
-    color: var(--text-inverse);
-    padding: 1rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-}
 
 /* Hero Section */
 .hero {
@@ -624,7 +617,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   max-width: 75rem;
   margin: 0 auto 2rem auto;
 }
-.hero .button-primary {
+.hero .button {
   background: var(--bg-btn-gradient);
   color: var(--text-inverse);
   padding: 1rem 2rem;
