@@ -1111,6 +1111,10 @@ body {
     margin-bottom: 2rem;
 }
 
+.profile-info span {
+    color: var(--text-primary);
+}
+
 .profile-info h3 {
     font-size: 1.8rem;
     color: var(--text-primary);
