@@ -343,7 +343,6 @@
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
     };
     
-    // Set the minimum date for the date input to today
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
     
     let currentUser = null;
@@ -791,7 +790,8 @@
             allMyTrips.push({ id: child.key, data: child.val() });
           });
         }
-        allMyTrips.reverse(); 
+        // Sort by createdAt timestamp in descending order (newest first)
+        allMyTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
 
         checkForNotifications(previousTrips, new Map(allMyTrips.map(trip => [trip.id, trip.data])));
         
