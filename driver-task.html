@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Panel Driver</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="content-wrapper">
+    <main class="main-content">
+      <div class="driver-header">
+        <header class="main-header" style="margin-bottom: 0;">
+          <h1 id="driverName">Halo, ...</h1>
+          <p>Selamat bekerja! Lihat tugas dan konfirmasi kedatangan di sini.</p>
+        </header>
+        <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+      </div>
+
+      <div class="driver-dashboard-grid">
+        <div class="stat-card">
+          <h3>Tugas Aktif</h3>
+          <p id="activeTripsCount">0</p>
+        </div>
+        <div class="stat-card">
+          <h3>Tugas Selesai</h3>
+          <p id="completedTripsCount">0</p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab-link active" data-tab="active">Tugas Aktif</div>
+        <div class="tab-link" data-tab="history">Riwayat Perjalanan</div>
+      </div>
+
+      <div id="tab-active" class="tab-content active">
+        <div id="activeJobsList">
+          <p class="empty-state">Memuat tugas aktif...</p>
+        </div>
+      </div>
+
+      <div id="tab-history" class="tab-content">
+        <div id="historyJobsList">
+          <p class="empty-state">Memuat riwayat perjalanan...</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="tripDetailModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Detail Perjalanan</h2>
+      <hr>
+      <div id="modalBody" class="detail-grid"></div>
+    </div>
+  </div>
+
+  <div id="confirmationModal" class="modal">
+    <div class="modal-content">
+      <span class="close-confirm-modal">&times;</span>
+      <h2>Konfirmasi Tiba di Tujuan</h2>
+      <p style="font-size: 1.5rem; color: var(--text-secondary); margin: 1rem 0 2rem 0;">
+        Masukkan kode resi perjalanan untuk menyelesaikan tugas ini.
+      </p>
+      <div id="confirmationModalBody" class="confirmation-modal-body">
+        <form id="arriveForm">
+            <div class="input-group">
+              <input type="text" id="tripIdInput" placeholder="Ketik atau scan kode resi" required>
+              <button type="button" id="scanBtn"><i class="fas fa-qrcode"></i> Scan</button>
+            </div>
+            <video id="preview" playsinline></video>
+            <p id="statusMsg" class="form-status" style="text-align: left;"></p>
+            <button type="submit" style="width: 100%; margin-top: 1.5rem;">Konfirmasi</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.3/adapter.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.min.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+
+  <script type="module">
+    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
+    import { badge, fmtDate, el } from './utils.js';
+
+    const elements = {
+      driverName: document.getElementById('driverName'),
+      activeTripsCount: document.getElementById('activeTripsCount'),
+      completedTripsCount: document.getElementById('completedTripsCount'),
+      activeJobsList: document.getElementById('activeJobsList'),
+      historyJobsList: document.getElementById('historyJobsList'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      tabs: document.querySelectorAll('.tab-link'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      
+      detailModal: document.getElementById('tripDetailModal'),
+      detailModalBody: document.getElementById('modalBody'),
+      closeDetailModal: document.querySelector('#tripDetailModal .close-modal'),
+
+      confirmModal: document.getElementById('confirmationModal'),
+      confirmModalBody: document.getElementById('confirmationModalBody'),
+      closeConfirmModal: document.querySelector('#confirmationModal .close-confirm-modal'),
+      arriveForm: document.getElementById('arriveForm'),
+      tripIdInput: document.getElementById('tripIdInput'),
+      scanBtn: document.getElementById('scanBtn'),
+      previewVideo: document.getElementById('preview'),
+      statusMsg: document.getElementById('statusMsg'),
+    };
+
+    let currentUser = null;
+    let currentScanner = null;
+    let activeTripIdForConfirmation = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = 'index.html';
+      currentUser = user;
+      const userRef = ref(db, 'users/' + currentUser.uid);
+      
+      onValue(userRef, (snap) => {
+        if (snap.exists()) {
+            const userData = snap.val();
+            if (userData.locked || userData.role !== 'driver') {
+                alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
+                signOut(auth);
+            }
+            elements.driverName.textContent = `Halo, ${userData.name || 'Driver'}!`;
+        } else {
+            alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
+            signOut(auth);
+        }
+      });
+      
+      const snap = await get(userRef);
+      if (!snap.exists()) return;
+      
+      await update(userRef, { lastLogin: Date.now(), online: true });
+      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+      
+      loadTrips();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        elements.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                elements.tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                elements.tabContents.forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${target}`).classList.add('active');
+            });
+        });
+
+        elements.closeDetailModal.onclick = () => elements.detailModal.style.display = 'none';
+        elements.closeConfirmModal.onclick = () => closeConfirmationModal();
+
+        window.onclick = (event) => {
+            if (event.target == elements.detailModal) elements.detailModal.style.display = "none";
+            if (event.target == elements.confirmModal) closeConfirmationModal();
+        };
+
+        elements.scanBtn.addEventListener('click', startScanner);
+        elements.arriveForm.addEventListener('submit', handleArriveConfirmation);
+    }
+
+    function loadTrips() {
+      const tripsRef = ref(db, 'trips');
+      const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
+      onValue(q, (snapshot) => {
+        let activeJobs = [];
+        let historyJobs = [];
+        let completedJobs = 0;
+
+        snapshot.forEach(child => {
+          const job = { id: child.key, ...child.val() };
+          if (['approved', 'delivering', 'arriving_soon'].includes(job.status)) {
+            activeJobs.push(job);
+          } else if (['arrived', 'rejected'].includes(job.status)) {
+            historyJobs.push(job);
+            if(job.status === 'arrived'){
+              completedJobs++;
+            }
+          }
+        });
+
+        elements.activeTripsCount.textContent = activeJobs.length;
+        elements.completedTripsCount.textContent = completedJobs;
+
+        displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
+        displayJobs(elements.historyJobsList, historyJobs, 'Belum ada riwayat perjalanan.');
+      });
+    }
+    
+    function displayJobs(container, jobs, emptyMessage) {
+        container.innerHTML = '';
+        if (jobs.length === 0) {
+            container.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
+            return;
+        }
+
+        jobs.sort((a,b) => b.createdAt - a.createdAt).forEach(job => {
+            const card = el('div', '', { class: 'trip-card' });
+            const statusBadge = badge(job.status);
+            
+            let actionButtonsHTML = '';
+            if (job.status === 'approved') {
+                actionButtonsHTML = `<button class="start" data-tripid="${job.id}" data-status="delivering"><i class="fas fa-play"></i> Mulai Perjalanan</button>`;
+            } else if (job.status === 'delivering') {
+                actionButtonsHTML = `<button class="arriving" data-tripid="${job.id}" data-status="arriving_soon"><i class="fas fa-flag-checkered"></i> Hampir Sampai</button>`;
+            } else if (job.status === 'arriving_soon') {
+                actionButtonsHTML = `<button class="confirm" data-tripid="${job.id}" data-action="confirm"><i class="fas fa-check-circle"></i> Konfirmasi Tiba</button>`;
+            }
+            
+            card.innerHTML = `
+                <div class="trip-card-header">
+                    <h3>${job.asal} <i class="fas fa-arrow-right"></i> ${job.tujuan}</h3>
+                    ${statusBadge.outerHTML}
+                </div>
+                <div class="trip-card-body">
+                    <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
+                    <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
+                </div>
+                ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
+            `;
+
+            card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
+            card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
+            
+            const actionButton = card.querySelector('.trip-card-actions button');
+            if (actionButton) {
+                actionButton.onclick = (e) => {
+                    e.stopPropagation();
+                    const button = e.target.closest('button');
+                    const tripId = button.dataset.tripid;
+                    const action = button.dataset.action;
+                    const newStatus = button.dataset.status;
+                    if(action === 'confirm'){
+                        openConfirmationModal(tripId);
+                    } else {
+                        handleTripAction(tripId, newStatus);
+                    }
+                };
+            }
+            
+            container.appendChild(card);
+        });
+    }
+
+    async function handleTripAction(tripId, newStatus) {
+        const tripRef = ref(db, `trips/${tripId}`);
+        try {
+            await update(tripRef, { status: newStatus, isRead_coor: false });
+        } catch (error) {
+            console.error("Gagal memperbarui status:", error);
+            alert("Gagal memperbarui status perjalanan. Silakan coba lagi.");
+        }
+    }
+
+    function showTripDetails(job) {
+        elements.detailModalBody.innerHTML = `
+            <span class="label">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
+            <span class="label">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
+            <span class="label">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
+            <span class="label">Kendaraan:</span><span class="value">${job.vehicleNumber}</span>
+            <span class="label">Muatan:</span><span class="value">${job.muatan || '-'}</span>
+            <span class="label">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
+        `;
+        elements.detailModal.style.display = 'block';
+    }
+
+    function openConfirmationModal(tripId) {
+        activeTripIdForConfirmation = tripId;
+        elements.confirmModal.style.display = 'block';
+    }
+
+    function closeConfirmationModal() {
+        if (currentScanner) {
+            currentScanner.stop();
+            currentScanner = null;
+        }
+        elements.previewVideo.style.display = 'none';
+        elements.arriveForm.reset();
+        elements.statusMsg.textContent = '';
+        elements.statusMsg.style.display = 'none';
+        elements.confirmModal.style.display = 'none';
+        activeTripIdForConfirmation = null;
+    }
+
+    async function handleArriveConfirmation(e) {
+      e.preventDefault();
+      const enteredTripId = elements.tripIdInput.value.trim();
+      
+      elements.statusMsg.style.display = 'block';
+
+      if (!enteredTripId) {
+        elements.statusMsg.style.color = 'var(--color-warn)';
+        elements.statusMsg.textContent = 'Harap masukkan kode resi perjalanan.';
+        return;
+      }
+      if (enteredTripId !== activeTripIdForConfirmation) {
+        elements.statusMsg.style.color = 'var(--color-danger)';
+        elements.statusMsg.textContent = '❌ Kode Resi tidak cocok dengan perjalanan yang dipilih.';
+        return;
+      }
+      
+      elements.statusMsg.textContent = 'Memproses...';
+      elements.statusMsg.style.color = 'var(--text-secondary)';
+
+      try {
+        const tripRef = ref(db, 'trips/' + activeTripIdForConfirmation);
+        await update(tripRef, { status: 'arrived', arrivedAt: Date.now(), isRead_coor: false });
+        elements.statusMsg.style.color = 'var(--color-success)';
+        elements.statusMsg.textContent = "✔️ Konfirmasi berhasil!";
+        
+        setTimeout(() => {
+            closeConfirmationModal();
+            document.querySelector('.tab-link[data-tab="history"]').click();
+        }, 1500);
+      } catch (err) {
+        elements.statusMsg.style.color = 'var(--color-danger)';
+        elements.statusMsg.textContent = '❌ Gagal: ' + err.message;
+      }
+    }
+
+    function startScanner() {
+        if (currentScanner) {
+            currentScanner.stop();
+            currentScanner = null;
+        }
+
+        elements.previewVideo.style.display = 'block';
+        let scanner = new Instascan.Scanner({ video: elements.previewVideo, scanPeriod: 5, mirror: false });
+        
+        scanner.addListener('scan', function(content) {
+            // Set input value from scan
+            elements.tripIdInput.value = content;
+            
+            // Stop scanner and hide video preview without resetting form
+            if (currentScanner) {
+                currentScanner.stop();
+                currentScanner = null;
+            }
+            elements.previewVideo.style.display = 'none';
+        });
+
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                let rearCamera = cameras.find(c => c.name.toLowerCase().includes('back'));
+                if (rearCamera) {
+                    scanner.start(rearCamera);
+                } else {
+                    scanner.start(cameras[cameras.length - 1]);
+                }
+                currentScanner = scanner;
+            } else {
+                console.error('No cameras found.');
+                elements.previewVideo.style.display = 'none';
+            }
+        }).catch(function (e) {
+            console.error(e);
+            elements.previewVideo.style.display = 'none';
+        });
+    }
+
+    elements.logoutBtn.addEventListener('click', async () => {
+        if (currentUser) {
+            await update(ref(db, 'users/' + currentUser.uid), { online: false });
+        }
+        signOut(auth).catch(err => console.error("Logout Gagal:", err));
+    });
+  </script>
+</body>
+</html>
