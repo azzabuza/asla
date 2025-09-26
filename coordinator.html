@@ -343,6 +343,9 @@
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
     };
     
+    // Set the minimum date for the date input to today
+    document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
+    
     let currentUser = null;
     let allMyTrips = [];
     let allDrivers = [];
