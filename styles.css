@@ -615,7 +615,7 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   font-size: 2rem;
   color: var(--text-primary);
   max-width: 75rem;
-  margin: 0 auto 2rem auto;
+  margin: 0 auto 4rem auto;
 }
 .hero .button {
   width: auto;
