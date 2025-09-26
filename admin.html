@@ -783,7 +783,8 @@
             if (snapshot.exists()) {
               snapshot.forEach(child => { allTrips.push({ id: child.key, data: child.val() }); });
             }
-            allTrips.reverse();
+            // Sort by createdAt timestamp in descending order (newest first)
+            allTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
             displayTrips(1);
             loadDashboardStats();
             loadRoleStats(); 
