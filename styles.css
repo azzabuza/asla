@@ -920,8 +920,8 @@ input:checked + .slider:before {
 }
 .driver-dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Diubah ke 2 kolom */
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
     margin-bottom: 2rem;
 }
 .tabs {
