@@ -576,19 +576,31 @@ tbody tr:hover { background-color: var(--bg-tertiary); }
   align-items: center;
   text-align: center;
   overflow: hidden;
-  background: rgba(18, 24, 40, 0.7);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(18, 24, 40, 0.8), rgba(18, 24, 40, 0.6));
+  z-index: 0;
 }
 .hero-video {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: cover;
   transform: translate(-50%, -50%);
   z-index: -1;
 }
 .hero-content {
+    position: relative;
     z-index: 1;
 }
 .hero h1 {
@@ -821,214 +833,4 @@ input:checked + .slider:before {
     border: 1px solid var(--border-primary);
 }
 .resource-card h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1.6rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-.resource-card p {
-    font-size: 1.4rem;
-    color: var(--text-secondary);
-    margin: 0.5rem 0;
-}
-.status-dot {
-    width: 1rem;
-    height: 1rem;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 0.8rem;
-}
-.status-dot.available { background-color: var(--color-success); }
-.status-dot.in-trip { background-color: var(--color-warn); }
-.report-buttons {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-.report-buttons button {
-    width: auto;
-}
-/* CSS untuk Modal Peta dan Detail */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1001;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6);
-    animation: fadeIn 0.3s;
-}
-.modal-content {
-    background-color: var(--bg-secondary);
-    margin: 10% auto;
-    padding: 2rem;
-    border: 1px solid var(--border-primary);
-    width: 80%;
-    max-width: 800px;
-    border-radius: 1rem;
-    position: relative;
-}
-.close-modal {
-    color: var(--text-secondary);
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2.5rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-.close-modal:hover { color: var(--text-primary); }
-#map-placeholder {
-    height: 400px;
-    background-color: var(--bg-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 1rem;
-    border-radius: 0.5rem;
-    color: var(--text-secondary);
-    font-size: 1.6rem;
-    text-align: center;
-}
-
-/* === CSS BARU UNTUK HALAMAN DRIVER === */
-.driver-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-}
-.driver-header .logout-button {
-    width: auto;
-}
-.driver-dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Diubah ke 2 kolom */
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-.tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-primary);
-    margin-bottom: 2rem;
-}
-.tab-link {
-    padding: 1rem 2rem;
-    cursor: pointer;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease-in-out;
-}
-.tab-link:hover {
-    color: var(--text-primary);
-}
-.tab-link.active {
-    color: var(--text-accent);
-    border-bottom-color: var(--text-accent);
-}
-.tab-content {
-    display: none;
-}
-.tab-content.active {
-    display: block;
-}
-.trip-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.trip-card.has-actions:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.1);
-}
-.trip-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    cursor: pointer;
-}
-.trip-card-header h3 {
-    font-size: 1.8rem;
-    margin: 0;
-    color: var(--text-primary);
-}
-.trip-card-body {
-    padding-bottom: 1.5rem;
-    cursor: pointer;
-}
-.trip-card-body p {
-    font-size: 1.4rem;
-    color: var(--text-secondary);
-    margin: 0.5rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-}
-.trip-card-body i {
-    color: var(--text-accent);
-}
-.trip-card-actions {
-    border-top: 1px solid var(--border-primary);
-    padding-top: 1.5rem;
-    display: flex;
-    gap: 1rem;
-}
-.trip-card-actions button {
-    width: 100%;
-    font-size: 1.4rem;
-}
-.trip-card-actions button.start {
-    background: var(--color-info);
-    color: var(--text-primary);
-}
-.trip-card-actions button.arriving {
-    background: var(--color-warn);
-    color: var(--text-inverse);
-}
-.trip-card-actions button.confirm {
-    background: var(--color-success);
-    color: var(--text-primary);
-}
-.modal-content .detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 1rem;
-    font-size: 1.5rem;
-}
-.modal-content .detail-grid .label {
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-.modal-content .detail-grid .value {
-    color: var(--text-primary);
-}
-.confirmation-modal-body .input-group {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.confirmation-modal-body input {
-    flex-grow: 1;
-}
-.confirmation-modal-body #scanBtn {
-    width: auto;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-.confirmation-modal-body video {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 0.5rem;
-    display: none;
-}
+    margin: 0
