@@ -950,7 +950,7 @@ input:checked + .slider:before {
   cursor: pointer;
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--dark-blue-gray);
+  color: var(--dark-blue-gray-80);
   border-bottom: 0.2rem solid transparent;
   transition: all 0.2s ease-in-out;
 }
@@ -958,8 +958,8 @@ input:checked + .slider:before {
   color: var(--dark-slate-blue);
 }
 .tab-link.active {
-  color: var(--dark-blue-gray);
-  border-bottom-color: var(--dark-blue-gray);
+  color: var(--dark-slate-blue);
+  border-bottom-color: var(--dark-slate-blue);
 }
 .tab-content {
   display: none;
