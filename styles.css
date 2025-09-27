@@ -941,7 +941,7 @@ input:checked + .slider:before {
 .tabs {
   box-sizing: border-box;
   display: flex;
-  border-bottom: 1px solid var(--gray);
+  border-bottom: 1px solid var(--dark-slate-blue);
   margin-bottom: 2rem;
 }
 .tab-link {
@@ -963,7 +963,7 @@ input:checked + .slider:before {
   background-color: var(--dark-slate-blue);
   color: var(--light-lavender);
   font-weight: 600;
-  border-radius: 0.5rem 0.5rem 0 0;
+  border-radius: 1rem 1rem 0 0;
 }
 .tab-content {
   display: none;
