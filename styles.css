@@ -642,6 +642,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   padding: 4rem;
 }
 .section-title {
+  color: var(--dark-slate-blue);
   text-align: center;
   font-size: 2rem;
   font-weight: 700;
@@ -650,8 +651,8 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .section-subtitle {
   text-align: center;
   font-size: 1.5rem;
-  color: var(--slate-gray);
-  margin-bottom: 5rem;
+  color: var(--gunmetal);
+  margin-bottom: 2rem;
   max-width: 70rem;
   margin-left: auto;
   margin-right: auto;
