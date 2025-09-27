@@ -637,9 +637,26 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
  
 /* Section Styling */
-.section { padding: 10rem 0; }
-.section-title { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 2rem; }
-.section-subtitle { text-align: center; font-size: 1.5rem; color: var(--slate-gray); margin-bottom: 5rem; max-width: 70rem; margin-left: auto; margin-right: auto; line-height: 1.6; }
+.section {
+  box-sizing: border-box;
+  padding: 2rem 0;
+}
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+.section-subtitle {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--slate-gray);
+  margin-bottom: 5rem;
+  max-width: 70rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
 
 /* Problem-Solution Section */
 .problem-solution-grid {
