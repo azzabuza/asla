@@ -251,6 +251,9 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   overflow: hidden;
   border: 0.1rem solid var(--border-gunmetal);
 }
+.card:last-child {
+  margin: 0;
+}
 .card-header {
   box-sizing: border-box;
   font-size: 1.8rem;
