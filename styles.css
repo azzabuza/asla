@@ -644,7 +644,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .section-title {
   color: var(--dark-slate-blue);
   text-align: center;
-  font-size: 2rem;
+  font-size: 3rem;
   font-weight: 700;
   margin-bottom: 2rem;
 }
@@ -657,6 +657,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
+  font-weight: 500;
 }
 
 /* Problem-Solution Section */
