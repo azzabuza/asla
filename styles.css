@@ -92,6 +92,11 @@ button { cursor: pointer; border: none; font-family: inherit; }
 hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* === ADMIN & KOORDINATOR LAYOUT === */
+.panel-content {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 .content-wrapper {
   box-sizing: border-box;
   display: flex;
