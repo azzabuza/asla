@@ -631,6 +631,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   color: var(--light-lavender);
   max-width: 75rem;
   margin: 0 auto 4rem auto;
+  line-height: 1.6;
 }
 .hero .button {
   width: auto;
@@ -1174,4 +1175,11 @@ body {
   font-size: 1.4rem;
   color: var(--slate-gray);
   margin: 0;
+}
+
+
+@media only screen and (max-width: 100rem) {
+  .problem-solution-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
