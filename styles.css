@@ -1176,5 +1176,12 @@ body {
   margin: 0;
 }
 
-
+@media only screen and (max-width: 90rem) {
+  .problem-solution-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .workflow-grid {
+  grid-template-columns: repeat(1, 1fr);
+}
+}
 
