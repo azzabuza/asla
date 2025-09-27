@@ -9,6 +9,7 @@
   --gunmetal: #242f48;
   --dark-blue-gray-80: rgba(18, 24, 40, 0.8);
   --gray: #555555;
+  --white: #ffffff;
 
   /* Background Gradient */
   --bg-gradient: linear-gradient(90deg, rgb(18, 24, 40, 0.9), rgb(18, 24, 40, 0.8));
@@ -57,7 +58,7 @@ body {
   max-width: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--light-lavender);
+  background-color: var(--white);
   font-family: 'Inter', sans-serif;
   text-align: left;
   user-select:none;
