@@ -491,6 +491,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* === HALAMAN LOGIN SEDERHANA === */
 .login-page {
   box-sizing: border-box;
+  padding: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
