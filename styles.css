@@ -526,7 +526,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   box-sizing: border-box;
   max-width: 120rem;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 2rem;
 }
 
 /* Animasi Reveal */
@@ -639,7 +639,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Section Styling */
 .section {
   box-sizing: border-box;
-  padding: 2rem 0;
+  padding: 2rem;
 }
 .section-title {
   text-align: center;
