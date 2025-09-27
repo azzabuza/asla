@@ -663,6 +663,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 
 /* Problem-Solution Section */
 .problem-solution-grid {
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
@@ -699,11 +700,9 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Workflow Section */
 .workflow-grid {
   box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
-  position: relative;
 }
 .workflow-step {
   box-sizing: border-box;
