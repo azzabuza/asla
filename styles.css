@@ -200,6 +200,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .main-header p {
   color: var(--dark-slate-blue);
   font-size: 1.5rem;
+  font-weight: 500;
   padding:0;
   margin:0;
 }
