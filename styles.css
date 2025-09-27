@@ -914,18 +914,22 @@ input:checked + .slider:before {
     margin-bottom: 2rem;
 }
 .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-gunmetal);
-    margin-bottom: 2rem;
+  background: var(--dark-slate-blue):
+  display: flex;
+  border: 1px solid var(--border-gunmetal);
+  border-radius: 1rem;
+  margin-bottom: 2rem;
 }
 .tab-link {
-    padding: 1rem 2rem;
-    cursor: pointer;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: var(--slate-gray);
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease-in-out;
+  background: var(--dark-slate-blue):
+  padding: 1rem 2rem;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--light-lavender);
+  border-bottom: 0.2rem solid transparent;
+  border-radius: 0.5rem 0 0 0.5rem;
+  transition: all 0.2s ease-in-out;
 }
 .tab-link:hover {
     color: var(--light-lavender);
