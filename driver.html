@@ -283,7 +283,7 @@
     function displayRecentJob(job){
         elements.recentJobCard.innerHTML = '';
         if(!job) {
-             elements.recentJobCard.innerHTML = `<p class="empty-state">Tidak ada tugas aktif saat ini.</p>`;
+             elements.recentJobCard.innerHTML = `<p class="empty-state" style="color: var(--light-lavender);">Tidak ada tugas aktif saat ini.</p>`;
              return;
         }
         
