@@ -950,7 +950,7 @@ input:checked + .slider:before {
   cursor: pointer;
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--dark-blue-gray-80);
+  color: var(--slate-gray);
   border-bottom: 0.2rem solid transparent;
   transition: all 0.2s ease-in-out;
 }
