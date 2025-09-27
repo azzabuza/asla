@@ -958,6 +958,7 @@ input:checked + .slider:before {
   background-color: var(--gunmetal);
   color: var(--light-lavender);
   font-weight: 600;
+  border-radius: 1rem 1rem 0 0;
 }
 .tab-link.active {
   background-color: var(--dark-slate-blue);
