@@ -28,7 +28,7 @@
        <div class="card" style="margin-top: 2rem;">
             <h2 class="card-header">Tugas Terbaru</h2>
             <div id="recentJobCard" class="card-body">
-                <p class="empty-state" style="color: var(--light-lavender);">Memuat tugas...</p>
+                <p class="empty-state" style="color: var(--slate-gray);">Memuat tugas...</p>
             </div>
         </div>
     </main>
@@ -283,7 +283,7 @@
     function displayRecentJob(job){
         elements.recentJobCard.innerHTML = '';
         if(!job) {
-             elements.recentJobCard.innerHTML = `<p class="empty-state" style="color: var(--light-lavender);">Tidak ada tugas aktif saat ini.</p>`;
+             elements.recentJobCard.innerHTML = `<p class="empty-state" style="color: var(--slate-gray);">Tidak ada tugas aktif saat ini.</p>`;
              return;
         }
         
