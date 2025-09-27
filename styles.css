@@ -915,7 +915,7 @@ input:checked + .slider:before {
 }
 .tabs {
   display: flex;
-  border: 1px solid var(--border-gunmetal);
+  border-bottom: 1px solid var(--border-gunmetal);
   margin-bottom: 2rem;
 }
 .tab-link {
