@@ -77,7 +77,7 @@
                 </div>
                 <div id="coor-activity-pagination-controls" style="display: flex; margin-top: 2rem; text-align: center; gap: 2rem;">
                     <button id="prevCoorActivityBtn">Sebelumnya</button>
-                    <span id="coorActivityPageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                    <span id="coorActivityPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
                     <button id="nextCoorActivityBtn">Berikutnya</button>
                 </div>
             </div>
@@ -212,7 +212,7 @@
         <section class="card">
           <h2 class="card-header">Unduh Laporan Sederhana</h2>
           <div class="card-body">
-            <p style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            <p style="font-size: 1.5rem; color: var(--light-lavender); margin-bottom: 2rem;">
               Anda dapat mengunduh data perjalanan yang telah Anda buat atau data kinerja supir dalam format PDF atau Excel.
             </p>
             <div class="form-group">
@@ -679,7 +679,7 @@
             tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja ditemukan.</td></tr>';
         } else {
             filteredPerformance.forEach(d => {
-                tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td><td style="color: #10b981;">${d.arrived || 0}</td><td style="color: #3b82f6;">${d.approved || 0}</td><td style="color: #ffa500;">${d.submitted || 0}</td><td style="color: #ef4444;">${d.rejected || 0}</td></tr>`;
+                tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td><td style="color: var(--green);">${d.arrived || 0}</td><td style="color: var(--blue);">${d.approved || 0}</td><td style="color: var(--light-orange);">${d.submitted || 0}</td><td style="color: var(--red);">${d.rejected || 0}</td></tr>`;
             });
         }
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
