@@ -931,7 +931,7 @@ input:checked + .slider:before {
     color: var(--dark-slate-blue);
 }
 .tab-link.active {
-    color: var(--cyan);
+    color: var(--dark-blue-gray);
     border-bottom-color: var(--dark-blue-gray);
 }
 .tab-content {
