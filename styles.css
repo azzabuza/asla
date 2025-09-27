@@ -189,13 +189,14 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0 0 2rem 0;
 }
 .main-header h1 {
+  color: var(--dark-blue-gray);
   font-size: 2rem;
   font-weight: 600;
   padding:0;
   margin:0 0 1rem;
 }
 .main-header p {
-  color: var(--slate-gray);
+  color: var(--dark-slate-blue);
   font-size: 1.5rem;
   padding:0;
   margin:0;
