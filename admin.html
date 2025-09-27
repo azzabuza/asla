@@ -97,7 +97,7 @@
                 </div>
                 <div id="activity-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
                     <button id="prevActivityBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-                    <span id="activityPageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                    <span id="activityPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
                     <button id="nextActivityBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
                 </div>
             </div>
@@ -146,7 +146,7 @@
             </div>
             <div id="pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
               <button id="prevBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="pageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <span id="pageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
             </div>
           </div>
@@ -179,7 +179,7 @@
             </div>
             <div id="user-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
                 <button id="prevUserBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-                <span id="userPageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                <span id="userPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
                 <button id="nextUserBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
             </div>
           </div>
@@ -212,7 +212,7 @@
             </div>
             <div id="route-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
               <button id="prevRouteBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="routePageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <span id="routePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextRouteBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
             </div>
           </div>
@@ -246,7 +246,7 @@
             </div>
             <div id="vehicle-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
               <button id="prevVehicleBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="vehiclePageInfo" style="color: #e0e5f5; font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <span id="vehiclePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextVehicleBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
             </div>
           </div>
@@ -384,15 +384,15 @@
         <section class="card">
           <h2 class="card-header">Pencadangan Data</h2>
           <div class="card-body">
-            <p style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 2rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
+            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 2rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
             <button id="downloadBackupBtn"><i class="fas fa-download"></i> Unduh Semua Data (.json)</button>
           </div>
         </section>
         <section class="card">
-          <h2 class="card-header" style="color: var(--color-danger);">Pemulihan Data</h2>
+          <h2 class="card-header" style="color: var(--red);">Pemulihan Data</h2>
           <div class="card-body">
             <p style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 2rem;">
-              <strong style="color: var(--color-warn);">PERINGATAN:</strong> Aksi ini akan <strong style="text-decoration: underline;">menimpa seluruh data</strong> yang ada di database dengan data dari file yang Anda unggah. Aksi ini tidak dapat dibatalkan. Lanjutkan hanya jika Anda benar-benar yakin.
+              <strong style="color: var(--orange);">PERINGATAN:</strong> Aksi ini akan <strong style="text-decoration: underline;">menimpa seluruh data</strong> yang ada di database dengan data dari file yang Anda unggah. Aksi ini tidak dapat dibatalkan. Lanjutkan hanya jika Anda benar-benar yakin.
             </p>
             <div class="form-group">
                 <label for="restoreFileInput">Pilih File Backup (.json)</label>
