@@ -57,7 +57,7 @@ body {
   max-width: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--slate-gray);
+  background-color: var(--light-lavender);
   font-family: 'Inter', sans-serif;
   text-align: left;
   user-select:none;
