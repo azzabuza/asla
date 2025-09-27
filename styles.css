@@ -1182,4 +1182,7 @@ body {
   .problem-solution-grid {
     grid-template-columns: repeat(1, 1fr);
   }
+  .workflow-grid {
+  grid-template-columns: repeat(1, 1fr);
+}
 }
