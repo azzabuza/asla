@@ -1182,7 +1182,7 @@ body {
   margin: 0;
 }
 
-@media only screen and (max-width: 90rem) {
+@media only screen and (max-width: 80rem) {
   .problem-solution-grid {
     grid-template-columns:repeat(1, 1fr);
   }
