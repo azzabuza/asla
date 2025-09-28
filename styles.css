@@ -102,7 +102,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar {
   box-sizing: border-box;
-  width: 50rem;
+  width: 40rem;
   background-color: var(--dark-slate-blue);
   color: var(--light-lavender);
   display: flex;
@@ -141,9 +141,17 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-size: 1.2rem;
 }
 .sidebar-menu {
+  box-sizing: border-box;
   flex-grow: 1;
   padding: 2rem;
   overflow-y: auto;
+}
+.sidebar-menu ul {
+  box-sizing: border-box;
+  display: block;
+  padding: 1rem 2rem;
+  margin: 0;
+  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-menu li a {
   display: block;
