@@ -143,12 +143,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar-menu {
   box-sizing: border-box;
   flex-grow: 1;
-  padding: 2rem;
+  padding: 0;
   overflow-y: auto;
 }
 .sidebar-menu ul {
   box-sizing: border-box;
-  padding: 0;
+  padding: 2rem;
   margin: 0;
   border-bottom: 0.1rem solid var(--border-gunmetal);
 }
