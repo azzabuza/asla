@@ -550,7 +550,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .navbar {
   box-sizing: border-box;
   width: 100%;
-  padding: 2rem;
+  padding: 0;
   position: fixed;
   top: 0;
   left: 0;
