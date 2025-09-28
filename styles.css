@@ -646,7 +646,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Section Styling */
 .section {
   box-sizing: border-box;
-  padding: 4rem;
+  padding: 2rem;
 }
 .section-title {
   color: var(--dark-slate-blue);
