@@ -717,7 +717,6 @@ tbody tr:hover { background-color: var(--gunmetal); }
   border-radius: 1rem;
   padding: 2rem;
   text-align: center;
-  width: 22%;
   position: relative;
 }
 .workflow-step .icon {
