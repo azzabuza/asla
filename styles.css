@@ -675,10 +675,10 @@ tbody tr:hover { background-color: var(--gunmetal); }
   gap: 2rem;
 }
 .problem-card, .solution-card {
-  background-color: var(--dark-slate-blue);
+  background-color: var(--white);
   border-radius: 1rem;
   padding: 2rem;
-  border: 0.1rem solid var(--border-gunmetal);
+  box-shadow: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
 }
 .problem-card h3, .solution-card h3 {
   display: flex;
