@@ -707,7 +707,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .workflow-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
 }
 .workflow-step {
