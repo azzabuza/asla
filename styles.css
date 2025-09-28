@@ -722,8 +722,8 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .workflow-step .icon {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   padding: 1rem;
   border-radius: 50%;
   background: var(--bg-btn-gradient);
