@@ -801,7 +801,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   color: var(--light-lavender);
   border-radius: 1rem;
   padding: 3rem;
-  border-left: 5px solid var(--cyan);
+  border-left: 5px solid var(--dark-blue-gray);
 }
 .testimonial-card p {
   font-size: 1.6rem;
