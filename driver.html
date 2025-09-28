@@ -54,43 +54,6 @@
       </div>
     </main>
 
-    <main id="page-darurat" class="main-content page">
-      <header class="main-header" style="margin-bottom: 2rem;">
-        <h1>Lapor Darurat</h1>
-        <p>Gunakan formulir ini jika terjadi keadaan darurat.</p>
-      </header>
-      <div class="card">
-        <div class="card-body">
-          <form id="emergencyForm">
-            <div class="form-group">
-              <label for="emergencyType">Jenis Laporan</label>
-              <select id="emergencyType" required>
-                <option value="">-- Pilih Jenis --</option>
-                <option value="kerusakan">Kerusakan Kendaraan</option>
-                <option value="kecelakaan">Kecelakaan</option>
-                <option value="kesehatan">Masalah Kesehatan</option>
-                <option value="keamanan">Masalah Keamanan</option>
-                <option value="lainnya">Lainnya</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="emergencyLocation">Lokasi Spesifik</label>
-              <div class="input-group">
-                <input type="text" id="emergencyLocation" placeholder="Contoh: Jl. Sudirman No. 12" required>
-                <button type="button" id="getLocationBtn" style="width: auto;"><i class="fas fa-map-marker-alt"></i> Lokasi Saya</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="emergencyDetails">Rincian Laporan</label>
-              <textarea id="emergencyDetails" rows="4" placeholder="Jelaskan rincian kejadian..." required></textarea>
-            </div>
-            <button type="submit" style="width: 100%;">Kirim Laporan</button>
-            <p id="emergencyStatusMsg" class="form-status"></p>
-          </form>
-        </div>
-      </div>
-    </main>
-
     <main id="page-profil" class="main-content page">
         <header class="main-header">
             <h1>Profil Saya</h1>
@@ -118,10 +81,6 @@
     <a href="#tugas" class="nav-link" data-page="tugas">
       <i class="fas fa-truck"></i>
       <span>Tugas</span>
-    </a>
-    <a href="#darurat" class="nav-link" data-page="darurat">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>Darurat</span>
     </a>
     <a href="#profil" class="nav-link" data-page="profil">
       <i class="fas fa-user"></i>
@@ -164,7 +123,7 @@
   <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect, push, serverTimestamp } from './firebase.js';
+    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
     const elements = {
@@ -202,16 +161,9 @@
       scanBtn: document.getElementById('scanBtn'),
       previewVideo: document.getElementById('preview'),
       statusMsg: document.getElementById('statusMsg'),
-
-      // Halaman Darurat
-      emergencyForm: document.getElementById('emergencyForm'),
-      emergencyLocationInput: document.getElementById('emergencyLocation'),
-      getLocationBtn: document.getElementById('getLocationBtn'),
-      emergencyStatusMsg: document.getElementById('emergencyStatusMsg'),
     };
 
     let currentUser = null;
-    let currentUserData = null;
     let currentScanner = null;
     let activeTripIdForConfirmation = null;
 
@@ -222,14 +174,14 @@
       
       onValue(userRef, (snap) => {
         if (snap.exists()) {
-            currentUserData = snap.val();
-            if (currentUserData.locked || currentUserData.role !== 'driver') {
+            const userData = snap.val();
+            if (userData.locked || userData.role !== 'driver') {
                 alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
                 signOut(auth);
             }
             // Update nama di semua halaman yang relevan
-            elements.driverName.textContent = `Halo, ${currentUserData.name || 'Driver'}!`;
-            elements.profileName.textContent = currentUserData.name || 'Driver';
+            elements.driverName.textContent = `Halo, ${userData.name || 'Driver'}!`;
+            elements.profileName.textContent = userData.name || 'Driver';
             elements.profileEmail.textContent = currentUser.email;
         } else {
             alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
@@ -283,9 +235,6 @@
 
         elements.scanBtn.addEventListener('click', startScanner);
         elements.arriveForm.addEventListener('submit', handleArriveConfirmation);
-        elements.emergencyForm.addEventListener('submit', handleEmergencyReport);
-        elements.getLocationBtn.addEventListener('click', getGeoLocation);
-
         elements.logoutBtn.addEventListener('click', async () => {
             if (currentUser) {
                 await update(ref(db, 'users/' + currentUser.uid), { online: false });
@@ -513,63 +462,6 @@
         elements.statusMsg.style.color = 'var(--color-danger)';
         elements.statusMsg.textContent = '❌ Gagal: ' + err.message;
       }
-    }
-
-    async function handleEmergencyReport(e) {
-      e.preventDefault();
-      elements.emergencyStatusMsg.style.display = 'block';
-      elements.emergencyStatusMsg.textContent = 'Mengirim laporan...';
-      elements.emergencyStatusMsg.style.color = 'var(--text-secondary)';
-      
-      // Get active trip
-      const activeTrip = Array.from(document.querySelectorAll('#activeJobsList .trip-card'))
-        .map(card => card.querySelector('button')?.dataset.tripid)
-        .find(id => id); // Get the first active trip id
-
-      const report = {
-        driverId: currentUser.uid,
-        driverName: currentUserData.name,
-        tripId: activeTrip || 'Tidak ada perjalanan aktif',
-        type: document.getElementById('emergencyType').value,
-        location: document.getElementById('emergencyLocation').value,
-        details: document.getElementById('emergencyDetails').value,
-        timestamp: serverTimestamp(),
-        status: 'reported' // Status: reported, handled
-      };
-
-      if(!report.type || !report.location || !report.details) {
-        elements.emergencyStatusMsg.textContent = 'Semua kolom wajib diisi.';
-        elements.emergencyStatusMsg.style.color = 'var(--color-danger)';
-        return;
-      }
-
-      try {
-        await push(ref(db, 'emergencies'), report);
-        elements.emergencyStatusMsg.textContent = '✔️ Laporan berhasil dikirim.';
-        elements.emergencyStatusMsg.style.color = 'var(--color-success)';
-        elements.emergencyForm.reset();
-        setTimeout(() => {
-            elements.emergencyStatusMsg.style.display = 'none';
-        }, 3000);
-      } catch (error) {
-        elements.emergencyStatusMsg.textContent = '❌ Gagal mengirim laporan: ' + error.message;
-        elements.emergencyStatusMsg.style.color = 'var(--color-danger)';
-      }
-    }
-
-    function getGeoLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const gmapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-                elements.emergencyLocationInput.value = gmapsUrl;
-            }, (error) => {
-                alert(`Gagal mendapatkan lokasi: ${error.message}`);
-            });
-        } else {
-            alert("Geolocation tidak didukung oleh browser ini.");
-        }
     }
 
     function startScanner() {
