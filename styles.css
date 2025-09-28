@@ -722,6 +722,8 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .workflow-step .icon {
   font-size: 1.5rem;
   margin-bottom: 1rem;
+  width: 4rem;
+  height: 4rem;
   padding: 1rem;
   border-radius: 50%;
   background: var(--bg-btn-gradient);
@@ -730,10 +732,6 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 .workflow-step h4 { font-size: 1.1rem; font-size: 1.8rem; margin-bottom: 0.5rem; }
 .workflow-step p { font-size: 0.9rem; color: var(--slate-gray); font-size: 1.5rem; line-height: 1.5; }
-.workflow-arrow {
-  color: var(--border-gunmetal);
-  font-size: 2rem;
-}
 
 /* Roles Section */
 .roles-grid {
