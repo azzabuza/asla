@@ -64,12 +64,12 @@
                 <p id="tripsLastMonth">0</p>
             </div>
             <div class="stat-card">
-                <h3>Total Pengguna</h3>
-                <p id="totalUsers">0</p>
-            </div>
-            <div class="stat-card">
                 <h3>Pengguna Online</h3>
                 <p id="onlineUsers">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Pengguna</h3>
+                <p id="totalUsers">0</p>
             </div>
             <div class="stat-card">
                 <h3>Total Rute</h3>
@@ -78,6 +78,10 @@
             <div class="stat-card">
                 <h3>Total Kendaraan</h3>
                 <p id="totalVehicles">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Kendaraan Aktif Hari Ini</h3>
+                <p id="activeVehiclesToday">0</p>
             </div>
         </div>
         <div class="card" style="margin-top: 2rem;">
@@ -482,6 +486,7 @@
         onlineUsers: document.getElementById('onlineUsers'),
         totalRoutes: document.getElementById('totalRoutes'),
         totalVehicles: document.getElementById('totalVehicles'),
+        activeVehiclesToday: document.getElementById('activeVehiclesToday'),
         recentActivityList: document.getElementById('recentActivityList'),
         activityPaginationControls: document.getElementById('activity-pagination-controls'),
         prevActivityBtn: document.getElementById('prevActivityBtn'),
@@ -622,26 +627,41 @@
         elements.totalUsers.textContent = userCount;
         const onlineCount = Object.values(allUsers).filter(u => u.online).length;
         elements.onlineUsers.textContent = onlineCount;
+        
         const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth();
+
         let thisMonthCount = 0;
         let lastMonthCount = 0;
+        const activeVehiclesToday = new Set();
+
         allTrips.forEach(tripEntry => {
             const tripDate = new Date(tripEntry.data.tanggal + "T00:00:00");
             const tripYear = tripDate.getFullYear();
             const tripMonth = tripDate.getMonth();
+
             if (tripYear === currentYear && tripMonth === currentMonth) {
                 thisMonthCount++;
             }
+            
             const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
             const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
             if (tripYear === lastMonthYear && tripMonth === lastMonth) {
                 lastMonthCount++;
             }
+
+            if (tripEntry.data.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(tripEntry.data.status)) {
+                activeVehiclesToday.add(tripEntry.data.vehicleNumber);
+            }
         });
+        
         elements.tripsThisMonth.textContent = thisMonthCount;
         elements.tripsLastMonth.textContent = lastMonthCount;
+        elements.activeVehiclesToday.textContent = activeVehiclesToday.size;
+        
         displayRecentActivity(1);
     }
     
