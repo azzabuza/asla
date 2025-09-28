@@ -103,7 +103,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar {
   box-sizing: border-box;
   max-width: 40rem;
-  width: 100%;
   background-color: var(--dark-slate-blue);
   color: var(--light-lavender);
   display: flex;
