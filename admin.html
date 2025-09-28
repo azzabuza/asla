@@ -25,7 +25,6 @@
       <ul>
         <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
         <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Pantau Perjalanan</a></li>
-        <li><a href="#emergency" class="nav-link"><i class="fas fa-exclamation-triangle"></i> Laporan Darurat</a></li>
         <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
@@ -158,31 +157,6 @@
             </div>
           </div>
         </section>
-      </div>
-
-      <div id="page-emergency" class="page">
-          <section class="card">
-              <h2 class="card-header">Laporan Darurat Masuk</h2>
-              <div class="card-body">
-                  <div class="table-responsive">
-                      <table>
-                          <thead>
-                              <tr>
-                                  <th>Waktu</th>
-                                  <th>Supir</th>
-                                  <th>Jenis</th>
-                                  <th>Lokasi</th>
-                                  <th>Rincian</th>
-                                  <th>Status</th>
-                              </tr>
-                          </thead>
-                          <tbody id="emergencyList">
-                              <tr><td colspan="6" class="empty-state">Memuat laporan...</td></tr>
-                          </tbody>
-                      </table>
-                  </div>
-              </div>
-          </section>
       </div>
       
       <div id="page-users" class="page">
@@ -444,14 +418,13 @@
     import { 
       auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp,
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
-      createUserWithEmailAndPassword, query, orderByChild
+      createUserWithEmailAndPassword
     } from './firebase.js';
     import { badge, fmtDate, el } from './utils.js';
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: '<i class="fas fa-truck"></i> Pantau Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
-        emergency: { title: '<i class="fas fa-exclamation-triangle"></i> Laporan Darurat', subtitle: 'Tinjau laporan darurat yang masuk dari supir.' },
         users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
         vehicles: { title: '<i class="fas fa-car"></i> Manajemen Kendaraan', subtitle: 'Kelola daftar kendaraan operasional.' },
@@ -533,7 +506,6 @@
         restoreBackupBtn: document.getElementById('restoreBackupBtn'),
         restoreFileInput: document.getElementById('restoreFileInput'),
         restoreStatus: document.getElementById('restoreStatus'),
-        emergencyList: document.getElementById('emergencyList'),
     };
 
     let currentUser = null;
@@ -607,7 +579,6 @@
         await update(userRef, { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         loadAllData();
-        loadEmergencyReports();
       } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
 
@@ -865,45 +836,6 @@
         elements.searchTrip.oninput = () => displayTrips(1);
         elements.searchRoute.oninput = () => displayRoutes(1);
         elements.searchVehicle.oninput = () => displayVehicles(1);
-    }
-
-    function loadEmergencyReports() {
-        const emergencyRef = query(ref(db, 'emergencies'), orderByChild('timestamp'));
-        onValue(emergencyRef, (snapshot) => {
-            elements.emergencyList.innerHTML = '';
-            let reports = [];
-            snapshot.forEach(child => reports.push({ id: child.key, ...child.val() }));
-            reports.reverse(); // Newest first
-
-            if (reports.length === 0) {
-                elements.emergencyList.innerHTML = `<tr><td colspan="6" class="empty-state">Tidak ada laporan darurat.</td></tr>`;
-                return;
-            }
-
-            reports.forEach(report => {
-                const tr = el('tr');
-                const time = report.timestamp ? new Date(report.timestamp).toLocaleString('id-ID') : 'N/A';
-                const locationText = report.location.startsWith('http') 
-                    ? `<a href="${report.location}" target="_blank">Lihat Peta</a>` 
-                    : report.location;
-                
-                const statusBadge = el('span', report.status === 'handled' ? 'Ditangani' : 'Baru', {
-                    class: `badge ${report.status === 'handled' ? 'success' : 'danger'}`
-                });
-
-                tr.innerHTML = `
-                    <td>${time}</td>
-                    <td>${report.driverName}</td>
-                    <td>${report.type}</td>
-                    <td>${locationText}</td>
-                    <td>${report.details}</td>
-                `;
-                const statusCell = el('td');
-                statusCell.appendChild(statusBadge);
-                tr.appendChild(statusCell);
-                elements.emergencyList.appendChild(tr);
-            });
-        });
     }
 
     elements.userList.addEventListener('click', async (e) => {
