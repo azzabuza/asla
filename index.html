@@ -2,217 +2,571 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta content="width=device-width, initial-scale=1" name="viewport" />
-  <title>SLA Trucking - Platform Otomatisasi Logistik Modern</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Koordinator Panel</title>
+  <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="content-wrapper">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>Koordinator</h2>
+      </div>
+      <div class="sidebar-account">
+        <p id="userName">Memuat...</p>
+        <small id="userEmail">Memuat...</small>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#list" class="nav-link"><i class="fas fa-list-alt"></i> Daftar Perjalanan</a></li>
+        <li><a href="#add" class="nav-link"><i class="fas fa-plus"></i> Tambah Perjalanan</a></li>
+        <li><a href="#performance" class="nav-link"><i class="fas fa-chart-bar"></i> Kinerja Supir</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+        <p>V.3.0.4 (BETA)</p>
+      </div>
+    </nav>
 
-  <header class="navbar">
-    <div class="container">
-      <div class="logo">SLA Trucking</div>
-      <nav class="nav-links">
-        <a href="#solutions">Solusi</a>
-        <a href="#features">Fitur Unggulan</a>
-        <a href="#workflow">Alur Kerja</a>
-        <a href="#testimonials">Testimonial</a>
-      </nav>
-      <a href="login.html" class="nav-cta">Minta Demo</a>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero">
-        <video autoplay loop muted playsinline class="hero-video">
-            <source src="https://res.cloudinary.com/drdmim3lu/video/upload/v1758897975/bg-video_mcra8t.mp4" type="video/mp4">
-        </video>
-        <div class="hero-content container">
-            <h1 class="reveal">Transformasi Digital untuk Logistik Anda.</h1>
-            <p class="reveal" style="transition-delay: 0.2s;">
-                Satu platform terintegrasi untuk visibilitas total, efisiensi operasional, dan pengambilan keputusan berbasis data yang lebih cerdas.
-            </p>
-            <div class="hero-buttons reveal" style="transition-delay: 0.4s;">
-              <a href="#solutions" class="button-primary">Lihat Solusi Kami</a>
+    <main class="main-content">
+      <header class="main-header">
+        <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <p id="pageSubtitle">Ringkasan aktivitas dan perjalanan Anda.</p>
+      </header>
+      
+      <div id="page-dashboard" class="page active">
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Total Perjalanan Dibuat</h3>
+                <p id="totalMyTrips">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Perjalanan Bulan Ini</h3>
+                <p id="myTripsThisMonth">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Perjalanan Bulan Lalu</h3>
+                <p id="myTripsLastMonth">0</p>
             </div>
         </div>
-    </section>
-
-    <section id="solutions" class="section container">
-        <div class="solution-grid">
-            <div class="solution-image-column reveal">
-                <img src="https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=2070&auto=format&fit=crop" alt="Dashboard logistik modern">
-            </div>
-            <div class="solution-text-column reveal" style="transition-delay: 0.2s;">
-                <div class="section-header-left">
-                    <span class="section-tag">Solusi Terintegrasi</span>
-                    <h2 class="section-title">Ubah Kekacauan Operasional Menjadi Keunggulan Kompetitif.</h2>
-                    <p class="section-subtitle">Hentikan ketergantungan pada spreadsheet dan komunikasi manual yang lambat. Platform kami adalah pusat komando untuk seluruh rantai pasok Anda, dari gudang hingga tujuan akhir.</p>
+        <div class="card" style="margin-top: 2rem;">
+            <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Deskripsi</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentActivityCoordinatorList">
+                            <tr><td colspan="3">Memuat aktivitas...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="solution-benefits">
-                    <div class="benefit-item">
-                        <div class="benefit-icon"><i class="fas fa-check"></i></div>
-                        <p>Visibilitas <strong>real-time</strong> atas semua aset dan pengiriman.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon"><i class="fas fa-check"></i></div>
-                        <p>Alur kerja persetujuan <strong>digital</strong> yang mempercepat keputusan.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon"><i class="fas fa-check"></i></div>
-                        <p>Analitik mendalam untuk <strong>optimasi biaya</strong> dan rute.</p>
-                    </div>
+                <div id="coor-activity-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+                    <button id="prevCoorActivityBtn" class="btn-sm info">Sebelumnya</button>
+                    <span id="coorActivityPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+                    <button id="nextCoorActivityBtn" class="btn-sm info">Berikutnya</button>
                 </div>
-            </div>
-        </div>
-    </section>
-    
-    <section id="features" class="section-dark">
-      <div class="container">
-        <div class="section-header reveal">
-            <span class="section-tag">Fitur Unggulan</span>
-            <h2 class="section-title">Dirancang untuk Kontrol dan Pertumbuhan.</h2>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card reveal" style="transition-delay: 0.1s;">
-                <div class="icon"><i class="fas fa-sitemap"></i></div>
-                <h4>Dasbor Terpusat</h4>
-                <p>Pantau semua metrik penting—dari status perjalanan hingga ketersediaan armada—dalam satu tampilan.</p>
-            </div>
-            <div class="feature-card reveal" style="transition-delay: 0.2s;">
-                <div class="icon"><i class="fas fa-users-cog"></i></div>
-                <h4>Manajemen Peran</h4>
-                <p>Berikan akses yang sesuai untuk admin, koordinator, dan pengemudi, memastikan semua orang fokus pada tugasnya.</p>
-            </div>
-            <div class="feature-card reveal" style="transition-delay: 0.3s;">
-                <div class="icon"><i class="fas fa-file-invoice"></i></div>
-                <h4>Dokumen Digital</h4>
-                <p>Buat surat jalan dan invoice secara otomatis, mengurangi pekerjaan administrasi dan risiko kesalahan.</p>
-            </div>
-            <div class="feature-card reveal" style="transition-delay: 0.4s;">
-                <div class="icon"><i class="fas fa-chart-pie"></i></div>
-                <h4>Pelaporan Cerdas</h4>
-                <p>Dapatkan laporan analitis yang mudah dipahami untuk mengukur kinerja dan menemukan peluang efisiensi.</p>
             </div>
         </div>
       </div>
-    </section>
 
-    <section id="workflow" class="section container">
-        <div class="section-header reveal">
-            <span class="section-tag">Alur Kerja</span>
-            <h2 class="section-title">Otomatisasi di Setiap Langkah.</h2>
-        </div>
-        <div class="workflow-timeline">
-            <div class="workflow-item reveal">
-                <div class="workflow-content">
-                    <span class="workflow-step-number">1</span>
-                    <h4>Input Tugas</h4>
-                    <p>Koordinator dengan mudah membuat data perjalanan baru melalui form intuitif.</p>
+      <div id="page-list" class="page">
+        <section class="card">
+          <h2 class="card-header">Daftar Perjalanan Dibuat</h2>
+          <div class="card-body">
+            <div class="table-controls">
+                <div class="form-group">
+                    <label>Filter Status</label>
+                    <select id="filterMyTripStatus">
+                        <option value="all">Semua</option>
+                        <option value="submitted">Menunggu</option>
+                        <option value="approved">Disetujui</option>
+                        <option value="rejected">Ditolak</option>
+                        <option value="arrived">Selesai</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cari Supir / Rute</label>
+                    <input type="text" id="searchMyTrip" />
                 </div>
             </div>
-             <div class="workflow-connector"></div>
-            <div class="workflow-item reveal">
-                <div class="workflow-content">
-                    <span class="workflow-step-number">2</span>
-                    <h4>Persetujuan Cepat</h4>
-                    <p>Admin menerima notifikasi, me-review, dan menyetujui tugas hanya dengan satu klik.</p>
-                </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rute</th>
+                    <th>Supir</th>
+                    <th>No. Kendaraan</th>
+                    <th>Muatan</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi Cetak</th>
+                  </tr>
+                </thead>
+                <tbody id="tripList">
+                  <tr><td colspan="7">Memuat data...</td></tr>
+                </tbody>
+              </table>
             </div>
-             <div class="workflow-connector"></div>
-            <div class="workflow-item reveal">
-                <div class="workflow-content">
-                    <span class="workflow-step-number">3</span>
-                    <h4>Eksekusi & Pelacakan</h4>
-                    <p>Pengemudi menerima tugas di aplikasi, dan tim kantor memantau progres secara live.</p>
-                </div>
+            <div id="coor-pagination-controls" style="display:none; margin-top:1.5rem; text-align:center;">
+              <button id="prevCoorBtn" class="btn-sm info">Sebelumnya</button>
+              <span id="coorPageInfo" style="margin: 0 1rem; font-weight: 500;"></span>
+              <button id="nextCoorBtn" class="btn-sm info">Berikutnya</button>
             </div>
-             <div class="workflow-connector"></div>
-            <div class="workflow-item reveal">
-                <div class="workflow-content">
-                    <span class="workflow-step-number">4</span>
-                    <h4>Konfirmasi Digital</h4>
-                    <p>Setibanya di tujuan, pengemudi melakukan scan QR untuk menyelesaikan tugas secara instan.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="testimonials" class="section-dark">
-      <div class="container">
-        <div class="section-header reveal">
-            <span class="section-tag">Kisah Sukses</span>
-            <h2 class="section-title">Dipercaya oleh Perusahaan Terkemuka.</h2>
-        </div>
-        <div class="testimonials-grid">
-            <div class="testimonial-card reveal" style="transition-delay: 0.2s;">
-                <div class="testimonial-header">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Budi Santoso" class="testimonial-avatar">
-                    <div class="testimonial-author">
-                        <h4>Budi Santoso</h4>
-                        <span>Manajer Logistik, PT Maju Jaya</span>
-                    </div>
-                </div>
-                <p>"Implementasi platform SLA Trucking adalah keputusan terbaik kami tahun ini. Visibilitas operasional meningkat 90%, dan waktu untuk approval surat jalan berkurang drastis."</p>
-            </div>
-            <div class="testimonial-card reveal" style="transition-delay: 0.4s;">
-                <div class="testimonial-header">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Rina Hartono" class="testimonial-avatar">
-                    <div class="testimonial-author">
-                        <h4>Rina Hartono</h4>
-                        <span>Direktur Operasional, CV Cipta Karya</span>
-                    </div>
-                </div>
-                <p>"Berkat laporan analitis yang detail, kami berhasil mengoptimalkan rute dan menghemat biaya bahan bakar hingga 18%. Platform ini benar-benar game-changer."</p>
-            </div>
-        </div>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <section id="cta" class="section container">
-        <div class="cta-section reveal">
-            <div class="cta-content">
-              <span class="section-tag">Langkah Selanjutnya</span>
-              <h2>Siap Memodernisasi Operasi Logistik Anda?</h2>
-              <p>Mari diskusikan bagaimana platform kami dapat disesuaikan untuk kebutuhan unik bisnis Anda. Jadwalkan sesi demo personal gratis hari ini.</p>
-              <a href="login.html" class="button-primary">Jadwalkan Demo Gratis</a>
+      <div id="page-add" class="page">
+        <section class="card">
+            <h2 class="card-header">Buat Data Perjalanan Baru</h2>
+            <div class="card-body">
+                <form id="tripForm">
+                  <div class="form-group">
+                    <label for="driverSelect">Supir</label>
+                    <select id="driverSelect" required>
+                      <option value="">Memuat daftar supir...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="vehicleNumberSelect">Kendaraan</label>
+                    <select id="vehicleNumberSelect" required>
+                      <option value="">Memuat kendaraan...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="asal">Asal</label>
+                    <select id="asal" required>
+                      <option value="">Memuat rute...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="tujuan">Tujuan</label>
+                    <select id="tujuan" required>
+                      <option value="">Memuat rute...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="muatan">Muatan</label>
+                    <input id="muatan" type="text" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="tanggal">Tanggal Keberangkatan</label>
+                    <input id="tanggal" type="date" required>
+                  </div>
+                  <button type="submit">Kirim Data Perjalanan</button>
+                  <p id="statusMsg" class="form-status"></p>
+                </form>
             </div>
-            <div class="cta-image">
-                <img src="https://images.unsplash.com/photo-1605710352217-0a96a3b615b1?q=80&w=1974&auto=format&fit=crop" alt="Tim logistik berdiskusi">
+        </section>
+      </div>
+
+      <div id="page-performance" class="page">
+        <section class="card">
+          <h2 class="card-header">Ringkasan Kinerja Supir</h2>
+          <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label>Cari Nama Supir</label>
+                    <input type="text" id="searchDriverPerformance" />
+                </div>
             </div>
-        </div>
-    </section>
-  </main>
+            <div id="driverPerformanceStats">
+                <p>Memuat data kinerja...</p>
+            </div>
+          </div>
+        </section>
+      </div>
+      
+    </main>
+  </div>
 
-  <footer class="footer">
-    <div class="container">
-      <p>&copy; 2024 SLA Trucking. Mendorong Inovasi Logistik Indonesia.</p>
-    </div>
-  </footer>
+  <script type="module">
+    import { 
+      auth, onAuthStateChanged, signOut, db, ref, get, push, set, onValue, 
+      query, orderByChild, equalTo, update, onDisconnect
+    } from './firebase.js';
+    import { badge, fmtDate, el } from './utils.js';
 
-  <script>
-    const navbar = document.querySelector('.navbar');
-    window.onscroll = () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
+    const pageContent = {
+        dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
+        list: { title: '<i class="fas fa-list-alt"></i> Status Perjalanan Saya', subtitle: 'Pantau semua perjalanan yang telah Anda buat di sini.' },
+        add: { title: '<i class="fas fa-plus"></i> Tambah Perjalanan', subtitle: 'Buat data perjalanan baru untuk supir.' },
+        performance: { title: '<i class="fas fa-chart-bar"></i> Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' }
+    };
+
+    const elements = {
+      pageTitle: document.getElementById('pageTitle'),
+      pageSubtitle: document.getElementById('pageSubtitle'),
+      navLinks: document.querySelectorAll('.nav-link'),
+      pages: document.querySelectorAll('.page'),
+      userName: document.getElementById('userName'),
+      userEmail: document.getElementById('userEmail'),
+      tripForm: document.getElementById('tripForm'),
+      tripList: document.getElementById('tripList'),
+      driverSelect: document.getElementById('driverSelect'),
+      vehicleNumberSelect: document.getElementById('vehicleNumberSelect'),
+      asalSelect: document.getElementById('asal'),
+      tujuanSelect: document.getElementById('tujuan'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      statusMsg: document.getElementById('statusMsg'),
+      filterMyTripStatus: document.getElementById('filterMyTripStatus'),
+      searchMyTrip: document.getElementById('searchMyTrip'),
+      coorPaginationControls: document.getElementById('coor-pagination-controls'),
+      prevCoorBtn: document.getElementById('prevCoorBtn'),
+      nextCoorBtn: document.getElementById('nextCoorBtn'),
+      coorPageInfo: document.getElementById('coorPageInfo'),
+      searchDriverPerformance: document.getElementById('searchDriverPerformance'),
+      driverPerformanceStats: document.getElementById('driverPerformanceStats'),
+      totalMyTrips: document.getElementById('totalMyTrips'),
+      myTripsThisMonth: document.getElementById('myTripsThisMonth'),
+      myTripsLastMonth: document.getElementById('myTripsLastMonth'),
+      recentActivityCoordinatorList: document.getElementById('recentActivityCoordinatorList'),
+      coorActivityPaginationControls: document.getElementById('coor-activity-pagination-controls'),
+      prevCoorActivityBtn: document.getElementById('prevCoorActivityBtn'),
+      nextCoorActivityBtn: document.getElementById('nextCoorActivityBtn'),
+      coorActivityPageInfo: document.getElementById('coorActivityPageInfo'),
     };
     
-    const revealElements = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+    let currentUser = null;
+    let allMyTrips = [];
+    let currentCoorPage = 1;
+    let currentCoorActivityPage = 1;
+    const coorActivityRowsPerPage = 5;
+    const rowsPerPage = 10;
+
+    function setupCoordinatorNavigation() {
+        elements.navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                elements.pages.forEach(page => page.classList.remove('active'));
+                elements.navLinks.forEach(nav => nav.classList.remove('active'));
+                document.getElementById(`page-${targetId}`).classList.add('active');
+                link.classList.add('active');
+                elements.pageTitle.innerHTML = pageContent[targetId].title;
+                elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
+            });
+        });
+    }
+    setupCoordinatorNavigation();
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = 'index.html';
+      currentUser = user;
+      const userRef = ref(db, 'users/' + currentUser.uid);
+      onValue(userRef, (snap) => {
+        if (snap.exists()) {
+            const userData = snap.val();
+            if (userData.locked || userData.role !== 'coordinator') {
+                alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
+                signOut(auth);
+            }
+        } else {
+            alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
+            signOut(auth);
+        }
+      });
+      const snap = await get(userRef);
+      if (!snap.exists()) return;
+      const userData = snap.val();
+      elements.userName.textContent = userData.name || 'Koordinator';
+      elements.userEmail.textContent = currentUser.email;
+      await update(userRef, { lastLogin: Date.now(), online: true });
+      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+      loadMyTrips();
+      loadDrivers(); 
+      loadRoutes();
+      loadVehicles();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        elements.filterMyTripStatus.onchange = () => displayMyTrips(1);
+        elements.searchMyTrip.oninput = () => displayMyTrips(1);
+        elements.searchDriverPerformance.oninput = () => loadDriverPerformance();
+    }
+
+    async function loadVehicles() {
+      try {
+        const snapshot = await get(ref(db, 'vehicles'));
+        elements.vehicleNumberSelect.innerHTML = '<option value="">-- Pilih Kendaraan --</option>';
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const vehicle = child.val();
+            const optionText = `${vehicle.vehicleNumber} (${vehicle.unit || 'N/A'})`;
+            const option = el('option', optionText, { value: vehicle.vehicleNumber });
+            elements.vehicleNumberSelect.appendChild(option);
+          });
+        }
+      } catch (error) { console.error("Gagal memuat kendaraan:", error); }
+    }
+    
+    async function loadRoutes() {
+      try {
+        const snapshot = await get(ref(db, 'routes'));
+        elements.asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
+        elements.tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const route = child.val();
+            const optionText = `${route.code} - ${route.address}`;
+            const optionValue = route.address;
+            const optionAsal = el('option', optionText, { value: optionValue });
+            const optionTujuan = el('option', optionText, { value: optionValue });
+            elements.asalSelect.appendChild(optionAsal);
+            elements.tujuanSelect.appendChild(optionTujuan);
+          });
+        }
+      } catch (error) { console.error("Gagal memuat rute:", error); }
+    }
+
+    async function loadDrivers() {
+        try {
+            const snapshot = await get(ref(db, 'users'));
+            if (snapshot.exists()) {
+                elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
+                let driverFound = false;
+                snapshot.forEach(child => {
+                    const uid = child.key;
+                    const user = child.val();
+                    if (user.role === 'driver' && user.name && !user.locked) {
+                        const option = el('option', user.name, { value: uid });
+                        elements.driverSelect.appendChild(option);
+                        driverFound = true;
+                    }
+                });
+                if (!driverFound) {
+                    elements.driverSelect.innerHTML = '<option value="">Tidak ada supir aktif</option>';
+                }
+            } else {
+                elements.driverSelect.innerHTML = '<option value="">Tidak ada data user</option>';
+            }
+        } catch (error) { 
+            console.error("Gagal memuat daftar supir:", error); 
+            elements.driverSelect.innerHTML = '<option value="">Gagal memuat supir</option>';
+        }
+    }
+
+    elements.tripForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      elements.statusMsg.style.display = 'block';
+      elements.statusMsg.textContent = 'Mengirim...';
+      if (!currentUser) return alert('Anda belum login.');
+
+      const selectedDriverOption = elements.driverSelect.options[elements.driverSelect.selectedIndex];
+      const driverId = selectedDriverOption.value;
+      const driverName = selectedDriverOption.text;
+      if (!driverId) {
+        alert('Silakan pilih supir terlebih dahulu.');
+        elements.statusMsg.textContent = '';
+        return;
+      }
+
+      const data = {
+        coorId: currentUser.uid, 
+        driverId, 
+        driverName,
+        vehicleNumber: document.getElementById('vehicleNumberSelect').value,
+        asal: document.getElementById('asal').value,
+        tujuan: document.getElementById('tujuan').value,
+        muatan: document.getElementById('muatan').value,
+        tanggal: document.getElementById('tanggal').value,
+        status: 'submitted', 
+        createdAt: Date.now()
+      };
+      
+      for(const key in data) {
+          if(!data[key] && key !== 'driverName') { 
+              alert(`Kolom ${key} tidak boleh kosong.`);
+              elements.statusMsg.textContent = '';
+              return;
+          }
+      }
+
+      try {
+        const newTripRef = push(ref(db, 'trips'));
+        await set(newTripRef, data);
+        elements.tripForm.reset();
+        elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
+        setTimeout(() => {
+            elements.statusMsg.textContent = '';
+            elements.statusMsg.style.display = 'none';
+            document.querySelector('.nav-link[href="#list"]').click();
+        }, 2000);
+      } catch(err) {
+        elements.statusMsg.style.color = 'var(--danger)';
+        elements.statusMsg.textContent = 'Gagal mengirim data: ' + err.message;
+      }
+    });
+
+    function displayRecentCoordinatorActivity(page) {
+        elements.recentActivityCoordinatorList.innerHTML = '';
+        currentCoorActivityPage = page;
+        const start = (page - 1) * coorActivityRowsPerPage;
+        const paginatedActivities = allMyTrips.slice(start, start + coorActivityRowsPerPage);
+        elements.coorActivityPaginationControls.style.display = allMyTrips.length > coorActivityRowsPerPage ? 'block' : 'none';
+        if (allMyTrips.length === 0) {
+            elements.recentActivityCoordinatorList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+        } else {
+            paginatedActivities.forEach(({data: trip}) => {
+                const tr = el('tr');
+                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${trip.tujuan}</strong>`;
+                const statusCell = el('td');
+                statusCell.appendChild(badge(trip.status));
+                tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+                tr.appendChild(statusCell);
+                elements.recentActivityCoordinatorList.appendChild(tr);
+            });
+        }
+        const totalPages = Math.ceil(allMyTrips.length / coorActivityRowsPerPage);
+        elements.coorActivityPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
+        elements.prevCoorActivityBtn.disabled = page === 1;
+        elements.nextCoorActivityBtn.disabled = page === totalPages;
+    }
+    elements.prevCoorActivityBtn.addEventListener('click', () => displayRecentCoordinatorActivity(currentCoorActivityPage - 1));
+    elements.nextCoorActivityBtn.addEventListener('click', () => displayRecentCoordinatorActivity(currentCoorActivityPage + 1));
+
+    function loadCoordinatorDashboardStats() {
+        elements.totalMyTrips.textContent = allMyTrips.length;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        let thisMonthCount = 0;
+        let lastMonthCount = 0;
+        allMyTrips.forEach(({data: trip}) => {
+            const tripDate = new Date(trip.tanggal + "T00:00:00");
+            const tripYear = tripDate.getFullYear();
+            const tripMonth = tripDate.getMonth();
+            if (tripYear === currentYear && tripMonth === currentMonth) {
+                thisMonthCount++;
+            }
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            if (tripYear === lastMonthYear && tripMonth === lastMonth) {
+                lastMonthCount++;
             }
         });
-    }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
-    revealElements.forEach(el => {
-        observer.observe(el);
+        elements.myTripsThisMonth.textContent = thisMonthCount;
+        elements.myTripsLastMonth.textContent = lastMonthCount;
+        displayRecentCoordinatorActivity(1);
+    }
+    
+    function loadDriverPerformance() {
+        const performance = {};
+        allMyTrips.forEach(({data: trip}) => {
+            if (!trip.driverId) return;
+            if (!performance[trip.driverId]) {
+                performance[trip.driverId] = { name: trip.driverName, total: 0, arrived: 0, approved: 0, submitted: 0, rejected: 0 };
+            }
+            performance[trip.driverId].total++;
+            if (trip.status) performance[trip.driverId][trip.status]++;
+        });
+        const searchTerm = elements.searchDriverPerformance.value.toLowerCase();
+        const filteredPerformance = Object.values(performance).filter(d => !searchTerm || (d.name || '').toLowerCase().includes(searchTerm));
+        let tableHTML = `<div class="table-responsive"><table><thead><tr><th>Nama Supir</th><th>Total</th><th>Selesai</th><th>Jalan</th><th>Menunggu</th><th>Ditolak</th></tr></thead><tbody>`;
+        if (filteredPerformance.length === 0) {
+            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja ditemukan.</td></tr>';
+        } else {
+            filteredPerformance.forEach(d => {
+                tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td><td style="color: #10b981;">${d.arrived || 0}</td><td style="color: #3b82f6;">${d.approved || 0}</td><td style="color: #ffa500;">${d.submitted || 0}</td><td style="color: #ef4444;">${d.rejected || 0}</td></tr>`;
+            });
+        }
+        elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
+    }
+
+    function displayMyTrips(page) {
+      elements.tripList.innerHTML = '';
+      currentCoorPage = page;
+      const searchTerm = elements.searchMyTrip.value.toLowerCase();
+      const statusFilter = elements.filterMyTripStatus.value;
+      const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
+          const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+          const searchMatch = !searchTerm ||
+              (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+              (trip.asal || '').toLowerCase().includes(searchTerm) ||
+              (trip.tujuan || '').toLowerCase().includes(searchTerm) ||
+              (trip.vehicleNumber || '').toLowerCase().includes(searchTerm);
+          return statusMatch && searchMatch;
+      });
+      const start = (page - 1) * rowsPerPage;
+      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+      if (paginatedTrips.length === 0 && filteredTrips.length > 0) {
+        return displayMyTrips(Math.ceil(filteredTrips.length / rowsPerPage));
+      }
+      elements.coorPaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'block' : 'none';
+      if (filteredTrips.length === 0) {
+        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
+      } else {
+        paginatedTrips.forEach(({id: tripId, data: tripData}) => {
+          const tr = el('tr');
+          const actionsCell = el('td', '', {'data-label': 'Aksi Cetak'});
+          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start' });
+          if (tripData.status === 'approved') {
+            const sjButton = el('button', 'Surat Jalan', { class: 'btn-sm info' });
+            const invButton = el('button', 'Invoice', { class: 'btn-sm info' });
+            sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
+            invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
+            actionsContainer.append(sjButton, invButton);
+          } else {
+            actionsContainer.textContent = '-';
+          }
+          actionsCell.appendChild(actionsContainer);
+          const statusCell = el('td', '', {'data-label': 'Status'});
+          statusCell.appendChild(badge(tripData.status));
+          tr.innerHTML = `<td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td><td data-label="Driver">${tripData.driverName||'-'}</td><td data-label="No. Kendaraan">${tripData.vehicleNumber}</td><td data-label="Muatan">${tripData.muatan||'-'}</td><td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>`;
+          tr.append(statusCell, actionsCell);
+          elements.tripList.appendChild(tr);
+        });
+      }
+      const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+      elements.coorPageInfo.textContent = `Halaman ${page} dari ${totalPages}`;
+      elements.prevCoorBtn.disabled = page === 1;
+      elements.nextCoorBtn.disabled = page === totalPages;
+    }
+    
+    elements.prevCoorBtn.addEventListener('click', () => displayMyTrips(currentCoorPage - 1));
+    elements.nextCoorBtn.addEventListener('click', () => {
+        const searchTerm = elements.searchMyTrip.value.toLowerCase();
+        const statusFilter = elements.filterMyTripStatus.value;
+        const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
+            const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+            const searchMatch = !searchTerm || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || (trip.tujuan || '').toLowerCase().includes(searchTerm) || (trip.vehicleNumber || '').toLowerCase().includes(searchTerm);
+            return statusMatch && searchMatch;
+        });
+        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+        if(currentCoorPage < totalPages) {
+            displayMyTrips(currentCoorPage + 1);
+        }
+    });
+
+    function loadMyTrips() {
+      const tripsRef = query(ref(db, 'trips'), orderByChild('coorId'), equalTo(currentUser.uid));
+      onValue(tripsRef, (snapshot) => {
+        allMyTrips = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            allMyTrips.push({ id: child.key, data: child.val() });
+          });
+        }
+        allMyTrips.reverse(); 
+        displayMyTrips(1);
+        loadDriverPerformance();
+        loadCoordinatorDashboardStats();
+      });
+    }
+
+    elements.logoutBtn.addEventListener('click', async () => {
+        if (currentUser) await update(ref(db, `users/${currentUser.uid}`), { online: false });
+        signOut(auth).catch(err => console.error("Logout Gagal:", err));
     });
   </script>
-
 </body>
 </html>
