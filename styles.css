@@ -758,6 +758,68 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .role-card h3 { font-size: 2rem; margin-bottom: 1rem; }
 .role-card p { color: var(--slate-gray); font-size: 1.5rem; line-height: 1.5; }
 
+/* Advantages Section */
+.advantages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 4rem;
+}
+.advantage-card {
+  background-color: #f8f9fa; /* Light Gray Background */
+  border: 1px solid #e0e5f5; /* Light Lavender Border */
+  border-radius: 1rem;
+  padding: 2.5rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.advantage-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(18, 24, 40, 0.08);
+}
+.advantage-card .icon {
+  font-size: 3rem;
+  color: var(--cyan);
+  margin-bottom: 1.5rem;
+}
+.advantage-card h4 {
+  font-size: 2rem;
+  color: var(--dark-slate-blue);
+  margin-bottom: 1rem;
+}
+.advantage-card p {
+  font-size: 1.5rem;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* Testimonials Section */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 4rem;
+}
+.testimonial-card {
+  background-color: var(--dark-slate-blue);
+  color: var(--light-lavender);
+  border-radius: 1rem;
+  padding: 3rem;
+  border-left: 5px solid var(--cyan);
+}
+.testimonial-card p {
+  font-size: 1.6rem;
+  font-style: italic;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.testimonial-card h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--slate-gray);
+  text-align: right;
+}
+
 /* CTA Section */
 .cta-section {
   box-sizing: border-box;
@@ -1180,12 +1242,9 @@ body {
   margin: 0;
 }
 
+/* Responsive Adjustments */
 @media only screen and (max-width: 80rem) {
-  .problem-solution-grid {
-    grid-template-columns:repeat(1, 1fr);
+  .problem-solution-grid, .workflow-grid, .roles-grid, .advantages-grid, .testimonials-grid {
+    grid-template-columns: 1fr;
   }
-  .workflow-grid {
-  grid-template-columns:repeat(1, 1fr);
 }
-}
-
