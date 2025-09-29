@@ -286,7 +286,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   background-color: var(--dark-blue-gray);
   border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   padding: 2rem;
   color: var(--light-lavender);
   text-align: center;
