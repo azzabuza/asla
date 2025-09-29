@@ -103,7 +103,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar {
   box-sizing: border-box;
   width: 40rem;
-  background-color: var(--dark-slate-blue);
+  background-color: #ffffff;
   color: var(--light-lavender);
   display: flex;
   flex-direction: column;
