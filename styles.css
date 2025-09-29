@@ -134,7 +134,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar-account {
   box-sizing: border-box;
-  padding: 1rem 2rem;
+  padding: 1rem;
   text-align: center;
   border-bottom: 0.1rem solid var(--border-gunmetal);
 }
@@ -251,7 +251,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: 1rem;
 }
 .stat-card {
   box-sizing: border-box;
