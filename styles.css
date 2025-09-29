@@ -203,7 +203,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   height: 100%;
-  padding: 2rem;
+  padding: 0;
   border-radius: 2rem;
 }
 .main-header {
