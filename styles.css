@@ -54,7 +54,7 @@ html {
 }
 body {
   box-sizing: border-box;
-  min-height: 100vh; /* Menggunakan min-height */
+  min-height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -67,7 +67,7 @@ body {
   -webkit-tap-highlight-color: transparent !important;
   -webkit-font-smoothing: antialiased;
   position: relative;
-  overflow-x: hidden; /* Mencegah scroll horizontal */
+  overflow-x: hidden;
 }
 /* SCROLLBAR */
 ::-webkit-scrollbar {
@@ -97,7 +97,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  min-height: 100vh; /* Menggunakan min-height */
+  min-height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -106,11 +106,10 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   display: flex;
   flex-shrink: 0;
-  height: 100vh; /* Menggunakan height 100vh */
+  height: 100vh;
   padding: 2rem;
   top: 0;
   left: 0;
-  position: sticky; /* Membuat social-media tetap */
 }
 .nav-social-media {
   box-sizing: border-box;
@@ -149,13 +148,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   display: flex;
   flex-shrink: 0;
-  width: 280px; /* Lebar sidebar */
-  height: 100vh; /* Menggunakan height 100vh */
+  width: 280px;
+  height: 100vh;
   padding: 2rem 2rem 2rem 0;
   top: 0;
   left: 0;
-  position: sticky; /* Membuat sidebar tetap */
-  transition: margin-left 0.3s ease; /* Transisi untuk responsive */
+  transition: margin-left 0.3s ease;
 }
 .sidebar-wrapper {
   box-sizing: border-box;
@@ -164,7 +162,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 100%; /* Agar wrapper mengisi sidebar */
+  width: 100%;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
@@ -242,10 +240,10 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .main-content {
   box-sizing: border-box;
   display: flex;
-  flex-direction: column; /* Mengubah arah flex menjadi kolom */
+  flex-direction: column;
   flex-grow: 1;
   width: 100%;
-  min-height: 100vh; /* Menggunakan min-height */
+  min-height: 100vh;
   padding: 2rem;
 }
 .main-header {
@@ -277,14 +275,14 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   overflow-x: hidden;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-gunmetal);
-  flex-grow: 1; /* Agar page-wrapper mengisi sisa ruang */
+  flex-grow: 1;
 }
 
 /* === DASHBOARD === */
 .dashboard-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Grid responsif */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
 }
 .stat-card {
@@ -507,7 +505,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   box-sizing: border-box;
   margin: 0 0 2rem 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Grid responsif */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
 }
 .table-controls .form-group {
@@ -574,8 +572,8 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 .login-container {
   box-sizing: border-box;
-  width: 100%; /* Lebar penuh di layar kecil */
-  max-width: 45rem; /* Lebar maksimum di layar besar */
+  width: 100%;
+  max-width: 45rem;
   margin: 0;
   padding: 2rem;
   background-color: var(--dark-slate-blue);
@@ -600,7 +598,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* === STYLING BARU DARI INDEX.HTML === */
 .container {
   box-sizing: border-box;
-  width: 100%; /* Lebar penuh */
+  width: 100%;
   max-width: 120rem;
   margin: 0 auto;
   padding: 2rem;
@@ -693,7 +691,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   z-index: 1;
 }
 .hero h1 {
-  font-size: clamp(3rem, 5vw, 5rem); /* Ukuran font responsif */
+  font-size: clamp(3rem, 5vw, 5rem);
   font-weight: 800;
   margin-bottom: 2rem;
   line-height: 1.1;
@@ -704,7 +702,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   -webkit-text-fill-color: transparent;
 }
 .hero p {
-  font-size: clamp(1.6rem, 2.5vw, 2rem); /* Ukuran font responsif */
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
   color: var(--light-lavender);
   max-width: 75rem;
   margin: 0 auto 4rem auto;
@@ -717,18 +715,18 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Section Styling */
 .section {
   box-sizing: border-box;
-  padding: 4rem 2rem; /* Menambah padding vertikal */
+  padding: 4rem 2rem;
 }
 .section-title {
   color: var(--dark-slate-blue);
   text-align: center;
-  font-size: clamp(2.5rem, 4vw, 3rem); /* Ukuran font responsif */
+  font-size: clamp(2.5rem, 4vw, 3rem);
   font-weight: 700;
   margin-bottom: 2rem;
 }
 .section-subtitle {
   text-align: center;
-  font-size: clamp(1.4rem, 2vw, 1.5rem); /* Ukuran font responsif */
+  font-size: clamp(1.4rem, 2vw, 1.5rem);
   color: var(--gunmetal);
   margin-bottom: 2rem;
   max-width: 70rem;
@@ -742,7 +740,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .problem-solution-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr; /* Default satu kolom */
+  grid-template-columns: 1fr;
   gap: 2rem;
 }
 .problem-card, .solution-card {
@@ -779,7 +777,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .workflow-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr; /* Default satu kolom */
+  grid-template-columns: 1fr;
   gap: 2rem;
 }
 .workflow-step {
@@ -809,7 +807,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .roles-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr; /* Default satu kolom */
+  grid-template-columns: 1fr;
   gap: 2rem;
 }
 .role-card {
@@ -832,7 +830,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Advantages Section */
 .advantages-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Default satu kolom */
+  grid-template-columns: 1fr;
   gap: 2rem;
   margin-top: 4rem;
 }
@@ -863,7 +861,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* Testimonials Section */
 .testimonials-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Default satu kolom */
+  grid-template-columns: 1fr;
   gap: 2rem;
   margin-top: 4rem;
 }
@@ -892,7 +890,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   box-sizing: border-box;
   background: var(--bg-btn-gradient);
   border-radius: 2rem;
-  padding: 4rem 2rem; /* Menambah padding */
+  padding: 4rem 2rem;
   text-align: center;
 }
 .cta-section .section-title, .cta-section .section-subtitle { color: var(--text-inverse-dark-blue-gray); }
@@ -1018,12 +1016,12 @@ input:checked + .slider:before {
 .status-dot.in-trip { background-color: var(--dark-orange); }
 .report-buttons {
   display: flex;
-  flex-direction: column; /* Tombol menjadi kolom di layar kecil */
+  flex-direction: column;
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
 .report-buttons button {
-  width: 100%; /* Lebar penuh */
+  width: 100%;
 }
 /* CSS untuk Modal Peta dan Detail */
 .modal {
@@ -1045,7 +1043,7 @@ input:checked + .slider:before {
   margin: 10% auto;
   padding: 2rem;
   border: 1px solid var(--border-gunmetal);
-  width: 90%; /* Lebar modal responsif */
+  width: 90%;
   max-width: 800px;
   border-radius: 2rem;
   position: relative;
@@ -1088,7 +1086,7 @@ input:checked + .slider:before {
 .driver-dashboard-grid {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr; /* Satu kolom di layar kecil */
+  grid-template-columns: 1fr;
   gap: 2rem;
   margin-bottom: 2rem;
 }
@@ -1097,7 +1095,7 @@ input:checked + .slider:before {
   display: flex;
   border-bottom: 1px solid var(--dark-slate-blue);
   margin-bottom: 2rem;
-  overflow-x: auto; /* Agar tab bisa di-scroll horizontal jika tidak cukup */
+  overflow-x: auto;
 }
 .tab-link {
   box-sizing: border-box;
@@ -1109,7 +1107,7 @@ input:checked + .slider:before {
   color: var(--slate-gray);
   border-radius: 2rem 2rem 0 0;
   transition: all 0.2s ease-in-out;
-  white-space: nowrap; /* Mencegah teks tab wrap */
+  white-space: nowrap;
 }
 .tab-link:hover {
   background-color: var(--gunmetal);
@@ -1147,9 +1145,9 @@ input:checked + .slider:before {
 .trip-card-header {
   box-sizing: border-box;
   display: flex;
-  flex-direction: column; /* Menjadi kolom di layar kecil */
-  align-items: flex-start; /* Rata kiri */
-  gap: 1rem; /* Jarak antara elemen */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1rem;
   cursor: pointer;
 }
@@ -1178,7 +1176,7 @@ input:checked + .slider:before {
   border-top: 1px solid var(--border-gunmetal);
   padding-top: 1.5rem;
   display: flex;
-  flex-direction: column; /* Tombol menjadi kolom di layar kecil */
+  flex-direction: column;
   gap: 1rem;
 }
 .trip-card-actions button {
@@ -1199,7 +1197,7 @@ input:checked + .slider:before {
 }
 .modal-content .detail-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Satu kolom di layar kecil */
+  grid-template-columns: 1fr;
   gap: 1rem;
   font-size: 1.5rem;
 }
@@ -1212,7 +1210,7 @@ input:checked + .slider:before {
 }
 .confirmation-modal-body .input-group {
   display: flex;
-  flex-direction: column; /* Menjadi kolom di layar kecil */
+  flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -1220,7 +1218,7 @@ input:checked + .slider:before {
   flex-grow: 1;
 }
 .confirmation-modal-body #scanBtn {
-  width: 100%; /* Lebar penuh */
+  width: 100%;
   background-color: var(--gunmetal);
   color: var(--light-lavender);
 }
@@ -1350,33 +1348,69 @@ body {
 
 /* === Media Queries for Responsiveness === */
 
+/* Tablet (min-width: 769px) */
+@media only screen and (min-width: 769px) {
+  .problem-solution-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .workflow-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .roles-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .advantages-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .testimonials-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .driver-dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .report-buttons {
+    flex-direction: row;
+  }
+  .trip-card-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .trip-card-actions {
+    flex-direction: row;
+  }
+  .modal-content .detail-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+  .confirmation-modal-body .input-group {
+    flex-direction: row;
+  }
+  .confirmation-modal-body #scanBtn {
+    width: auto;
+  }
+}
+
+
 /* Tablet (max-width: 1024px) */
 @media only screen and (max-width: 1024px) {
   .sidebar {
     position: fixed;
-    left: -280px; /* Sembunyikan sidebar di luar layar */
+    left: -280px;
     z-index: 1001;
     height: 100vh;
     padding: 2rem;
   }
   .sidebar.active {
-    left: 0; /* Tampilkan sidebar */
+    left: 0;
   }
   .social-media {
-    display: none; /* Sembunyikan social media di tablet */
+    display: none;
   }
   .main-content {
     padding: 2rem;
   }
   .dashboard-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-  .problem-solution-grid,
-  .workflow-grid,
-  .roles-grid,
-  .advantages-grid,
-  .testimonials-grid {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1386,7 +1420,7 @@ body {
     flex-direction: column;
   }
   .main-content {
-    padding-top: 8rem; /* Beri ruang untuk header */
+    padding-top: 2rem;
   }
   .main-header h1 {
     font-size: 2.2rem;
@@ -1407,9 +1441,6 @@ body {
     font-size: 1.6rem;
   }
   .navbar .nav-links {
-    display: none; /* Sembunyikan link nav di mobile, bisa diganti dengan menu hamburger */
-  }
-  .driver-dashboard-grid {
-    grid-template-columns: 1fr;
+    display: none;
   }
 }
