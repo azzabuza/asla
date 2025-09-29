@@ -188,7 +188,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-size: 1.5rem;
   text-align: center;
   padding: 0;
-  margin: 2rem 0 0 0;
+  margin: 1rem 0 0 0;
 }
 
 .main-content {
@@ -205,7 +205,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 2rem;
+  border-radius: 0.5rem 2rem 2rem 0.5rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
@@ -802,7 +802,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 .advantage-card {
   background-color: #f8f9fa; /* Light Gray Background */
-  border: 1px solid #e0e5f5; /* Light Lavender Border */
+  border: 0.1rem solid #e0e5f5; /* Light Lavender Border */
   border-radius: 1rem;
   padding: 2.5rem;
   text-align: center;
@@ -957,7 +957,7 @@ input:checked + .slider:before {
   background-color: var(--gunmetal);
   border-radius: 0.8rem;
   padding: 1.5rem;
-  border: 1px solid var(--border-gunmetal);
+  border: 0.1rem solid var(--border-gunmetal);
 }
 .resource-card h4 {
   margin: 0 0 1rem 0;
@@ -1007,7 +1007,7 @@ input:checked + .slider:before {
   background-color: var(--dark-slate-blue);
   margin: 10% auto;
   padding: 2rem;
-  border: 1px solid var(--border-gunmetal);
+  border: 0.1rem solid var(--border-gunmetal);
   width: 80%;
   max-width: 800px;
   border-radius: 1rem;
@@ -1058,7 +1058,7 @@ input:checked + .slider:before {
 .tabs {
   box-sizing: border-box;
   display: flex;
-  border-bottom: 1px solid var(--dark-slate-blue);
+  border-bottom: 0.1rem solid var(--dark-slate-blue);
   margin-bottom: 1rem;
 }
 .tab-link {
@@ -1091,7 +1091,7 @@ input:checked + .slider:before {
 .trip-card {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  border: 1px solid var(--border-gunmetal);
+  border: 0.1rem solid var(--border-gunmetal);
   border-radius: 1rem;
   margin-bottom: 2rem;
   padding: 2rem;
@@ -1135,7 +1135,7 @@ input:checked + .slider:before {
   color: var(--cyan);
 }
 .trip-card-actions {
-  border-top: 1px solid var(--border-gunmetal);
+  border-top: 0.1rem solid var(--border-gunmetal);
   padding-top: 1.5rem;
   display: flex;
   gap: 1rem;
@@ -1206,7 +1206,7 @@ body {
   display: flex;
   justify-content: space-around;
   background-color: var(--dark-slate-blue);
-  border-top: 1px solid var(--border-gunmetal);
+  border-top: 0.1rem solid var(--border-gunmetal);
   padding: 0.5rem 0;
   z-index: 1000;
 }
@@ -1245,7 +1245,7 @@ body {
   background-color: var(--dark-slate-blue);
   border-radius: 1rem;
   padding: 2rem;
-  border: 1px solid var(--border-gunmetal);
+  border: 0.1rem solid var(--border-gunmetal);
 }
 
 .profile-info {
