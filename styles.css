@@ -117,7 +117,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 2rem;
+  border-radius: 2rem 0.5rem 0.5rem 2rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-header {
@@ -289,7 +289,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   border-radius: 1rem;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
   overflow: hidden;
   border: 0.1rem solid var(--border-gunmetal);
 }
@@ -471,10 +471,10 @@ tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background-color: var(--gunmetal); }
 .table-controls {
   box-sizing: border-box;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
+  gap: 1rem;
 }
 .table-controls .form-group {
   margin: 0;
@@ -1052,14 +1052,14 @@ input:checked + .slider:before {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 .tabs {
   box-sizing: border-box;
   display: flex;
   border-bottom: 1px solid var(--dark-slate-blue);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 .tab-link {
   box-sizing: border-box;
