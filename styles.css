@@ -272,6 +272,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 2rem;
   overflow-y: auto;
   overflow-x: hidden;
+  border-radius: 2rem;
 }
 
 /* === DASHBOARD === */
