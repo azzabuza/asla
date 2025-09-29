@@ -198,6 +198,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   top: 0;
   left: 0;
   padding: 2rem 2rem 2rem 0;
+}
+.main-wrapper {
+  box-sizing: border-box;
+  background-color: var(--dark-slate-blue);
+  height: 100%;
+  padding: 2rem;
   overflow-y: auto;
 }
 .main-header {
