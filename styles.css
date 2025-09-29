@@ -204,14 +204,13 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   background-color: var(--dark-slate-blue);
   height: 100%;
   padding: 2rem;
-  overflow-y: auto;
   border-radius: 2rem;
-  border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
   box-sizing:border-box;
-  padding: 0;
-  margin: 0 0 2rem 0;
+  padding: 2rem;
+  margin: 0;
+  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .main-header h1 {
   color: var(--light-lavender);
@@ -226,6 +225,13 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-weight: 500;
   padding:0;
   margin:0;
+}
+.content-container {
+  box-sizing: border-box;
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .page-wrapper {
   box-sizing:border-box;
