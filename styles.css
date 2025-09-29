@@ -418,7 +418,7 @@ label {
 input, select {
   box-sizing: border-box;
   display: inline-block;
-  background-color: var(--dark-blue-gray);
+  background-color: var(--dark-slate-blue);
   font-family: var(--font-main);
   color: var(--light-lavender);
   caret-color: var(--light-lavender);
