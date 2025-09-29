@@ -284,7 +284,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .stat-card {
   box-sizing: border-box;
-  background-color: var(--dark-blue-gray);
+  background-color: var(--dark-slate-blue);
   border: 0.1rem solid var(--border-gunmetal);
   border-radius: 1rem;
   padding: 2rem;
@@ -316,7 +316,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .card {
   box-sizing: border-box;
-  background-color: var(--dark-blue-gray);
+  background-color: var(--dark-slate-blue);
   border-radius: 1rem;
   margin: 0 0 2rem 0;
   overflow: hidden;
