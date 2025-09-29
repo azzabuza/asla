@@ -239,8 +239,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   width: 100%;
   margin: 0;
   padding: 2rem 2rem 2rem 0;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 .main-header {
   box-sizing:border-box;
@@ -260,6 +258,16 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-weight: 500;
   padding:0;
   margin:0;
+}
+.page-wrapper {
+  box-sizing:border-box;
+  background-color: var(--dark-slate-blue);
+  border: 0.1rem solid var(--border-gunmetal);
+  width: 100%;
+  margin: 0;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* === DASHBOARD === */
