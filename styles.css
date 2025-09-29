@@ -95,7 +95,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .content-wrapper {
   box-sizing: border-box;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
   height: 100dvh;
   max-width: 100%;
   margin: 0;
