@@ -202,9 +202,11 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .main-wrapper {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  padding: 0;
   border-radius: 2rem;
+  border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
   box-sizing:border-box;
