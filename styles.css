@@ -117,7 +117,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 2rem;
+  border-radius: 1rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-header {
@@ -227,7 +227,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 2rem;
   overflow-y: auto;
   overflow-x: hidden;
-  border-radius: 2rem;
+  border-radius: 1rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 
@@ -529,7 +529,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   margin: 0;
   padding: 2rem;
   background-color: var(--dark-slate-blue);
-  border-radius: 2rem;
+  border-radius: 1rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .login-container h2 {
@@ -696,7 +696,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 .problem-card, .solution-card {
   background-color: var(--white);
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
 }
@@ -735,7 +735,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 2rem;
   text-align: center;
   position: relative;
@@ -788,7 +788,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .advantage-card {
   background-color: #f8f9fa; /* Light Gray Background */
   border: 1px solid #e0e5f5; /* Light Lavender Border */
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 2.5rem;
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -819,7 +819,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .testimonial-card {
   background-color: var(--dark-slate-blue);
   color: var(--light-lavender);
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 3rem;
   border-left: 5px solid var(--dark-blue-gray);
 }
@@ -840,7 +840,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .cta-section {
   box-sizing: border-box;
   background: var(--bg-btn-gradient);
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 2rem;
   text-align: center;
 }
@@ -995,7 +995,7 @@ input:checked + .slider:before {
   border: 1px solid var(--border-gunmetal);
   width: 80%;
   max-width: 800px;
-  border-radius: 2rem;
+  border-radius: 1rem;
   position: relative;
 }
 .close-modal {
@@ -1077,7 +1077,7 @@ input:checked + .slider:before {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   border: 1px solid var(--border-gunmetal);
-  border-radius: 2rem;
+  border-radius: 1rem;
   margin-bottom: 2rem;
   padding: 2rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1228,7 +1228,7 @@ body {
 .profile-card {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  border-radius: 2rem;
+  border-radius: 1rem;
   padding: 2rem;
   border: 1px solid var(--border-gunmetal);
 }
