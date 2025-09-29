@@ -102,7 +102,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar {
   box-sizing: border-box;
-  width: 50rem;
+  width: 45rem;
   display: flex;
   flex-direction: column;
   height: 100%;
