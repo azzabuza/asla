@@ -102,7 +102,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .social-media {
   box-sizing: border-box;
-  width: 10rem;
+  width: 20rem;
   display: flex;
   flex-direction: column;
   height: 100%;
