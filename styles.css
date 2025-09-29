@@ -1236,6 +1236,41 @@ body {
   margin: 0;
 }
 
+/* === TIPS CARD STYLES === */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tips-card .card-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tips-card .card-body li {
+    color: var(--slate-gray);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 0;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.tips-card .card-body li:last-child {
+    margin-bottom: 0;
+}
+
+.tips-card .card-body li i {
+    color: var(--cyan);
+    font-size: 1.6rem;
+    margin-top: 0.2rem;
+}
+
+
 /* Responsive Adjustments */
 @media only screen and (max-width: 80rem) {
   .problem-solution-grid, .workflow-grid, .roles-grid, .advantages-grid, .testimonials-grid {
