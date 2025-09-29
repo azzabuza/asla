@@ -407,7 +407,7 @@ input, select {
   margin: 0;
   width: 100%;
   outline: none;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   border: 0.1rem solid var(--border-gunmetal);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   appearance: none;
