@@ -281,7 +281,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .card {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   margin: 0 0 2rem 0;
   overflow: hidden;
   border: 0.1rem solid var(--border-gunmetal);
@@ -437,7 +437,7 @@ option {
 .table-responsive {
   overflow-x: auto;
   border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 table { width: 100%; border-collapse: collapse;}
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
