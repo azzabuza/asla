@@ -228,6 +228,19 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding:0;
   margin:0;
 }
+.main-footer {
+  box-sizing:border-box;
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 0.1rem solid var(--border-gunmetal);
+}
+.main-footer p {
+  color: var(--slate-gray);
+  font-size: 1.5rem;
+  font-weight: 500;
+  padding:0;
+  margin:0;
+}
 .content-container {
   box-sizing: border-box;
   flex-grow: 1;
