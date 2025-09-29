@@ -101,52 +101,8 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0;
   padding: 0;
 }
-.social-media {
-  box-sizing: border-box;
-  width: 12rem;
-  display: flex;
-  flex-shrink: 0;
-  height: 100%;
-  padding: 2rem;
-  top: 0;
-  left: 0;
-}
-.nav-social-media {
-  box-sizing: border-box;
-  background-color: var(--dark-slate-blue);
-  padding: 2rem;
-  margin: 0;
-  color: var(--light-lavender);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border-radius: 2rem;
-  border: 0.1rem solid var(--border-gunmetal);
-}
-.nav-social-media ul {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-.nav-social-media li a {
-  width: 4rem;
-  display: block;
-  padding: 1rem;
-  margin: 0;
-  color: var(--slate-gray);
-  font-size: 1.5rem;
-  text-align: center;
-  transition: all 0.2s ease-in-out;
-  border-radius: 1rem;
-  font-weight: 500;
-}
-.nav-social-media li a:hover {
-  background-color: var(--gunmetal);
-  color: var(--light-lavender);
-}
 .sidebar {
   box-sizing: border-box;
-  width: 45rem;
   display: flex;
   flex-shrink: 0;
   height: 100%;
