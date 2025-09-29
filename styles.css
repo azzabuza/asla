@@ -1041,7 +1041,7 @@ input:checked + .slider:before {
   cursor: pointer;
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--gray);
+  color: var(--slate-gray);
   border-radius: 2rem 2rem 0 0;
   transition: all 0.2s ease-in-out;
 }
