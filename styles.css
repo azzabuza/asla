@@ -526,7 +526,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   font-size: 2rem;
 }
 .empty-state {
-  color: var(--dark-slate-blue);
+  color: var(--slate-gray);
   font-style: italic;
   font-size: 1.5rem;
   padding: 2rem 0;
