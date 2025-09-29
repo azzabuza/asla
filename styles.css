@@ -113,7 +113,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .nav-social-media {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  padding: 1rem;
+  padding: 2rem;
   margin: 0;
   color: var(--light-lavender);
   display: flex;
