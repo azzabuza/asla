@@ -231,7 +231,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   flex-grow: 1;
   padding: 2rem;
   overflow-y: auto;
-  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .page-wrapper {
   box-sizing:border-box;
