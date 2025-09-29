@@ -103,14 +103,21 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar {
   box-sizing: border-box;
   width: 40rem;
-  background-color: var(--dark-slate-blue);
-  color: var(--light-lavender);
   display: flex;
   flex-direction: column;
   height: 100%;
   top: 0;
   left: 0;
-  border-right: 0.1rem solid var(--border-gunmetal);
+}
+.sidebar-wrapper {
+  box-sizing: border-box;
+  background-color: var(--dark-slate-blue);
+  color: var(--light-lavender);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-header {
   box-sizing: border-box;
