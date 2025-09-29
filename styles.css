@@ -120,13 +120,28 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border-radius: 1rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
+.nav-social-media ul {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+.nav-social-media li a {
+  display: block;
+  padding: 1rem 2rem;
+  margin: 0;
+  color: var(--slate-gray);
+  font-size: 2rem;
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
 .sidebar {
   box-sizing: border-box;
   width: 45rem;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 2rem;
+  padding: 2rem 2rem 2rem 0;
   top: 0;
   left: 0;
 }
