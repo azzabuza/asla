@@ -87,7 +87,7 @@
                 <p id="activeVehiclesToday">0</p>
             </div>
         </div>
-        <div class="card" style="margin-top: 2rem;">
+        <div class="card" style="margin-top: 1rem;">
             <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
             <div class="card-body">
                 <div class="table-responsive">
@@ -104,7 +104,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="activity-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
+                <div id="activity-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
                     <button id="prevActivityBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
                     <span id="activityPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
                     <button id="nextActivityBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
@@ -153,7 +153,7 @@
                 </tbody>
               </table>
             </div>
-            <div id="pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
+            <div id="pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
               <button id="prevBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
               <span id="pageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
@@ -186,7 +186,7 @@
                 <tbody id="userList"><tr><td colspan="6">Memuat data...</td></tr></tbody>
               </table>
             </div>
-            <div id="user-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
+            <div id="user-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
                 <button id="prevUserBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
                 <span id="userPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
                 <button id="nextUserBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
@@ -219,7 +219,7 @@
                 </tbody>
               </table>
             </div>
-            <div id="route-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
+            <div id="route-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
               <button id="prevRouteBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
               <span id="routePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextRouteBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
@@ -253,7 +253,7 @@
                 </tbody>
               </table>
             </div>
-            <div id="vehicle-pagination-controls" style="display: none; margin-top: 2rem; text-align: center; gap: 2rem;">
+            <div id="vehicle-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
               <button id="prevVehicleBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
               <span id="vehiclePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextVehicleBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
@@ -342,7 +342,7 @@
                 <option value="vehicles">Laporan Kendaraan</option>
               </select>
             </div>
-            <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
                     <label for="startDate">Dari Tanggal</label>
                     <input type="date" id="startDate">
@@ -352,7 +352,7 @@
                     <input type="date" id="endDate">
                 </div>
             </div>
-            <div style="display: flex; gap: 2rem; margin-top: 2rem;">
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                 <button id="exportPdfBtn"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</button>
                 <button id="exportExcelBtn"><i class="fa-solid fa-file-excel"></i> Unduh Excel</button>
             </div>
@@ -393,14 +393,14 @@
         <section class="card">
           <h2 class="card-header">Pencadangan Data</h2>
           <div class="card-body">
-            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 2rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
+            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
             <button id="downloadBackupBtn"><i class="fas fa-download"></i> Unduh Semua Data (.json)</button>
           </div>
         </section>
         <section class="card">
           <h2 class="card-header" style="color: var(--red);">Pemulihan Data</h2>
           <div class="card-body">
-            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 2rem;">
+            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">
               <strong style="color: var(--orange);">PERINGATAN:</strong> Aksi ini akan <strong style="text-decoration: underline;">menimpa seluruh data</strong> yang ada di database dengan data dari file yang Anda unggah. Aksi ini tidak dapat dibatalkan. Lanjutkan hanya jika Anda benar-benar yakin.
             </p>
             <div class="form-group">
