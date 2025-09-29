@@ -166,7 +166,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   color: var(--slate-gray);
   font-size: 1.5rem;
   transition: all 0.2s ease-in-out;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   font-weight: 500;
 }
 .sidebar-menu li a:hover {
@@ -250,7 +250,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   padding: 2rem;
   color: var(--light-lavender);
   text-align: center;
@@ -281,7 +281,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .card {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   margin: 0 0 2rem 0;
   overflow: hidden;
   border: 0.1rem solid var(--border-gunmetal);
@@ -316,7 +316,7 @@ button, .button {
   color: var(--text-inverse-dark-blue-gray);
   padding: 1rem 2rem;
   margin: 0;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   font-size: 1.5rem;
   font-weight: 500;
   transition: all 0.3s ease;
