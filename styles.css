@@ -102,7 +102,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .social-media {
   box-sizing: border-box;
-  width: 20rem;
+  width: 12rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -113,7 +113,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .nav-social-media {
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
-  padding: 2rem;
+  padding: 1rem;
   margin: 0;
   color: var(--light-lavender);
   display: flex;
@@ -128,11 +128,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0;
 }
 .nav-social-media li a {
+  width: 4rem;
   display: block;
   padding: 1rem;
   margin: 0;
   color: var(--slate-gray);
-  font-size: 2rem;
+  font-size: 1.5rem;
   text-align: center;
   transition: all 0.2s ease-in-out;
   border-radius: 0.5rem;
