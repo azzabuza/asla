@@ -117,7 +117,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 1rem;
+  border-radius: 2rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-header {
@@ -205,7 +205,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   height: 100%;
   padding: 2rem;
   overflow-y: auto;
-  border-radius: 1rem;
+  border-radius: 2rem;
   border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
@@ -250,7 +250,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   background-color: var(--dark-slate-blue);
   border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   padding: 2rem;
   color: var(--light-lavender);
   text-align: center;
@@ -316,7 +316,7 @@ button, .button {
   color: var(--text-inverse-dark-blue-gray);
   padding: 1rem 2rem;
   margin: 0;
-  border-radius: 1.5rem;
+  border-radius: 0.5rem;
   font-size: 1.5rem;
   font-weight: 500;
   transition: all 0.3s ease;
