@@ -1265,7 +1265,7 @@ body {
 }
 
 .tips-card .card-body li i {
-    color: var(--cyan);
+    color: var(--green);
     font-size: 1.6rem;
     margin-top: 0.2rem;
 }
