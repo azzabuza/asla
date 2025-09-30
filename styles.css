@@ -212,6 +212,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: flex;
   padding: 0;
   margin: 0;
+  align-items: center;
   justify-content: space-between;
   border-bottom: 0.1rem solid var(--border-gunmetal);
 }
@@ -238,7 +239,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing:border-box;
   padding: 1rem;
   margin: 0;
-  align-items: center;
   border-left: 0.1rem solid var(--border-gunmetal);
 }
 .main-header-menu ul {
