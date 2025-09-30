@@ -415,6 +415,7 @@ label {
   padding: 0;
   margin: 0 0 1rem 0;
 }
+
 input, select {
   box-sizing: border-box;
   display: inline-block;
