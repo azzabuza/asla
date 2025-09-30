@@ -140,7 +140,7 @@
               </div>
               <div class="form-group">
                 <label>Cari Sopir / Rute</label>
-                <input type="text" id="searchTrip" />
+                <input type="text" id="searchTrip" placeholder="Ketikkan sesuatu..."/>
               </div>
             </div>
             <div class="table-responsive">
@@ -185,7 +185,7 @@
               </div>
               <div class="form-group">
                 <label>Cari Nama</label>
-                <input type="text" id="searchName" />
+                <input type="text" id="searchName" placeholder="Ketikkan nama..." />
               </div>
             </div>
             <div class="table-responsive">
@@ -210,7 +210,7 @@
             <div class="table-controls" style="grid-template-columns: 1fr;">
               <div class="form-group">
                 <label>Cari Kode / Alamat Rute</label>
-                <input type="text" id="searchRoute" />
+                <input type="text" id="searchRoute" placeholder="Ketikkan alamat..." />
               </div>
             </div>
             <div class="table-responsive">
@@ -243,7 +243,7 @@
             <div class="table-controls" style="grid-template-columns: 1fr;">
               <div class="form-group">
                 <label>Cari No. Kendaraan / Unit</label>
-                <input type="text" id="searchVehicle" />
+                <input type="text" id="searchVehicle" placeholder="Ketikkan kendaraan..." />
               </div>
             </div>
             <div class="table-responsive">
@@ -275,10 +275,25 @@
               <h2 class="card-header">Tambah Pengguna Baru</h2>
               <div class="card-body">
                   <form id="addUserForm">
-                      <div class="form-group"><label for="newUserName">Nama</label><input type="text" id="newUserName" autocomplete="off" required></div>
-                      <div class="form-group"><label for="newUserEmail">Email</label><input type="email" id="newUserEmail" autocomplete="off" required></div>
-                      <div class="form-group"><label for="newUserPassword">Password</label><input type="password" id="newUserPassword" autocomplete="new-password" required></div>
-                      <div class="form-group"><label for="newUserRole">Role</label><select id="newUserRole" required><option value="coordinator">Koordinator</option><option value="driver">Supir</option></select></div>
+                      <div class="form-group">
+                        <label for="newUserName">Nama</label>
+                        <input type="text" id="newUserName" placeholder="Ketikkan nama..." autocomplete="off" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserEmail">Email</label>
+                        <input type="email" id="newUserEmail" placeholder="Ketikkan email..." autocomplete="off" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserPassword">Password</label>
+                        <input type="password" id="newUserPassword" placeholder="Ketikkan password..." autocomplete="new-password" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserRole">Role</label>
+                        <select id="newUserRole" required>
+                          <option value="coordinator">Koordinator</option>
+                          <option value="driver">Supir</option>
+                        </select>
+                      </div>
                       <button type="submit"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
                   </form>
                   <p id="addUserStatus" class="form-status"></p>
@@ -292,11 +307,11 @@
               <form id="addRouteForm">
                 <div class="form-group">
                   <label for="routeCode">Kode Rute</label>
-                  <input type="text" id="routeCode" required>
+                  <input type="text" id="routeCode" placeholder="Ketikkan kode..." required>
                 </div>
                 <div class="form-group">
                   <label for="routeAddress">Alamat/Lokasi</label>
-                  <input type="text" id="routeAddress" required>
+                  <input type="text" id="routeAddress" placeholder="Ketikkan alamat..." required>
                 </div>
                 <button type="submit"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</button>
               </form>
@@ -311,11 +326,11 @@
               <form id="addVehicleForm">
                 <div class="form-group">
                   <label for="vehicleNumberInput">No. Kendaraan</label>
-                  <input type="text" id="vehicleNumberInput" required>
+                  <input type="text" id="vehicleNumberInput" placeholder="Ketikkan nomor polisi..." required>
                 </div>
                 <div class="form-group">
                   <label for="vehicleUnit">Unit</label>
-                  <input type="text" id="vehicleUnit" required>
+                  <input type="text" id="vehicleUnit" placeholder="Ketikkan kendaraan..." required>
                 </div>
                 <div class="form-group">
                   <label for="vehicleOwnership">Kepemilikan</label>
