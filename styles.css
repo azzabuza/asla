@@ -238,6 +238,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing:border-box;
   padding: 1rem;
   margin: 0;
+  align-items: center;
   border-left: 0.1rem solid var(--border-gunmetal);
 }
 .main-header-menu ul {
@@ -246,7 +247,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0;
   display: flex;
   gap: 1rem;
-  align-items: center;
 }
 .main-header-menu li a {
   background: var(--bg-btn-gradient);
