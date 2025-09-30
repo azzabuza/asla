@@ -463,6 +463,10 @@ input, select {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   appearance: none;
 }
+input::placeholder {
+  color: var(--gray);
+  font-style: italic;
+}
 input:focus, select:focus {
   border-color: var(--border-orange);
 }
