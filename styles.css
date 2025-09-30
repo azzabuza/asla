@@ -244,7 +244,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .main-header-menu ul {
   box-sizing: border-box;
   padding: 0;
-  margin: 0;
+  margin: auto 0;
   display: flex;
 }
 .main-header-menu li a {
