@@ -253,7 +253,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   display: block;
   padding: 1rem 2rem;
   margin: 0;
-  color: var(--slate-gray);
+  color: var(--text-inverse-dark-blue-gray);
   font-size: 1.5rem;
   transition: all 0.2s ease-in-out;
   border-radius: 0.5rem;
