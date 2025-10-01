@@ -396,6 +396,7 @@ button, .button {
 .btn-sm {
   box-sizing: border-box;
   font-size: 1rem;
+  font-weight: 500;
   width: auto;
   padding: 0.5rem 1rem;
   margin: 0;
