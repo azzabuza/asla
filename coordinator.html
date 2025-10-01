@@ -375,6 +375,7 @@
     let allVehicles = [];
     let allUsers = {};
     let allRoutesOptions = '';
+    let routeAddressToCodeMap = {};
     let notifications = [];
     let qrcodeGenerator = null;
     let currentTripIdForBarcode = null;
@@ -558,11 +559,13 @@
       try {
         const snapshot = await get(ref(db, 'routes'));
         let optionsHTML = '<option value="">-- Pilih Rute --</option>';
+        routeAddressToCodeMap = {}; 
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
             const optionText = `${route.code} - ${route.address}`;
             optionsHTML += `<option value="${route.address}">${optionText}</option>`;
+            routeAddressToCodeMap[route.address] = route.code;
           });
         }
         allRoutesOptions = optionsHTML;
@@ -832,8 +835,14 @@
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
           
-          const tujuanDisplay = Array.isArray(tripData.tujuan) ? tripData.tujuan.join(', ') : tripData.tujuan;
-          const ruteDisplay = `${tripData.asal} → ${tujuanDisplay}`;
+          const asalCode = routeAddressToCodeMap[tripData.asal] || tripData.asal;
+          let tujuanCodes;
+          if (Array.isArray(tripData.tujuan)) {
+              tujuanCodes = tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ');
+          } else {
+              tujuanCodes = routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan;
+          }
+          const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
 
           tr.innerHTML = `
             <td data-label="Trip ID">${tripId}</td>
