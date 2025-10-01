@@ -647,7 +647,6 @@
         await update(userRef, { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
-        // Ensure routes are loaded first, then the rest
         await loadRoutes();
         loadInitialData();
 
@@ -669,7 +668,7 @@
                 displayRoutes(1);
                 loadDashboardStats();
                 resolve();
-            }, { onlyOnce: true }); // Use onlyOnce to ensure it resolves after first load
+            }, { onlyOnce: true });
         });
     }
 
@@ -687,7 +686,7 @@
               snapshot.forEach(child => { allTrips.push({ id: child.key, data: child.val() }); });
             }
             allTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
-            displayTrips(1); // Now this will have routeCodeMap ready
+            displayTrips(1);
             loadDashboardStats();
             loadRoleStats(); 
         });
@@ -727,8 +726,17 @@
                     case 'rejected': actionText = "dibatalkan perjalanannya"; break;
                     case 'arrived': actionText = "menyelesaikan rute"; break;
                 }
-                const tujuanDisplay = Array.isArray(trip.tujuan) ? trip.tujuan[0] : trip.tujuan;
-                const description = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${trip.asal} → ${tujuanDisplay}</strong>`;
+                
+                const asalCode = routeCodeMap[trip.asal] || trip.asal;
+                let tujuanCodes;
+                if (Array.isArray(trip.tujuan)) {
+                    tujuanCodes = trip.tujuan.map(t => routeCodeMap[t] || t).join(', ');
+                } else {
+                    tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
+                }
+                const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
+                
+                const description = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${ruteDisplay}</strong>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
