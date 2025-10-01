@@ -201,6 +201,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   top: 0;
   left: 0;
   padding: 1rem 1rem 1rem 0;
+  min-width: 0; /* <<< FIX: Added to allow flex item to shrink */
 }
 .main-wrapper {
   box-sizing: border-box;
@@ -1376,6 +1377,6 @@ body {
     grid-template-columns: 1fr;
   }
   .dashboard-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
