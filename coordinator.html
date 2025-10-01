@@ -766,7 +766,7 @@
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
           tr.innerHTML = `
-            <td data-label="Trip ID"><code>${tripId}</code></td>
+            <td data-label="Trip ID">${tripId}</td>
             <td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td>
             <td data-label="Driver">${tripData.driverName||'-'}</td>
             <td data-label="No. Kendaraan">${tripData.vehicleNumber}</td>
