@@ -303,14 +303,6 @@
                         <input type="password" id="newUserPassword" placeholder="Ketikkan password..." autocomplete="new-password" required>
                       </div>
                       <div class="form-group">
-                        <label for="newUserRole">Role</label>
-                        <select id="newUserRole" required>
-                          <option value="">-- Pilih Role --</option>
-                          <option value="coordinator">Koordinator</option>
-                          <option value="driver">Supir</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
                         <label for="newUserNik">Nomor Identitas (NIK)</label>
                         <input type="number" id="newUserNik" placeholder="Ketikkan NIK..." autocomplete="off" required>
                       </div>
@@ -329,6 +321,14 @@
                           <option value="Tetap">Tetap</option>
                           <option value="Kontrak">Kontrak</option>
                           <option value="Freelance">Freelance</option>
+                        </select>
+                      </div>
+                    <div class="form-group">
+                        <label for="newUserRole">Role</label>
+                        <select id="newUserRole" required>
+                          <option value="">-- Pilih Role --</option>
+                          <option value="coordinator">Koordinator</option>
+                          <option value="driver">Supir</option>
                         </select>
                       </div>
                       <button type="submit"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
