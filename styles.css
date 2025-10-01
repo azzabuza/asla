@@ -480,7 +480,7 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 input::placeholder {
-  color: var(--cyan);
+  color: var(--gray);
   font-style: italic;
 }
 input:focus, select:focus {
