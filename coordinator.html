@@ -168,10 +168,16 @@
                     </select>
                   </div>
                   <div class="form-group">
-                    <label for="tujuan">Tujuan</label>
-                    <select id="tujuan" required>
-                      <option value="">Memuat rute...</option>
-                    </select>
+                    <label>Tujuan</label>
+                    <div id="tujuanContainer">
+                      <div class="tujuan-group" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                        <select class="tujuan-select" required>
+                          <option value="">Memuat rute...</option>
+                        </select>
+                        <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;">Hapus</button>
+                      </div>
+                    </div>
+                    <button type="button" id="addTujuanBtn" class="btn-sm success" style="width: auto; margin-top: 0.5rem;"><i class="fas fa-plus"></i> Tambah Tujuan</button>
                   </div>
                   <div class="form-group">
                     <label for="muatan">Muatan</label>
@@ -323,7 +329,8 @@
       driverSelect: document.getElementById('driverSelect'),
       vehicleNumberSelect: document.getElementById('vehicleNumberSelect'),
       asalSelect: document.getElementById('asal'),
-      tujuanSelect: document.getElementById('tujuan'),
+      tujuanContainer: document.getElementById('tujuanContainer'),
+      addTujuanBtn: document.getElementById('addTujuanBtn'),
       logoutBtn: document.getElementById('logoutBtn'),
       statusMsg: document.getElementById('statusMsg'),
       filterMyTripStatus: document.getElementById('filterMyTripStatus'),
@@ -367,6 +374,7 @@
     let allDrivers = [];
     let allVehicles = [];
     let allUsers = {};
+    let allRoutesOptions = '';
     let notifications = [];
     let qrcodeGenerator = null;
     let currentTripIdForBarcode = null;
@@ -429,12 +437,24 @@
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
       
       loadAllUsers(); 
+      await loadRoutes();
       loadMyTrips();
       loadDrivers(); 
-      loadRoutes();
       loadVehicles();
       setupEventListeners();
     });
+    
+    function updateTujuanButtons() {
+        const tujuanGroups = elements.tujuanContainer.querySelectorAll('.tujuan-group');
+        tujuanGroups.forEach((group, index) => {
+            const removeBtn = group.querySelector('.remove-tujuan-btn');
+            if (tujuanGroups.length > 1) {
+                removeBtn.style.display = 'inline-block';
+            } else {
+                removeBtn.style.display = 'none';
+            }
+        });
+    }
 
     function setupEventListeners() {
         elements.filterMyTripStatus.onchange = () => displayMyTrips(1);
@@ -443,6 +463,33 @@
         elements.exportPdfBtn.onclick = () => handleExport('pdf');
         elements.exportExcelBtn.onclick = () => handleExport('excel');
         
+        elements.addTujuanBtn.addEventListener('click', () => {
+            const newTujuanGroup = document.createElement('div');
+            newTujuanGroup.className = 'tujuan-group';
+            newTujuanGroup.style.cssText = 'display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;';
+            
+            const newSelect = document.createElement('select');
+            newSelect.className = 'tujuan-select';
+            newSelect.required = true;
+            newSelect.innerHTML = allRoutesOptions;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-sm danger remove-tujuan-btn';
+            removeBtn.innerHTML = 'Hapus';
+
+            newTujuanGroup.append(newSelect, removeBtn);
+            elements.tujuanContainer.appendChild(newTujuanGroup);
+            updateTujuanButtons();
+        });
+
+        elements.tujuanContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-tujuan-btn')) {
+                e.target.closest('.tujuan-group').remove();
+                updateTujuanButtons();
+            }
+        });
+
         elements.closeModal.onclick = () => elements.mapModal.style.display = 'none';
         elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
 
@@ -510,19 +557,18 @@
     async function loadRoutes() {
       try {
         const snapshot = await get(ref(db, 'routes'));
-        elements.asalSelect.innerHTML = '<option value="">-- Pilih Asal --</option>';
-        elements.tujuanSelect.innerHTML = '<option value="">-- Pilih Tujuan --</option>';
+        let optionsHTML = '<option value="">-- Pilih Rute --</option>';
         if (snapshot.exists()) {
           snapshot.forEach(child => {
             const route = child.val();
             const optionText = `${route.code} - ${route.address}`;
-            const optionValue = route.address;
-            const optionAsal = el('option', optionText, { value: optionValue });
-            const optionTujuan = el('option', optionText, { value: optionValue });
-            elements.asalSelect.appendChild(optionAsal);
-            elements.tujuanSelect.appendChild(optionTujuan);
+            optionsHTML += `<option value="${route.address}">${optionText}</option>`;
           });
         }
+        allRoutesOptions = optionsHTML;
+        elements.asalSelect.innerHTML = allRoutesOptions;
+        elements.tujuanContainer.querySelector('.tujuan-select').innerHTML = allRoutesOptions;
+
       } catch (error) { console.error("Gagal memuat rute:", error); }
     }
 
@@ -586,6 +632,15 @@
           elements.statusMsg.textContent = '';
           return;
       }
+      
+      const tujuanElements = elements.tujuanContainer.querySelectorAll('.tujuan-select');
+      const tujuanValues = Array.from(tujuanElements).map(select => select.value).filter(value => value);
+
+      if (tujuanValues.length === 0) {
+          alert('Harap tambahkan setidaknya satu tujuan.');
+          elements.statusMsg.textContent = '';
+          return;
+      }
 
       const data = {
         coorId: currentUser.uid, 
@@ -593,7 +648,7 @@
         driverName,
         vehicleNumber: vehicleNumber,
         asal: document.getElementById('asal').value,
-        tujuan: document.getElementById('tujuan').value,
+        tujuan: tujuanValues,
         muatan: document.getElementById('muatan').value,
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', 
@@ -615,6 +670,15 @@
         const newTripRef = ref(db, 'trips/' + newTripId);
         await set(newTripRef, data);
         elements.tripForm.reset();
+        elements.tujuanContainer.innerHTML = `
+          <div class="tujuan-group" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+            <select class="tujuan-select" required>
+              ${allRoutesOptions}
+            </select>
+            <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;">Hapus</button>
+          </div>`;
+        updateTujuanButtons();
+        
         elements.statusMsg.textContent = '✔️ Data berhasil dikirim.';
         setTimeout(() => {
             elements.statusMsg.textContent = '';
@@ -638,7 +702,8 @@
         } else {
             paginatedActivities.forEach(({data: trip}) => {
                 const tr = el('tr');
-                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${trip.tujuan}</strong>`;
+                const tujuanDisplay = Array.isArray(trip.tujuan) ? trip.tujuan[0] : trip.tujuan;
+                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${tujuanDisplay}</strong>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
@@ -709,11 +774,12 @@
       const statusFilter = elements.filterMyTripStatus.value;
       const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
           const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+          const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : trip.tujuan;
           const searchMatch = !searchTerm ||
               (id || '').toLowerCase().includes(searchTerm) ||
               (trip.driverName || '').toLowerCase().includes(searchTerm) ||
               (trip.asal || '').toLowerCase().includes(searchTerm) ||
-              (trip.tujuan || '').toLowerCase().includes(searchTerm) ||
+              (tujuanText || '').toLowerCase().includes(searchTerm) ||
               (trip.vehicleNumber || '').toLowerCase().includes(searchTerm);
           return statusMatch && searchMatch;
       });
@@ -765,9 +831,13 @@
           actionsCell.appendChild(actionsContainer);
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
+          
+          const tujuanDisplay = Array.isArray(tripData.tujuan) ? tripData.tujuan.join(', ') : tripData.tujuan;
+          const ruteDisplay = `${tripData.asal} → ${tujuanDisplay}`;
+
           tr.innerHTML = `
             <td data-label="Trip ID">${tripId}</td>
-            <td data-label="Rute">${tripData.asal} → ${tripData.tujuan}</td>
+            <td data-label="Rute">${ruteDisplay}</td>
             <td data-label="Driver">${tripData.driverName||'-'}</td>
             <td data-label="No. Kendaraan">${tripData.vehicleNumber}</td>
             <td data-label="Tanggal">${fmtDate(tripData.tanggal)}</td>
@@ -788,7 +858,8 @@
         const statusFilter = elements.filterMyTripStatus.value;
         const filteredTrips = allMyTrips.filter(({id, data: trip}) => {
             const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
-            const searchMatch = !searchTerm || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || (trip.tujuan || '').toLowerCase().includes(searchTerm) || (trip.vehicleNumber || '').toLowerCase().includes(searchTerm);
+            const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : trip.tujuan;
+            const searchMatch = !searchTerm || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || (tujuanText || '').toLowerCase().includes(searchTerm) || (trip.vehicleNumber || '').toLowerCase().includes(searchTerm);
             return statusMatch && searchMatch;
         });
         const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
@@ -944,11 +1015,14 @@
           title = 'Laporan Perjalanan Saya';
           filename = 'laporan_perjalanan_saya';
           headers = ["Trip ID", "Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
-          data = allMyTrips.map(({id, data: t}) => ({
-              'Trip ID': id, 'Rute': `${t.asal} → ${t.tujuan}`, 'Supir': t.driverName,
-              'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
-              'Tanggal': t.tanggal, 'Status': t.status
-          }));
+          data = allMyTrips.map(({id, data: t}) => {
+              const tujuanDisplay = Array.isArray(t.tujuan) ? t.tujuan.join(', ') : t.tujuan;
+              return {
+                  'Trip ID': id, 'Rute': `${t.asal} → ${tujuanDisplay}`, 'Supir': t.driverName,
+                  'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
+                  'Tanggal': t.tanggal, 'Status': t.status
+              }
+          });
       } else { 
           title = 'Laporan Kinerja Supir';
           filename = 'laporan_kinerja_supir';
