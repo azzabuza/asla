@@ -162,7 +162,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .card:last-child {
-  border: none;
+  border-bottom: none;
 }
 .sidebar-menu li a {
   display: block;
