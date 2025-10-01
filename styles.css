@@ -514,7 +514,11 @@ option {
   overflow-x: auto;
   overflow-y: auto;
 }
-table { width: 100%; border-collapse: collapse;}
+table {
+  width: 100%;
+  min-width: 50rem;
+  border-collapse: collapse;
+}
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
 th {
   background-color: var(--gunmetal);
