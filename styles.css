@@ -601,7 +601,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 .login-container {
   box-sizing: border-box;
-  width: 45rem;
+  width: 35rem;
   margin: 0;
   padding: 1rem;
   background-color: var(--dark-slate-blue);
