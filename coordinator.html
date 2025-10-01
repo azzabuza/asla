@@ -808,7 +808,7 @@
         paginatedTrips.forEach(({id: tripId, data: tripData}) => {
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content:flex-start; gap: 0.5rem;' });
+          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'display:flex; justify-content:flex-start; gap: 1rem;' });
           
           const barcodeButton = el('button', '<i class="fas fa-qrcode"></i>', { class: 'btn-sm' });
           barcodeButton.onclick = () => {
