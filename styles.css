@@ -577,6 +577,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--text-inverse-dark-blue-gray);
+  text-transform: uppercase;
 }
 .badge.success { color: var(--green); }
 .badge.warn { color: var(--dark-orange); }
