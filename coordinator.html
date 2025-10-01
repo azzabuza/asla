@@ -716,7 +716,7 @@
                 }
                 const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
                 
-                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${ruteDisplay}</strong>`;
+                const description = `Perjalanan untuk <span style="color: var(--cyan);">${trip.driverName || 'N/A'}</span> ke <span style="color: var(--green);">${ruteDisplay}</span>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
