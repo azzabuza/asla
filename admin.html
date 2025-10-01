@@ -671,7 +671,8 @@
                     case 'rejected': actionText = "dibatalkan perjalanannya"; break;
                     case 'arrived': actionText = "menyelesaikan rute"; break;
                 }
-                const description = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${trip.asal} → ${trip.tujuan}</strong>`;
+                const tujuanDisplay = Array.isArray(trip.tujuan) ? trip.tujuan[0] : trip.tujuan;
+                const description = `<strong>${trip.driverName || 'N/A'}</strong> ${actionText} <strong>${trip.asal} → ${tujuanDisplay}</strong>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
@@ -741,11 +742,12 @@
       const filteredTrips = allTrips.filter(tripEntry => {
           const trip = tripEntry.data;
           const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
+          const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
           const searchMatch = !searchTerm ||
               (tripEntry.id || '').toLowerCase().includes(searchTerm) ||
               (trip.driverName || '').toLowerCase().includes(searchTerm) ||
               (trip.asal || '').toLowerCase().includes(searchTerm) ||
-              (trip.tujuan || '').toLowerCase().includes(searchTerm);
+              tujuanText.toLowerCase().includes(searchTerm);
           return statusMatch && searchMatch;
       });
       const start = (currentPage - 1) * rowsPerPage;
@@ -763,7 +765,17 @@
             const tripId = tripEntry.id;
             const trip = tripEntry.data;
             const tr = el('tr');
-            const tripInfo = `${trip.asal} → ${trip.tujuan}`;
+
+            const asalCode = routeCodeMap[trip.asal] || trip.asal;
+            let tujuanCodes;
+            if (Array.isArray(trip.tujuan)) {
+                tujuanCodes = trip.tujuan.map(t => routeCodeMap[t] || t).join(', ');
+            } else {
+                tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
+            }
+            const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
+            const tripInfoForDelete = `${asalCode} → ${tujuanCodes}`;
+            
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions' });
             actionsContainer.style.justifyContent = 'flex-start';
@@ -775,7 +787,7 @@
                 actionsContainer.append(approveBtn, rejectBtn);
             }
             if (currentUserData && currentUserData.role === 'super admin') {
-                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfo });
+                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfoForDelete });
                 actionsContainer.appendChild(deleteBtn);
             }
             actionsCell.appendChild(actionsContainer);
@@ -783,7 +795,7 @@
             statusCell.appendChild(badge(trip.status));
             tr.innerHTML = `
                 <td data-label="Trip ID">${tripId}</td>
-                <td data-label="Rute">${tripInfo}</td>
+                <td data-label="Rute">${ruteDisplay}</td>
                 <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
                 <td data-label="No. Kendaraan">${trip.vehicleNumber || 'N/A'}</td>
                 <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
@@ -806,7 +818,8 @@
         const filteredTrips = allTrips.filter(tripEntry => {
             const trip = tripEntry.data;
             const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
-            const searchMatch = !searchTerm || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || (trip.tujuan || '').toLowerCase().includes(searchTerm);
+            const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
+            const searchMatch = !searchTerm || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
             return statusMatch && searchMatch;
         });
         const totalPages = Math.ceil(filteredTrips.length / rowsPerPage); 
@@ -1096,7 +1109,15 @@
         allTrips.forEach(tripEntry => { 
             const t = tripEntry.data;
             const tripId = tripEntry.id;
-            const tripInfo = `${t.asal} ke ${t.tujuan}`; 
+
+            const asalCode = routeCodeMap[t.asal] || t.asal;
+            let tujuanCodes;
+            if (Array.isArray(t.tujuan)) {
+                tujuanCodes = t.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ');
+            } else {
+                tujuanCodes = routeCodeMap[t.tujuan] || t.tujuan;
+            }
+            const tripInfo = `${asalCode} ke ${tujuanCodes}`; 
             if (t.approvedBy && t.approvedAt) { 
                 const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus'; 
                 activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${coorName}`, tripId: tripId }); 
@@ -1226,14 +1247,14 @@
               return tripDate >= startDate && tripDate <= endDate;
           });
           dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${t.data.asal} → ${t.data.tujuan}`, 'Sopir': t.data.driverName || 'N/A',
+            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal} → ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Sopir': t.data.driverName || 'N/A',
             'No. Kendaraan': t.data.vehicleNumber || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
           bodyForPDF = filteredTrips.map(t => {
             const asalCode = routeCodeMap[t.data.asal] || 'N/A';
-            const tujuanCode = routeCodeMap[t.data.tujuan] || 'N/A';
-            return [`${asalCode}-${tujuanCode}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
+            const tujuanCodes = Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || 'N/A');
+            return [`${asalCode} → ${tujuanCodes}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
           });
           headers = ["Rute", "Sopir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
           filename = 'Laporan_Perjalanan';
