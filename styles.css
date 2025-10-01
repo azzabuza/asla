@@ -135,7 +135,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   padding: 1rem;
   text-align: center;
-  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-account p {
   color: var(--light-lavender);
@@ -157,10 +156,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   padding: 1rem;
   margin: 0;
-  border-bottom: 0.1rem solid var(--border-gunmetal);
-}
-.card:last-child {
-  border-bottom: none;
 }
 .sidebar-menu li a {
   display: block;
@@ -184,7 +179,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing:border-box;
   padding: 1rem;
   margin:0;
-  border-top: 0.1rem solid var(--border-gunmetal);
 }
 .sidebar-footer p {
   color: var(--light-lavender);
@@ -201,7 +195,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   top: 0;
   left: 0;
   padding: 1rem 1rem 1rem 0;
-  min-width: 0; /* <<< FIX: Added to allow flex item to shrink */
+  min-width: 0;
 }
 .main-wrapper {
   box-sizing: border-box;
@@ -210,7 +204,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   flex-direction: column;
   height: 100%;
   border-radius: 0.5rem 2rem 2rem 0.5rem;
-  border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
   box-sizing: border-box;
@@ -219,7 +212,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin: 0;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .main-header-content {
   box-sizing: border-box;
@@ -267,7 +259,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing:border-box;
   padding: 1rem;
   margin: 0;
-  border-top: 0.1rem solid var(--border-gunmetal);
 }
 .main-footer p {
   color: var(--slate-gray);
@@ -291,7 +282,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 1rem;
-  border: 0.1rem solid var(--border-gunmetal);
 }
 
 /* === DASHBOARD === */
@@ -304,7 +294,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .stat-card {
   box-sizing: border-box;
   background-color: var(--dark-blue-gray);
-  border: 0.1rem solid var(--border-gunmetal);
   border-radius: 1rem;
   padding: 1rem;
   color: var(--light-lavender);
@@ -340,7 +329,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border-radius: 1rem;
   margin: 0 0 1rem 0;
   overflow: hidden;
-  border: 0.1rem solid var(--border-gunmetal);
 }
 .card:last-child {
   margin: 0;
@@ -350,7 +338,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-size: 1.8rem;
   padding: 1rem;
   margin: 0;
-  border-bottom: 0.1rem solid var(--border-gunmetal);
   font-weight: 500;
 }
 .card-body {
@@ -468,7 +455,7 @@ input, select {
   width: 100%;
   outline: none;
   border-radius: 0.5rem;
-  border: 0.1rem solid var(--border-gunmetal);
+  border: none;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   appearance: none;
 }
@@ -510,7 +497,6 @@ option {
 .form-status { display: none; margin-top: 1rem; color: var(--slate-gray); font-weight: 500; text-align: center; }
 .table-responsive {
   box-sizing: border-box;
-  border: 0.1rem solid var(--border-gunmetal);
   border-radius: 0.5rem;
   overflow-x: auto;
 }
@@ -526,20 +512,17 @@ th {
   text-transform: uppercase;
   font-size: 1.5rem;
   color: var(--slate-gray);
-  border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 td {
   background-color: var(--dark-slate-blue);
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--slate-gray);
-  border-top: 0.1rem solid var(--border-gunmetal);
 }
 td:last-child {
   border: none;
 }
-tbody tr { border-bottom: 0.1rem solid var(--border-gunmetal); }
-tbody tr:last-child { border-bottom: none; }
+tbody tr { border: none; }
 tbody tr:hover { background-color: var(--gunmetal); }
 .table-controls {
   box-sizing: border-box;
@@ -609,7 +592,6 @@ tbody tr:hover { background-color: var(--gunmetal); }
   padding: 1rem;
   background-color: var(--dark-slate-blue);
   border-radius: 1rem;
-  border: 0.1rem solid var(--border-gunmetal);
 }
 .login-container h2 {
   text-align: center;
@@ -940,7 +922,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .cta-section .button-secondary:hover { transform: translateY(-0.3rem); opacity: 0.9; }
 
 /* Footer */
-.footer { box-sizing: border-box; padding: 4rem 0 2rem 0; text-align: center; border-top: 0.1rem solid var(--border-gunmetal); }
+.footer { box-sizing: border-box; padding: 4rem 0 2rem 0; text-align: center;}
 .footer p { color: var(--slate-gray); }
 
 /* === SWITCH CONTROL === */
