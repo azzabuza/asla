@@ -190,8 +190,23 @@
             </div>
             <div class="table-responsive">
               <table>
-                <thead><tr><th>UID</th><th>Nama</th><th>Role</th><th>Login Terakhir</th><th>Status</th><th>Aksi</th></tr></thead>
-                <tbody id="userList"><tr><td colspan="6">Memuat data...</td></tr></tbody>
+                <thead>
+                  <tr>
+                    <th>Nama</th>
+                    <th>Role</th>
+                    <th>NIK</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Status Karyawan</th>
+                    <th>Login Terakhir</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="userList">
+                  <tr>
+                    <td colspan="8">Memuat data...</td>
+                  </tr>
+                </tbody>
               </table>
             </div>
             <div id="user-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
@@ -292,6 +307,25 @@
                         <select id="newUserRole" required>
                           <option value="coordinator">Koordinator</option>
                           <option value="driver">Supir</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserNik">Nomor Identitas (NIK)</label>
+                        <input type="text" id="newUserNik" placeholder="Ketikkan NIK..." autocomplete="off" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserGender">Jenis Kelamin</label>
+                        <select id="newUserGender" required>
+                          <option value="Laki-laki">Laki-laki</option>
+                          <option value="Perempuan">Perempuan</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="newUserStatus">Status Karyawan</label>
+                        <select id="newUserStatus" required>
+                          <option value="Tetap">Tetap</option>
+                          <option value="Kontrak">Kontrak</option>
+                          <option value="Freelance">Freelance</option>
                         </select>
                       </div>
                       <button type="submit"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
@@ -794,7 +828,7 @@
       }
       elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedUsers.length === 0) {
-        elements.userList.innerHTML = '<tr><td colspan="6">Tidak ada user ditemukan.</td></tr>';
+        elements.userList.innerHTML = '<tr><td colspan="8">Tidak ada user ditemukan.</td></tr>';
       } else {
         paginatedUsers.forEach(([uid, u]) => {
           const tr = el('tr');
@@ -810,7 +844,16 @@
               deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
           }
           const roleClass = (u.role || '').replace(' ', '-');
-          tr.innerHTML = `<td data-label="UID">${uid}</td><td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td><td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td><td data-label="Aksi">${deleteButton}</td>`;
+          tr.innerHTML = `
+              <td data-label="Nama">${u.name || '-'}</td>
+              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
+              <td data-label="NIK">${u.nik || '-'}</td>
+              <td data-label="Jenis Kelamin">${u.gender || '-'}</td>
+              <td data-label="Status Karyawan">${u.employeeStatus || '-'}</td>
+              <td data-label="Login Terakhir">${u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-'}</td>
+              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
+              <td data-label="Aksi">${deleteButton}</td>
+          `;
           elements.userList.appendChild(tr);
         });
       }
@@ -1001,7 +1044,43 @@
     });
 
     elements.addRouteForm.addEventListener('submit', async (e) => { e.preventDefault(); const code = document.getElementById('routeCode').value.toUpperCase(); const address = document.getElementById('routeAddress').value; elements.addRouteStatus.style.display = 'block'; elements.addRouteStatus.textContent = 'Menambahkan...'; try { await push(ref(db, 'routes'), { code, address }); elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.'; elements.addRouteForm.reset(); setTimeout(() => { elements.addRouteStatus.textContent = ''; elements.addRouteStatus.style.display = 'none'; }, 3000); } catch (error) { elements.addRouteStatus.textContent = 'Gagal: ' + error.message; } });
-    elements.addUserForm.addEventListener('submit', async (e) => { e.preventDefault(); elements.addUserStatus.style.display = 'block'; elements.addUserStatus.textContent = 'Menambahkan...'; const name = document.getElementById('newUserName').value; const email = document.getElementById('newUserEmail').value; const password = document.getElementById('newUserPassword').value; const role = document.getElementById('newUserRole').value; const tempAppName = 'temp-app-' + Date.now(); let tempApp; try { tempApp = initializeApp(firebaseConfig, tempAppName); const cred = await createUserWithEmailAndPassword(getAuth(tempApp), email, password); await set(ref(db, `users/${cred.user.uid}`), { name, role, online: false, lastLogin: null }); elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`; elements.addUserForm.reset(); setTimeout(() => { elements.addUserStatus.textContent = ''; elements.addUserStatus.style.display = 'none'; }, 3000); } catch (error) { elements.addUserStatus.textContent = 'Gagal: ' + error.message; } finally { if (tempApp) await deleteApp(tempApp); } });
+    elements.addUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        elements.addUserStatus.style.display = 'block';
+        elements.addUserStatus.textContent = 'Menambahkan...';
+        const name = document.getElementById('newUserName').value;
+        const email = document.getElementById('newUserEmail').value;
+        const password = document.getElementById('newUserPassword').value;
+        const role = document.getElementById('newUserRole').value;
+        const nik = document.getElementById('newUserNik').value;
+        const gender = document.getElementById('newUserGender').value;
+        const employeeStatus = document.getElementById('newUserStatus').value;
+        const tempAppName = 'temp-app-' + Date.now();
+        let tempApp;
+        try {
+            tempApp = initializeApp(firebaseConfig, tempAppName);
+            const cred = await createUserWithEmailAndPassword(getAuth(tempApp), email, password);
+            await set(ref(db, `users/${cred.user.uid}`), {
+                name,
+                role,
+                nik,
+                gender,
+                employeeStatus,
+                online: false,
+                lastLogin: null
+            });
+            elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
+            elements.addUserForm.reset();
+            setTimeout(() => {
+                elements.addUserStatus.textContent = '';
+                elements.addUserStatus.style.display = 'none';
+            }, 3000);
+        } catch (error) {
+            elements.addUserStatus.textContent = 'Gagal: ' + error.message;
+        } finally {
+            if (tempApp) await deleteApp(tempApp);
+        }
+    });
     elements.tripList.addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-trip')) { const { tripId, tripInfo } = e.target.dataset; if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) { try { await set(ref(db, `trips/${tripId}`), null); alert(`Perjalanan berhasil dihapus.`); } catch (error) { alert(`Gagal: ${error.message}`); } } } });
     
     function loadRoleStats() { 
