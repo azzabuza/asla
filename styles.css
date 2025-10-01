@@ -103,14 +103,12 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar {
   box-sizing: border-box;
-  flex: 1;
   display: flex;
   flex-shrink: 0;
   height: 100%;
   padding: 1rem;
   top: 0;
   left: 0;
-  min-width: 0;
 }
 .sidebar-wrapper {
   box-sizing: border-box;
