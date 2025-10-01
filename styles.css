@@ -317,6 +317,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   font-weight: 500;
 }
 .stat-card p {
+  color: var(--cyan);
   font-size: 3rem;
   font-weight: 700;
   margin: 0;
