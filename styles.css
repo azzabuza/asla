@@ -417,7 +417,7 @@ button, .button {
 .delete-user-btn, .btn-delete-trip {
   box-sizing: border-box;
   background: var(--red);
-  color: var(--light-lavender);
+  color: var(--text-inverse-dark-blue-gray);
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 0.5rem;
