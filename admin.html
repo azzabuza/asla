@@ -646,9 +646,65 @@
         }
         await update(userRef, { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-        loadAllData();
+        
+        // Ensure routes are loaded first, then the rest
+        await loadRoutes();
+        loadInitialData();
+
       } catch (e) { console.error("Error saat inisialisasi admin:", e); }
     });
+
+    async function loadRoutes() {
+        return new Promise((resolve) => {
+            onValue(ref(db, 'routes'), (snapshot) => {
+                allRoutes = [];
+                routeCodeMap = {};
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const routeData = { id: child.key, data: child.val() };
+                        allRoutes.push(routeData);
+                        routeCodeMap[routeData.data.address] = routeData.data.code;
+                    });
+                }
+                displayRoutes(1);
+                loadDashboardStats();
+                resolve();
+            }, { onlyOnce: true }); // Use onlyOnce to ensure it resolves after first load
+        });
+    }
+
+    function loadInitialData() {
+        onValue(ref(db, 'users'), (snapshot) => {
+            allUsers = snapshot.val() || {};
+            displayUsers(1);
+            displayLockdownUsers();
+            loadDashboardStats();
+            loadRoleStats(); 
+        });
+        onValue(ref(db, 'trips'), (snapshot) => {
+            allTrips = [];
+            if (snapshot.exists()) {
+              snapshot.forEach(child => { allTrips.push({ id: child.key, data: child.val() }); });
+            }
+            allTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
+            displayTrips(1); // Now this will have routeCodeMap ready
+            loadDashboardStats();
+            loadRoleStats(); 
+        });
+        onValue(ref(db, 'vehicles'), (snapshot) => {
+            allVehicles = [];
+            if (snapshot.exists()) { snapshot.forEach(child => { allVehicles.push({ id: child.key, data: child.val() }); }); }
+            displayVehicles(1);
+            loadDashboardStats();
+        });
+        
+        elements.filterRole.onchange = () => displayUsers(1);
+        elements.searchName.oninput = () => displayUsers(1);
+        elements.filterTripStatus.onchange = () => displayTrips(1);
+        elements.searchTrip.oninput = () => displayTrips(1);
+        elements.searchRoute.oninput = () => displayRoutes(1);
+        elements.searchVehicle.oninput = () => displayVehicles(1);
+    }
 
     function displayRecentActivity(page) {
         elements.recentActivityList.innerHTML = '';
@@ -882,52 +938,6 @@
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) { displayUsers(currentUserPage - 1); } });
     elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(Object.keys(allUsers).length / rowsPerPage); if (currentUserPage < totalPages) { displayUsers(currentUserPage + 1); } });
     
-    function loadAllData() {
-        onValue(ref(db, 'users'), (snapshot) => {
-            allUsers = snapshot.val() || {};
-            displayUsers(1);
-            displayLockdownUsers();
-            loadDashboardStats();
-            loadRoleStats(); 
-        });
-        onValue(ref(db, 'trips'), (snapshot) => {
-            allTrips = [];
-            if (snapshot.exists()) {
-              snapshot.forEach(child => { allTrips.push({ id: child.key, data: child.val() }); });
-            }
-            // Sort by createdAt timestamp in descending order (newest first)
-            allTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
-            displayTrips(1);
-            loadDashboardStats();
-            loadRoleStats(); 
-        });
-        onValue(ref(db, 'routes'), (snapshot) => {
-          allRoutes = [];
-          routeCodeMap = {};
-          if (snapshot.exists()) {
-            snapshot.forEach(child => {
-              const routeData = { id: child.key, data: child.val() };
-              allRoutes.push(routeData);
-              routeCodeMap[routeData.data.address] = routeData.data.code;
-            });
-          }
-          displayRoutes(1);
-          loadDashboardStats();
-        });
-        onValue(ref(db, 'vehicles'), (snapshot) => {
-            allVehicles = [];
-            if (snapshot.exists()) { snapshot.forEach(child => { allVehicles.push({ id: child.key, data: child.val() }); }); }
-            displayVehicles(1);
-            loadDashboardStats();
-        });
-        elements.filterRole.onchange = () => displayUsers(1);
-        elements.searchName.oninput = () => displayUsers(1);
-        elements.filterTripStatus.onchange = () => displayTrips(1);
-        elements.searchTrip.oninput = () => displayTrips(1);
-        elements.searchRoute.oninput = () => displayRoutes(1);
-        elements.searchVehicle.oninput = () => displayVehicles(1);
-    }
-
     elements.userList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-user-btn')) {
             const { uid, name } = e.target.dataset;
