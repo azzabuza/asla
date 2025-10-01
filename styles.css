@@ -571,28 +571,22 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .text-secondary { color: var(--slate-gray); }
 .status-online { color: var(--green); }
 .status-offline { color: var(--slate-gray); }
-.status-online i, .status-offline i { font-size: 1rem; vertical-align: middle; }
+.status-online i, .status-offline i { font-size: 1.5rem; vertical-align: middle; }
 .badge, .role-badge {
-  box-sizing: border-box;
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: capitalize;
+  font-size: 1.5rem;
+  font-weight: 500;
   color: var(--text-inverse-dark-blue-gray);
-  line-height: 1.5;
 }
-.badge.success { background-color: var(--green); }
-.badge.warn { background-color: var(--dark-orange); }
-.badge.danger { background: var(--red); }
-.badge.info { background-color: var(--blue); }
-.badge.inprogress { background-color: var(--light-purple); }
-.badge.super-admin { background-color: var(--purple); }
-.role-admin { background: var(--red); }
-.role-super-admin { background-color: var(--purple); }
-.role-coordinator { background-color: var(--green); }
-.role-driver { background-color: var(--blue); }
+.badge.success { color: var(--green); }
+.badge.warn { color: var(--dark-orange); }
+.badge.danger { color: var(--red); }
+.badge.info { color: var(--blue); }
+.badge.inprogress { color: var(--light-purple); }
+.badge.super-admin { color: var(--purple); }
+.role-admin { color: var(--red); }
+.role-super-admin { color: var(--purple); }
+.role-coordinator { color: var(--green); }
+.role-driver { color: var(--blue); }
 
 
 /* === HALAMAN LOGIN SEDERHANA === */
