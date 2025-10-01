@@ -1373,4 +1373,7 @@ body {
   .problem-solution-grid, .workflow-grid, .roles-grid, .advantages-grid, .testimonials-grid {
     grid-template-columns: 1fr;
   }
+  .dashboard-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
 }
