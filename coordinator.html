@@ -437,8 +437,8 @@
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
       
-      loadAllUsers(); 
       await loadRoutes();
+      loadAllUsers();
       loadMyTrips();
       loadDrivers(); 
       loadVehicles();
@@ -706,8 +706,17 @@
         } else {
             paginatedActivities.forEach(({data: trip}) => {
                 const tr = el('tr');
-                const tujuanDisplay = Array.isArray(trip.tujuan) ? trip.tujuan[0] : trip.tujuan;
-                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${tujuanDisplay}</strong>`;
+                
+                const asalCode = routeAddressToCodeMap[trip.asal] || trip.asal;
+                let tujuanCodes;
+                if (Array.isArray(trip.tujuan)) {
+                    tujuanCodes = trip.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ');
+                } else {
+                    tujuanCodes = routeAddressToCodeMap[trip.tujuan] || trip.tujuan;
+                }
+                const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
+                
+                const description = `Perjalanan untuk <strong>${trip.driverName || 'N/A'}</strong> ke <strong>${ruteDisplay}</strong>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
@@ -892,7 +901,7 @@
 
         checkForNotifications(previousTrips, new Map(allMyTrips.map(trip => [trip.id, trip.data])));
         
-        displayMyTrips(1); // Now this will have routeAddressToCodeMap ready
+        displayMyTrips(1);
         loadDriverPerformance();
         loadCoordinatorDashboardStats();
         displayAvailability();
