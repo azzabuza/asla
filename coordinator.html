@@ -556,24 +556,25 @@
     }
     
     async function loadRoutes() {
-      try {
-        const snapshot = await get(ref(db, 'routes'));
-        let optionsHTML = '<option value="">-- Pilih Rute --</option>';
-        routeAddressToCodeMap = {}; 
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            const route = child.val();
-            const optionText = `${route.code} - ${route.address}`;
-            optionsHTML += `<option value="${route.address}">${optionText}</option>`;
-            routeAddressToCodeMap[route.address] = route.code;
-          });
-        }
-        allRoutesOptions = optionsHTML;
-        elements.asalSelect.innerHTML = allRoutesOptions;
-        elements.tujuanContainer.querySelector('.tujuan-select').innerHTML = allRoutesOptions;
+        try {
+            const snapshot = await get(ref(db, 'routes'));
+            let optionsHTML = '<option value="">-- Pilih Rute --</option>';
+            routeAddressToCodeMap = {}; 
+            if (snapshot.exists()) {
+              snapshot.forEach(child => {
+                const route = child.val();
+                const optionText = `${route.code} - ${route.address}`;
+                optionsHTML += `<option value="${route.address}">${optionText}</option>`;
+                routeAddressToCodeMap[route.address] = route.code;
+              });
+            }
+            allRoutesOptions = optionsHTML;
+            elements.asalSelect.innerHTML = allRoutesOptions;
+            elements.tujuanContainer.querySelector('.tujuan-select').innerHTML = allRoutesOptions;
 
-      } catch (error) { console.error("Gagal memuat rute:", error); }
+        } catch (error) { console.error("Gagal memuat rute:", error); }
     }
+
 
     async function loadDrivers() {
         try {
@@ -887,12 +888,11 @@
             allMyTrips.push({ id: child.key, data: child.val() });
           });
         }
-        // Sort by createdAt timestamp in descending order (newest first)
         allMyTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
 
         checkForNotifications(previousTrips, new Map(allMyTrips.map(trip => [trip.id, trip.data])));
         
-        displayMyTrips(1);
+        displayMyTrips(1); // Now this will have routeAddressToCodeMap ready
         loadDriverPerformance();
         loadCoordinatorDashboardStats();
         displayAvailability();
