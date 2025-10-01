@@ -512,6 +512,7 @@ option {
   border: 0.1rem solid var(--border-gunmetal);
   border-radius: 0.5rem;
   overflow-x: auto;
+  overflow-y: auto;
 }
 table { width: 100%; border-collapse: collapse;}
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
