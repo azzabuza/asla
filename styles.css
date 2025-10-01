@@ -465,7 +465,7 @@ input, select {
   appearance: none;
 }
 input::placeholder {
-  color: var(--gray);
+  color: var(--cyan);
   font-style: italic;
 }
 input:focus, select:focus {
