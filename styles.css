@@ -214,7 +214,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border: 0.1rem solid var(--border-gunmetal);
 }
 .main-header {
-  box-sizing:border-box;
+  box-sizing: border-box;
   display: flex;
   padding: 0;
   margin: 0;
@@ -223,7 +223,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   border-bottom: 0.1rem solid var(--border-gunmetal);
 }
 .main-header-content {
-  box-sizing:border-box;
+  box-sizing: border-box;
   padding: 1rem;
   margin: 0;
 }
@@ -242,7 +242,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   margin:0;
 }
 .main-header-menu {
-  box-sizing:border-box;
+  box-sizing: border-box;
   padding: 1rem;
   margin: 0;
 }
@@ -431,6 +431,7 @@ button, .button {
   transform: scale(1.05);
 }
 .delete-user-btn:disabled {
+  box-sizing: border-box;
   background-color: var(--gray);
   color: var(--light-gray);
   cursor: not-allowed;
