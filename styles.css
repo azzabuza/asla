@@ -10,6 +10,7 @@
   --dark-blue-gray-80: rgba(18, 24, 40, 0.8);
   --gray: #555555;
   --white: #ffffff;
+  --lighter-dark-blue: #30384b;
 
   /* Background Gradient */
   --bg-gradient: linear-gradient(90deg, rgb(18, 24, 40, 0.9), rgb(18, 24, 40, 0.8));
@@ -480,7 +481,7 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 input::placeholder {
-  color: var(--gray);
+  color: var(--lighter-dark-blue);
   font-style: italic;
 }
 input:focus, select:focus {
