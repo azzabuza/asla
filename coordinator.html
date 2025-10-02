@@ -765,7 +765,7 @@
                 } else {
                     tujuanCodes = routeAddressToCodeMap[trip.tujuan] || trip.tujuan;
                 }
-                const ruteDisplay = `${asalCode} -> ${tujuanCodes}`;
+                const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
                 
                 const description = `Perj. untuk <span style="color: var(--cyan);">${trip.driverName || 'N/A'}</span> ke <span style="color: var(--green);">${ruteDisplay}</span>`;
                 const statusCell = el('td');
@@ -886,7 +886,7 @@
         doc.text(recipientAddress.split('\n'), 14, startY + 12);
         
         // AutoTable for items
-        const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} -> ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
+        const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
         const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
 
         doc.autoTable({
@@ -992,7 +992,7 @@
           } else {
               tujuanCodes = routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan;
           }
-          const ruteDisplay = `${asalCode} -> ${tujuanCodes}`;
+          const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
 
           tr.innerHTML = `
             <td data-label="Trip ID">${tripId}</td>
@@ -1177,7 +1177,7 @@
           data = allMyTrips.map(({id, data: t}) => {
               const tujuanDisplay = Array.isArray(t.tujuan) ? t.tujuan.join(', ') : t.tujuan;
               return {
-                  'Trip ID': id, 'Rute': `${t.asal} -> ${tujuanDisplay}`, 'Supir': t.driverName,
+                  'Trip ID': id, 'Rute': `${t.asal}, ${tujuanDisplay}`, 'Supir': t.driverName,
                   'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
                   'Tanggal': t.tanggal, 'Status': t.status
               }
