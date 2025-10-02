@@ -103,12 +103,13 @@
                         <thead>
                             <tr>
                                 <th>Deskripsi</th>
+                                <th>Uang Jalan</th>
                                 <th>Tanggal</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="recentActivityList">
-                            <tr><td colspan="3">Memuat aktivitas...</td></tr>
+                            <tr><td colspan="4">Memuat aktivitas...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -713,7 +714,7 @@
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
         elements.activityPaginationControls.style.display = allTrips.length >= 20 ? 'flex' : 'none';
         if (allTrips.length === 0) {
-            elements.recentActivityList.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+            elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
             paginatedActivities.forEach(tripEntry => {
                 const trip = tripEntry.data;
@@ -737,10 +738,11 @@
                 }
                 const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
                 
-                const description = `<span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ${actionText} <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span> dengan uang jalan <span style="color: var(--orange);">${idr(trip.uangJalan)}</span>`;
+                const description = `<span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ${actionText} <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
-                tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+                
+                tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Uang Jalan">${idr(trip.uangJalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
                 tr.appendChild(statusCell);
                 elements.recentActivityList.appendChild(tr);
             });
