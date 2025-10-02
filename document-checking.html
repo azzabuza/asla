@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Verifikasi Dokumen</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="padding: 2rem;">
+  <div class="container" style="max-width: 700px; margin: auto;">
+    <div class="card">
+      <div class="card-header" id="docHeader">
+        <i class="fas fa-spinner fa-spin"></i> Memuat Data...
+      </div>
+      <div class="card-body" id="content">
+        <p class="empty-state">Silakan tunggu, sistem sedang memverifikasi dokumen...</p>
+      </div>
+    </div>
+    <footer class="footer" style="padding-top: 2rem;">
+      <p>&copy; 2024 SLA Trucking. Sistem Verifikasi Dokumen Digital.</p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { db, ref, get } from './firebase.js';
+    import { qparam, fmtDate, idr, badge } from './utils.js';
+
+    const id = qparam('id');
+    const content = document.getElementById('content');
+    const docHeader = document.getElementById('docHeader');
+
+    (async () => {
+      if (!id) {
+          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> Verifikasi Gagal`;
+          return content.innerHTML = '<p class="empty-state">ID Dokumen tidak ditemukan di URL. Pastikan QR Code valid.</p>';
+      }
+      
+      const snap = await get(ref(db, 'trips/' + id));
+      if (!snap.exists()) {
+          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> Dokumen Tidak Ditemukan`;
+          return content.innerHTML = '<p class="empty-state">Data perjalanan untuk ID ini tidak ada di database. Dokumen mungkin tidak asli.</p>';
+      }
+      
+      const d = snap.val();
+      docHeader.innerHTML = `<i class="fas fa-check-circle" style="color: var(--green);"></i> Dokumen Terverifikasi`;
+      
+      const ruteDisplay = `${d.asal} → ${Array.isArray(d.tujuan) ? d.tujuan.join(', ') : d.tujuan}`;
+
+      content.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 2rem; color: var(--light-lavender);">Detail Perjalanan</h2>
+        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; font-size: 1.5rem;">
+          <strong style="color: var(--slate-gray);">Trip ID:</strong> <code style="color: var(--cyan);">${id}</code>
+          <strong style="color: var(--slate-gray);">Sopir:</strong> <span style="color: var(--light-lavender);">${d.driverName}</span>
+          <strong style="color: var(--slate-gray);">Kendaraan:</strong> <span style="color: var(--light-lavender);">${d.vehicleNumber}</span>
+          <strong style="color: var(--slate-gray);">Rute:</strong> <span style="color: var(--light-lavender);">${ruteDisplay}</span>
+          <strong style="color: var(--slate-gray);">Muatan:</strong> <span style="color: var(--light-lavender);">${d.muatan}</span>
+          <strong style="color: var(--slate-gray);">Uang Jalan:</strong> <span style="color: var(--light-lavender);">${idr(d.uangJalan)}</span>
+          <strong style="color: var(--slate-gray);">Tanggal:</strong> <span style="color: var(--light-lavender);">${fmtDate(d.tanggal)}</span>
+          <strong style="color: var(--slate-gray);">Status:</strong> <span id="status-badge"></span>
+        </div>
+      `;
+      document.getElementById('status-badge').appendChild(badge(d.status));
+    })();
+  </script>
+</body>
+</html>
