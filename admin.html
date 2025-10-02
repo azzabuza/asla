@@ -10,6 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -485,6 +486,22 @@
     
   </div>
 
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeInvoiceModal">&times;</span>
+      <h2>Cetak Invoice</h2>
+      <div class="form-group">
+        <label for="recipientName">Nama Penerima/Perusahaan</label>
+        <input type="text" id="recipientName" placeholder="Contoh: PT. Sejahtera Abadi">
+      </div>
+      <div class="form-group">
+        <label for="recipientAddress">Alamat Penerima</label>
+        <textarea id="recipientAddress" rows="3" placeholder="Contoh: Jl. Industri No. 45, Jakarta"></textarea>
+      </div>
+      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
+    </div>
+  </div>
+
   <script type="module">
     import { 
       auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp,
@@ -577,6 +594,11 @@
         restoreBackupBtn: document.getElementById('restoreBackupBtn'),
         restoreFileInput: document.getElementById('restoreFileInput'),
         restoreStatus: document.getElementById('restoreStatus'),
+        invoiceModal: document.getElementById('invoiceModal'),
+        closeInvoiceModal: document.getElementById('closeInvoiceModal'),
+        printInvoiceBtn: document.getElementById('printInvoiceBtn'),
+        recipientName: document.getElementById('recipientName'),
+        recipientAddress: document.getElementById('recipientAddress'),
     };
 
     let currentUser = null;
@@ -586,6 +608,7 @@
     let allRoutes = [];
     let allVehicles = [];
     let routeCodeMap = {};
+    let currentTripForInvoice = null;
     let currentPage = 1;
     let currentUserPage = 1;
     let currentRoutePage = 1;
@@ -606,6 +629,35 @@
                 elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
             });
+        });
+
+        elements.closeInvoiceModal.onclick = () => {
+            elements.invoiceModal.style.display = 'none';
+            elements.recipientName.value = '';
+            elements.recipientAddress.value = '';
+        }
+
+        window.onclick = (event) => {
+          if (event.target == elements.invoiceModal) {
+            elements.invoiceModal.style.display = "none";
+            elements.recipientName.value = '';
+            elements.recipientAddress.value = '';
+          }
+        }
+        
+        elements.printInvoiceBtn.addEventListener('click', () => {
+            const recipientName = elements.recipientName.value;
+            const recipientAddress = elements.recipientAddress.value;
+            if (!recipientName.trim() || !recipientAddress.trim()) {
+                alert('Nama dan Alamat Penerima tidak boleh kosong.');
+                return;
+            }
+            if(currentTripForInvoice) {
+                generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice.data, recipientName, recipientAddress);
+                elements.invoiceModal.style.display = 'none';
+                elements.recipientName.value = '';
+                elements.recipientAddress.value = '';
+            }
         });
     }
     setupNavigation();
@@ -801,6 +853,105 @@
         
         displayRecentActivity(1);
     }
+
+    function openInvoiceModal(trip) {
+      currentTripForInvoice = trip;
+      elements.invoiceModal.style.display = 'block';
+    }
+
+    async function generateQrCodeDataURL(tripId) {
+        const tempQrContainer = document.createElement('div');
+        const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/invoice-checking.html?id=${tripId}`;
+        return new Promise(resolve => {
+            new QRCode(tempQrContainer, {
+                text: url,
+                width: 128,
+                height: 128,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            setTimeout(() => {
+                const canvas = tempQrContainer.querySelector('canvas');
+                resolve(canvas.toDataURL());
+            }, 100);
+        });
+    }
+
+    async function generateInvoicePDF(tripId, tripData, recipientName, recipientAddress) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const qrCodeDataUrl = await generateQrCodeDataURL(tripId);
+
+        // Header
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PT MAJU MUNDUR sYANTIQ', 14, 22);
+        
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
+        const addressLines = doc.splitTextToSize(companyAddress, 100); 
+        doc.text(addressLines, 14, 30);
+        const addressHeight = (addressLines.length * 5);
+        doc.text('Telepon: (021) 555-1234', 14, 30 + addressHeight);
+
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('INVOICE', 200, 22, { align: 'right' });
+
+        // Invoice Info
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`No. Invoice: ${tripId}`, 200, 32, { align: 'right' });
+        doc.text(`Tanggal: ${fmtDate(new Date().toISOString().slice(0,10))}`, 200, 38, { align: 'right' });
+
+        // Bill To
+        let startY = 36 + addressHeight + 10;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Tagihan Kepada:', 14, startY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(recipientName, 14, startY + 6);
+        doc.text(recipientAddress.split('\n'), 14, startY + 12);
+        
+        // AutoTable for items
+        const ruteDisplay = `${routeCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[tripData.tujuan] || tripData.tujuan)}`;
+        const deskripsi = `Pengiriman ${tripData.muatan}`;
+
+        doc.autoTable({
+            startY: startY + 25,
+            head: [['Trip ID', 'Deskripsi', 'Rute', 'Keberangkatan', 'Jumlah']],
+            body: [
+                [tripId, deskripsi, ruteDisplay, fmtDate(tripData.tanggal), idr(tripData.uangJalan)],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [22, 34, 53], fontSize: 10 },
+            bodyStyles: { fontSize: 10 },
+            didDrawPage: function (data) {
+                const tableEndY = data.cursor.y;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Sopir: ${tripData.driverName}`, 14, tableEndY + 10);
+                doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, tableEndY + 15);
+
+                const finalY = tableEndY + 25;
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
+                doc.text(idr(tripData.uangJalan), 200, finalY, { align: 'right' });
+
+                const pageHeight = doc.internal.pageSize.height;
+                doc.addImage(qrCodeDataUrl, 'PNG', 14, pageHeight - 50, 40, 40);
+                doc.setFontSize(8);
+                doc.text('Scan untuk Verifikasi', 16, pageHeight - 8);
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                doc.text('Terima kasih atas kepercayaan Anda.', 200, pageHeight - 20, { align: 'right' });
+                doc.text('Pembayaran ke BCA 123456789 a/n PT Maju Mundur Syantiq.', 200, pageHeight - 14, { align: 'right' });
+            }
+        });
+
+        doc.save(`Invoice-${tripId}.pdf`);
+    }
     
     function displayTrips(page) {
       elements.tripList.innerHTML = '';
@@ -847,6 +998,7 @@
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions' });
             actionsContainer.style.justifyContent = 'flex-start';
+            
             if (trip.status === 'submitted') {
                 const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                 const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
@@ -854,10 +1006,18 @@
                 rejectBtn.onclick = () => update(ref(db, `trips/${tripId}`), { status: 'rejected', rejectedAt: Date.now(), rejectedBy: currentUser.uid, isRead_coor: false });
                 actionsContainer.append(approveBtn, rejectBtn);
             }
+
+            if (trip.status === 'approved' || trip.status === 'delivering' || trip.status === 'arriving_soon' || trip.status === 'arrived') {
+                const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
+                invButton.onclick = () => openInvoiceModal(tripEntry);
+                actionsContainer.append(invButton);
+            }
+
             if (currentUserData && currentUserData.role === 'super admin') {
                 const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfoForDelete });
                 actionsContainer.appendChild(deleteBtn);
             }
+
             actionsCell.appendChild(actionsContainer);
             const statusCell = el('td', '', {'data-label': 'Status'});
             statusCell.appendChild(badge(trip.status));
