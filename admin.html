@@ -1014,7 +1014,7 @@
             }
 
             if (currentUserData && currentUserData.role === 'super admin') {
-                const deleteBtn = el('button', 'Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfoForDelete });
+                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfoForDelete });
                 actionsContainer.appendChild(deleteBtn);
             }
 
@@ -1084,11 +1084,11 @@
           const isCurrentUserAdmin = currentUserData.role === 'admin';
           let deleteButton;
           if (isCurrentUser) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri">Hapus</button>`;
+              deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri"><i class="fa-solid fa-trash"></i> Hapus</button>`;
           } else if (isCurrentUserAdmin && isTargetSuperAdmin) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin">Hapus</button>`;
+              deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin"><i class="fa-solid fa-trash"></i> Hapus</button>`;
           } else {
-              deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}">Hapus</button>`;
+              deleteButton = `<button class="delete-user-btn" data-uid="${uid}" data-name="${u.name || 'tanpa nama'}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
           }
           const roleClass = (u.role || '').replace(' ', '-');
           tr.innerHTML = `
@@ -1148,7 +1148,7 @@
           const route = routeEntry.data;
           const tr = el('tr');
           tr.innerHTML = `<td>${route.code}</td><td>${route.address}</td><td></td>`;
-          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
               await set(ref(db, `routes/${routeId}`), null);
@@ -1198,7 +1198,7 @@
           const vehicle = vehicleEntry.data;
           const tr = el('tr');
           tr.innerHTML = `<td>${vehicle.vehicleNumber}</td><td>${vehicle.unit || '-'}</td><td>${vehicle.ownership || '-'}</td><td></td>`;
-          const deleteBtn = el('button', 'Hapus', { class: 'btn-sm danger' });
+          const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus Kendaraan ${vehicle.vehicleNumber}?`)) {
               await set(ref(db, `vehicles/${vehicleId}`), null);
