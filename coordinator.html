@@ -293,6 +293,18 @@
     </div>
   </div>
 
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeInvoiceModal">&times;</span>
+      <h2>Cetak Invoice</h2>
+      <div class="form-group">
+        <label for="invoiceRecipient">Tagihan Kepada:</label>
+        <textarea id="invoiceRecipient" rows="3" placeholder="Contoh:&#10;PT. Sejahtera Abadi&#10;Jl. Industri No. 45&#10;Jakarta"></textarea>
+      </div>
+      <button id="printInvoiceBtn" class="btn-sm info" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
+    </div>
+  </div>
+
 
   <script type="module">
     import { 
@@ -357,6 +369,10 @@
       downloadBarcodeBtn: document.getElementById('downloadBarcodeBtn'),
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
       uangJalanInput: document.getElementById('uangJalan'),
+      invoiceModal: document.getElementById('invoiceModal'),
+      closeInvoiceModal: document.getElementById('closeInvoiceModal'),
+      printInvoiceBtn: document.getElementById('printInvoiceBtn'),
+      invoiceRecipient: document.getElementById('invoiceRecipient'),
     };
     
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
@@ -371,6 +387,7 @@
     let notifications = [];
     let qrcodeGenerator = null;
     let currentTripIdForBarcode = null;
+    let currentTripForInvoice = null;
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
     const coorActivityRowsPerPage = 5;
@@ -484,9 +501,11 @@
         });
 
         elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
+        elements.closeInvoiceModal.onclick = () => elements.invoiceModal.style.display = 'none';
 
         window.onclick = (event) => {
           if (event.target == elements.barcodeModal) elements.barcodeModal.style.display = "none";
+          if (event.target == elements.invoiceModal) elements.invoiceModal.style.display = "none";
         }
 
         elements.downloadBarcodeBtn.onclick = () => {
@@ -531,6 +550,19 @@
                 }).format(number);
             } else {
                 this.value = '';
+            }
+        });
+
+        elements.printInvoiceBtn.addEventListener('click', () => {
+            const recipient = elements.invoiceRecipient.value;
+            if (!recipient.trim()) {
+                alert('Detail "Tagihan Kepada" tidak boleh kosong.');
+                return;
+            }
+            if(currentTripForInvoice) {
+                generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice.data, recipient);
+                elements.invoiceModal.style.display = 'none';
+                elements.invoiceRecipient.value = '';
             }
         });
     }
@@ -786,7 +818,7 @@
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
     }
 
-    function generateInvoicePDF(tripId, tripData) {
+    function generateInvoicePDF(tripId, tripData, recipient) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
@@ -815,9 +847,7 @@
         doc.setFont('helvetica', 'bold');
         doc.text('Tagihan Kepada:', 14, 50);
         doc.setFont('helvetica', 'normal');
-        doc.text('Nama Pelanggan / Perusahaan', 14, 56);
-        doc.text('Alamat Pelanggan Lengkap', 14, 62);
-        doc.text('Kota, Kode Pos', 14, 68);
+        doc.text(recipient, 14, 56);
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} → ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
@@ -852,6 +882,11 @@
 
         doc.save(`Invoice-${tripId}.pdf`);
     }
+
+    function openInvoiceModal(trip) {
+      currentTripForInvoice = trip;
+      elements.invoiceModal.style.display = 'block';
+    }
     
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
@@ -878,7 +913,8 @@
       if (filteredTrips.length === 0) {
         elements.tripList.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
       } else {
-        paginatedTrips.forEach(({id: tripId, data: tripData}) => {
+        paginatedTrips.forEach((trip) => {
+          const { id: tripId, data: tripData } = trip;
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const actionsContainer = el('div', '', { class: 'trip-actions', style: 'display:flex; gap: 1rem;' });
@@ -904,7 +940,7 @@
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
             
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
-            invButton.onclick = () => generateInvoicePDF(tripId, tripData);
+            invButton.onclick = () => openInvoiceModal(trip);
             actionsContainer.append(barcodeButton, sjButton, invButton);
           } else {
             actionsContainer.append(barcodeButton);
