@@ -1054,7 +1054,7 @@ input:checked + .slider:before {
   margin: 10% auto;
   padding: 1rem;
   width: 80%;
-  max-width: 800px;
+  max-width: 40rem;
   border-radius: 1rem;
   position: relative;
 }
