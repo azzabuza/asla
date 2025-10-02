@@ -592,8 +592,6 @@ tbody tr:hover { background-color: var(--gunmetal); }
   width: 35rem;
   margin: 0;
   padding: 1rem;
-  background-color: var(--dark-slate-blue);
-  border-radius: 1rem;
 }
 .login-container h2 {
   text-align: center;
