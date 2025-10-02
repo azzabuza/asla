@@ -887,7 +887,7 @@
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
-        const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
+        const deskripsi = `Pengiriman ${tripData.muatan}`;
 
         doc.autoTable({
             startY: startY + 25,
