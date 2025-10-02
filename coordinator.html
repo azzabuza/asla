@@ -786,6 +786,73 @@
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
     }
 
+    function generateInvoicePDF(tripId, tripData) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PT SLA TRUCKING', 14, 22);
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Jl. Logistik No. 123, Kota Pengiriman', 14, 30);
+        doc.text('Telepon: (021) 555-1234', 14, 36);
+
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('INVOICE', 200, 22, { align: 'right' });
+
+        // Invoice Info
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`No. Invoice: ${tripId}`, 200, 32, { align: 'right' });
+        doc.text(`Tanggal: ${fmtDate(new Date().toISOString().slice(0,10))}`, 200, 38, { align: 'right' });
+
+        // Bill To
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Tagihan Kepada:', 14, 50);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Nama Pelanggan / Perusahaan', 14, 56);
+        doc.text('Alamat Pelanggan Lengkap', 14, 62);
+        doc.text('Kota, Kode Pos', 14, 68);
+        
+        // AutoTable for items
+        const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} → ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
+
+        doc.autoTable({
+            startY: 80,
+            head: [['Deskripsi', 'Jumlah']],
+            body: [
+                [`Jasa Pengiriman Rute: ${ruteDisplay}`, idr(tripData.uangJalan)],
+                [`Sopir: ${tripData.driverName}`, ''],
+                [`Kendaraan: ${tripData.vehicleNumber}`, ''],
+                [`Muatan: ${tripData.muatan}`, ''],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [22, 34, 53] },
+            didDrawPage: function (data) {
+                // Total
+                const finalY = data.cursor.y + 10;
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
+                doc.text(idr(tripData.uangJalan), 200, finalY, { align: 'right' });
+
+                // Footer
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                const pageHeight = doc.internal.pageSize.height;
+                doc.text('Terima kasih atas kepercayaan Anda.', 14, pageHeight - 20);
+                doc.text('Pembayaran dapat dilakukan ke rekening BCA 123456789 a/n PT SLA Trucking.', 14, pageHeight - 14);
+            }
+        });
+
+        doc.save(`Invoice-${tripId}.pdf`);
+    }
+    
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
       currentCoorPage = page;
@@ -837,7 +904,7 @@
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
             
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
-            invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
+            invButton.onclick = () => generateInvoicePDF(tripId, tripData);
             actionsContainer.append(barcodeButton, sjButton, invButton);
           } else {
             actionsContainer.append(barcodeButton);
