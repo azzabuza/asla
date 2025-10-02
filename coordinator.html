@@ -856,9 +856,9 @@
         // Header
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
-        doc.text('PT SLA TRUCKING', 14, 22);
+        doc.text('PT MAJU MUNDUR sYANTIQ', 14, 22);
         
-        doc.setFontSize(11); // Consistent font size
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
         const addressLines = doc.splitTextToSize(companyAddress, 100); 
@@ -886,7 +886,7 @@
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
-        const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
+        const deskripsi = `Pengiriman ${tripData.muatan}`;
 
         doc.autoTable({
             startY: startY + 25,
@@ -918,7 +918,7 @@
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'italic');
                 doc.text('Terima kasih atas kepercayaan Anda.', 200, pageHeight - 20, { align: 'right' });
-                doc.text('Pembayaran ke BCA 123456789 a/n PT SLA Trucking.', 200, pageHeight - 14, { align: 'right' });
+                doc.text('Pembayaran ke BCA 123456789 a/n PT Maju Mundur Syantiq.', 200, pageHeight - 14, { align: 'right' });
             }
         });
 
