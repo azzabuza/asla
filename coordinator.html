@@ -858,7 +858,7 @@
         doc.setFont('helvetica', 'bold');
         doc.text('PT SLA TRUCKING', 14, 22);
         
-        doc.setFontSize(12);
+        doc.setFontSize(11); // Consistent font size
         doc.setFont('helvetica', 'normal');
         const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
         const addressLines = doc.splitTextToSize(companyAddress, 100); 
@@ -878,7 +878,6 @@
 
         // Bill To
         let startY = 36 + addressHeight + 10;
-        doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
         doc.text('Tagihan Kepada:', 14, startY);
         doc.setFont('helvetica', 'normal');
@@ -887,7 +886,7 @@
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
-        const deskripsi = `Pengiriman ${tripData.muatan}`;
+        const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
 
         doc.autoTable({
             startY: startY + 25,
@@ -896,7 +895,8 @@
                 [tripId, deskripsi, ruteDisplay, fmtDate(tripData.tanggal), idr(tripData.uangJalan)],
             ],
             theme: 'striped',
-            headStyles: { fillColor: [22, 34, 53] },
+            headStyles: { fillColor: [22, 34, 53], fontSize: 10 },
+            bodyStyles: { fontSize: 10 },
             didDrawPage: function (data) {
                 const tableEndY = data.cursor.y;
                 doc.setFontSize(10);
@@ -905,7 +905,7 @@
                 doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, tableEndY + 15);
 
                 const finalY = tableEndY + 25;
-                doc.setFontSize(12);
+                doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
                 doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
                 doc.text(idr(tripData.uangJalan), 200, finalY, { align: 'right' });
