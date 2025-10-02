@@ -298,10 +298,14 @@
       <span class="close-modal" id="closeInvoiceModal">&times;</span>
       <h2>Cetak Invoice</h2>
       <div class="form-group">
-        <label for="invoiceRecipient">Tagihan Kepada:</label>
-        <textarea id="invoiceRecipient" rows="3" placeholder="Contoh:&#10;PT. Sejahtera Abadi&#10;Jl. Industri No. 45&#10;Jakarta"></textarea>
+        <label for="recipientName">Nama Penerima/Perusahaan</label>
+        <input type="text" id="recipientName" placeholder="Contoh: PT. Sejahtera Abadi">
       </div>
-      <button id="printInvoiceBtn" class="btn-sm info" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
+      <div class="form-group">
+        <label for="recipientAddress">Alamat Penerima</label>
+        <textarea id="recipientAddress" rows="3" placeholder="Contoh: Jl. Industri No. 45, Jakarta"></textarea>
+      </div>
+      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
     </div>
   </div>
 
@@ -372,7 +376,8 @@
       invoiceModal: document.getElementById('invoiceModal'),
       closeInvoiceModal: document.getElementById('closeInvoiceModal'),
       printInvoiceBtn: document.getElementById('printInvoiceBtn'),
-      invoiceRecipient: document.getElementById('invoiceRecipient'),
+      recipientName: document.getElementById('recipientName'),
+      recipientAddress: document.getElementById('recipientAddress'),
     };
     
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
@@ -554,15 +559,17 @@
         });
 
         elements.printInvoiceBtn.addEventListener('click', () => {
-            const recipient = elements.invoiceRecipient.value;
-            if (!recipient.trim()) {
-                alert('Detail "Tagihan Kepada" tidak boleh kosong.');
+            const recipientName = elements.recipientName.value;
+            const recipientAddress = elements.recipientAddress.value;
+            if (!recipientName.trim() || !recipientAddress.trim()) {
+                alert('Nama dan Alamat Penerima tidak boleh kosong.');
                 return;
             }
             if(currentTripForInvoice) {
-                generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice.data, recipient);
+                generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice.data, recipientName, recipientAddress);
                 elements.invoiceModal.style.display = 'none';
-                elements.invoiceRecipient.value = '';
+                elements.recipientName.value = '';
+                elements.recipientAddress.value = '';
             }
         });
     }
@@ -818,7 +825,7 @@
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
     }
 
-    function generateInvoicePDF(tripId, tripData, recipient) {
+    function generateInvoicePDF(tripId, tripData, recipientName, recipientAddress) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
@@ -847,13 +854,14 @@
         doc.setFont('helvetica', 'bold');
         doc.text('Tagihan Kepada:', 14, 50);
         doc.setFont('helvetica', 'normal');
-        doc.text(recipient, 14, 56);
+        doc.text(recipientName, 14, 56);
+        doc.text(recipientAddress.split('\n'), 14, 62);
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} → ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
 
         doc.autoTable({
-            startY: 80,
+            startY: 85,
             head: [['Deskripsi', 'Jumlah']],
             body: [
                 [`Jasa Pengiriman Rute: ${ruteDisplay}`, idr(tripData.uangJalan)],
