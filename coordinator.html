@@ -178,7 +178,7 @@
                         <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;">Hapus</button>
                       </div>
                     </div>
-                    <button type="button" id="addTujuanBtn" class="btn-sm success" style="width: auto; margin: 0;"><i class="fas fa-plus"></i> Tambah Tujuan</button>
+                    <button type="button" id="addTujuanBtn" class="btn-sm success" style="width: auto; margin-top: 0.5rem;"><i class="fas fa-plus"></i> Tambah Tujuan</button>
                   </div>
                   <div class="form-group">
                     <label for="muatan">Muatan</label>
@@ -186,7 +186,7 @@
                   </div>
                   <div class="form-group">
                     <label for="uangJalan">Uang Jalan</label>
-                    <input id="uangJalan" type="text" inputmode="numeric" placeholder="Ketikkan nominal" required>
+                    <input id="uangJalan" type="text" inputmode="numeric" placeholder="Contoh: Rp 100.000" required>
                   </div>
                   <div class="form-group">
                     <label for="tanggal">Tanggal Keberangkatan</label>
@@ -535,9 +535,8 @@
             }
         };
         
-        // Formatter for Uang Jalan input
         elements.uangJalanInput.addEventListener('keyup', function(e) {
-            let value = this.value.replace(/\D/g, ''); // Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
             if(value) {
                 const number = parseInt(value, 10);
                 this.value = new Intl.NumberFormat('id-ID', {
@@ -739,7 +738,7 @@
                 }
                 const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
                 
-                const description = `Perjalanan untuk <span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ke <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span>`;
+                const description = `Perjalanan untuk <span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ke <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span> dengan uang jalan <span style="color: var(--orange);">${idr(trip.uangJalan)}</span>`;
                 const statusCell = el('td');
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
