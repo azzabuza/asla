@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Verifikasi Invoice</title>
+  <title>Verifikasi Dokumen</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body style="padding: 2rem; background-color: var(--dark-blue-gray);">
   <div class="container" style="max-width: 700px; margin: auto;">
     <div class="card">
-      <div class="card-header" id="docHeader">
+      <div class="card-header" id="docHeader" style="color: var(--light-lavender);">
         <i class="fas fa-spinner fa-spin"></i> Memuat Data...
       </div>
       <div class="card-body" id="content">
@@ -32,18 +32,18 @@
 
     (async () => {
       if (!id) {
-          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> Verifikasi Gagal`;
+          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> <span style="color: var(--light-lavender);">Verifikasi Gagal</span>`;
           return content.innerHTML = '<p class="empty-state">ID Dokumen tidak ditemukan di URL. Pastikan QR Code valid.</p>';
       }
       
       const snap = await get(ref(db, 'trips/' + id));
       if (!snap.exists()) {
-          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> Dokumen Tidak Ditemukan`;
+          docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> <span style="color: var(--light-lavender);">Dokumen Tidak Ditemukan</span>`;
           return content.innerHTML = '<p class="empty-state">Data perjalanan untuk ID ini tidak ada di database. Dokumen mungkin tidak asli.</p>';
       }
       
       const d = snap.val();
-      docHeader.innerHTML = `<i class="fas fa-check-circle" style="color: var(--green);"></i> Dokumen Terverifikasi`;
+      docHeader.innerHTML = `<i class="fas fa-check-circle" style="color: var(--green);"></i> <span style="color: var(--light-lavender);">Dokumen Terverifikasi</span>`;
       
       const ruteDisplay = `${d.asal} → ${Array.isArray(d.tujuan) ? d.tujuan.join(', ') : d.tujuan}`;
 
