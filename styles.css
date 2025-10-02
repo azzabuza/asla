@@ -444,7 +444,7 @@ label {
   margin: 0 0 1rem 0;
 }
 
-input, select {
+input, select, textarea {
   box-sizing: border-box;
   display: inline-block;
   background-color: var(--dark-slate-blue);
@@ -1050,10 +1050,9 @@ input:checked + .slider:before {
 }
 .modal-content {
   box-sizing: border-box;
-  background-color: var(--dark-slate-blue);
+  background-color: var(--dark-blue-gray);
   margin: 10% auto;
-  padding: 2rem;
-  border: 0.1rem solid var(--border-gunmetal);
+  padding: 1rem;
   width: 80%;
   max-width: 800px;
   border-radius: 1rem;
