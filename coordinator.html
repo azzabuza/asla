@@ -186,7 +186,7 @@
                   </div>
                   <div class="form-group">
                     <label for="uangJalan">Uang Jalan</label>
-                    <input id="uangJalan" type="text" inputmode="numeric" placeholder="Contoh: 100.000" required>
+                    <input id="uangJalan" type="text" inputmode="numeric" placeholder="Contoh: Rp 100.000" required>
                   </div>
                   <div class="form-group">
                     <label for="tanggal">Tanggal Keberangkatan</label>
@@ -537,9 +537,15 @@
         
         // Formatter for Uang Jalan input
         elements.uangJalanInput.addEventListener('keyup', function(e) {
-            let value = this.value.replace(/\D/g, '');
+            let value = this.value.replace(/\D/g, ''); // Remove non-digit characters
             if(value) {
-                this.value = parseInt(value, 10).toLocaleString('id-ID');
+                const number = parseInt(value, 10);
+                this.value = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(number);
             } else {
                 this.value = '';
             }
@@ -670,7 +676,7 @@
         asal: document.getElementById('asal').value,
         tujuan: tujuanValues,
         muatan: document.getElementById('muatan').value,
-        uangJalan: elements.uangJalanInput.value.replace(/\./g, ''),
+        uangJalan: elements.uangJalanInput.value.replace(/\D/g, ''),
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', 
         createdAt: Date.now(),
