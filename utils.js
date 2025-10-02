@@ -29,11 +29,16 @@ export function fmtDate(iso) {
 }
 
 export function idr(num) {
-  return (num || 0).toLocaleString("id-ID", {
-    style: "currency",
-    currency: "IDR",
-  });
+  const number = Number(num) || 0;
+  // This formats to "Rp 100.000" without decimals, which is ideal.
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(number);
 }
+
 
 export function qparam(name) {
   return new URLSearchParams(location.search).get(name);
