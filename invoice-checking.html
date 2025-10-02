@@ -45,7 +45,7 @@
       const d = snap.val();
       docHeader.innerHTML = `<i class="fas fa-check-circle" style="color: var(--green);"></i> <span style="color: var(--light-lavender);">Dokumen Terverifikasi</span>`;
       
-      const ruteDisplay = `${d.asal} → ${Array.isArray(d.tujuan) ? d.tujuan.join(', ') : d.tujuan}`;
+      const ruteDisplay = `${d.asal}, ${Array.isArray(d.tujuan) ? d.tujuan.join(', ') : d.tujuan}`;
 
       content.innerHTML = `
         <h2 style="text-align: center; margin-bottom: 2rem; color: var(--light-lavender);">Detail Perjalanan</h2>
