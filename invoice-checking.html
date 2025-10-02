@@ -57,7 +57,7 @@
           <strong style="color: var(--slate-gray);">Muatan:</strong> <span style="color: var(--light-lavender);">${d.muatan}</span>
           <strong style="color: var(--slate-gray);">Uang Jalan:</strong> <span style="color: var(--light-lavender);">${idr(d.uangJalan)}</span>
           <strong style="color: var(--slate-gray);">Tanggal:</strong> <span style="color: var(--light-lavender);">${fmtDate(d.tanggal)}</span>
-          <strong style="color: var(--slate-gray);">Status:</strong> <span id="status-badge"></span>
+          <strong style="color: var(--slate-gray);">Status:</strong> <span id="status-badge" style="color: var(--green)"></span>
         </div>
       `;
       document.getElementById('status-badge').appendChild(badge(d.status));
