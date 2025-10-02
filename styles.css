@@ -471,7 +471,7 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
-input::placeholder {
+input::placeholder, textarea::placeholder {
   color: var(--lighter-dark-blue);
   font-style: italic;
 }
