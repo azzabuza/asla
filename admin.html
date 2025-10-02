@@ -929,7 +929,7 @@
                 const tableEndY = data.cursor.y;
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Sopir: ${tripData.driverName}`, 14, tableEndY + 10);
+                doc.text(`Supir: ${tripData.driverName}`, 14, tableEndY + 10);
                 doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, tableEndY + 15);
 
                 const finalY = tableEndY + 25;
@@ -1024,7 +1024,7 @@
             tr.innerHTML = `
                 <td data-label="Trip ID">${tripId}</td>
                 <td data-label="Rute">${ruteDisplay}</td>
-                <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
+                <td data-label="Supir">${trip.driverName || 'N/A'}</td>
                 <td data-label="No. Kendaraan">${trip.vehicleNumber || 'N/A'}</td>
                 <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
                 <td data-label="Uang Jalan">${idr(trip.uangJalan)}</td>
@@ -1431,7 +1431,7 @@
               return tripDate >= startDate && tripDate <= endDate;
           });
           dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal}, ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Sopir': t.data.driverName || 'N/A',
+            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal}, ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Supir': t.data.driverName || 'N/A',
             'No. Kendaraan': t.data.vehicleNumber || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
@@ -1440,7 +1440,7 @@
             const tujuanCodes = Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || 'N/A');
             return [`${asalCode}, ${tujuanCodes}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
           });
-          headers = ["Rute", "Sopir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
+          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
           filename = 'Laporan_Perjalanan';
           title = `Laporan Perjalanan (${startDate} s/d ${endDate})`;
           break;
