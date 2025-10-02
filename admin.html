@@ -498,7 +498,7 @@
         <label for="recipientAddress">Alamat Penerima</label>
         <textarea id="recipientAddress" rows="3" placeholder="Contoh: Jl. Industri No. 45, Jakarta"></textarea>
       </div>
-      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
+      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak Invoice</button>
     </div>
   </div>
 
@@ -1008,7 +1008,7 @@
             }
 
             if (trip.status === 'approved' || trip.status === 'delivering' || trip.status === 'arriving_soon' || trip.status === 'arrived') {
-                const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
+                const invButton = el('button', '<i class="fas fa-file-invoice"></i> Invoice', { class: 'btn-sm info' });
                 invButton.onclick = () => openInvoiceModal(tripEntry);
                 actionsContainer.append(invButton);
             }
