@@ -390,8 +390,6 @@
     let allRoutesOptions = '';
     let routeAddressToCodeMap = {};
     let notifications = [];
-    let qrcodeGenerator = null;
-    let currentTripIdForBarcode = null;
     let currentTripForInvoice = null;
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
@@ -506,18 +504,26 @@
         });
 
         elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
-        elements.closeInvoiceModal.onclick = () => elements.invoiceModal.style.display = 'none';
+        elements.closeInvoiceModal.onclick = () => {
+            elements.invoiceModal.style.display = 'none';
+            elements.recipientName.value = '';
+            elements.recipientAddress.value = '';
+        }
 
         window.onclick = (event) => {
           if (event.target == elements.barcodeModal) elements.barcodeModal.style.display = "none";
-          if (event.target == elements.invoiceModal) elements.invoiceModal.style.display = "none";
+          if (event.target == elements.invoiceModal) {
+            elements.invoiceModal.style.display = "none";
+            elements.recipientName.value = '';
+            elements.recipientAddress.value = '';
+          }
         }
 
         elements.downloadBarcodeBtn.onclick = () => {
             const canvas = elements.qrcodeContainer.querySelector('canvas');
             if (canvas) {
                 const a = document.createElement("a");
-                a.download = `${currentTripIdForBarcode}-qrcode.png`;
+                a.download = `qrcode-${elements.qrcodeText.textContent}.png`;
                 a.href = canvas.toDataURL("image/png");
                 a.click();
             }
@@ -825,9 +831,27 @@
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
     }
 
-    function generateInvoicePDF(tripId, tripData, recipientName, recipientAddress) {
+    async function generateQrCodeDataURL(tripId) {
+        const tempQrContainer = document.createElement('div');
+        const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/document-checking.html?id=${tripId}`;
+        return new Promise(resolve => {
+            new QRCode(tempQrContainer, {
+                text: url,
+                width: 128,
+                height: 128,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            setTimeout(() => {
+                const canvas = tempQrContainer.querySelector('canvas');
+                resolve(canvas.toDataURL());
+            }, 100);
+        });
+    }
+
+    async function generateInvoicePDF(tripId, tripData, recipientName, recipientAddress) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const qrCodeDataUrl = await generateQrCodeDataURL(tripId);
 
         // Header
         doc.setFontSize(20);
@@ -870,26 +894,27 @@
             theme: 'striped',
             headStyles: { fillColor: [22, 34, 53] },
             didDrawPage: function (data) {
-                // Additional Details
                 const startY = data.cursor.y + 10;
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Sopir: ${tripData.driverName}`, 14, startY);
                 doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, startY + 5);
 
-                // Total
                 const finalY = startY + 15;
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'bold');
                 doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
                 doc.text(idr(tripData.uangJalan), 200, finalY, { align: 'right' });
 
-                // Footer
+                const pageHeight = doc.internal.pageSize.height;
+                doc.addImage(qrCodeDataUrl, 'PNG', 14, pageHeight - 50, 40, 40);
+                doc.setFontSize(8);
+                doc.text('Scan untuk Verifikasi', 16, pageHeight - 8);
+                
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'italic');
-                const pageHeight = doc.internal.pageSize.height;
-                doc.text('Terima kasih atas kepercayaan Anda.', 14, pageHeight - 20);
-                doc.text('Pembayaran dapat dilakukan ke rekening BCA 123456789 a/n PT SLA Trucking.', 14, pageHeight - 14);
+                doc.text('Terima kasih atas kepercayaan Anda.', 200, pageHeight - 20, { align: 'right' });
+                doc.text('Pembayaran ke BCA 123456789 a/n PT SLA Trucking.', 200, pageHeight - 14, { align: 'right' });
             }
         });
 
@@ -934,27 +959,21 @@
           
           const barcodeButton = el('button', '<i class="fas fa-qrcode"></i>', { class: 'btn-sm' });
           barcodeButton.onclick = () => {
-              currentTripIdForBarcode = tripId;
+              elements.qrcodeText.textContent = tripId;
               elements.qrcodeContainer.innerHTML = '';
               new QRCode(elements.qrcodeContainer, {
                   text: tripId,
                   width: 256,
                   height: 256,
-                  colorDark : "#000000",
-                  colorLight : "#ffffff",
-                  correctLevel : QRCode.CorrectLevel.H
+                  correctLevel: QRCode.CorrectLevel.H
               });
-              elements.qrcodeText.textContent = tripId;
               elements.barcodeModal.style.display = 'block';
           };
           
           if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
-            const sjButton = el('button', '<i class="fas fa-print"></i> SJ', { class: 'btn-sm info' });
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
-            
-            sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
             invButton.onclick = () => openInvoiceModal(trip);
-            actionsContainer.append(barcodeButton, sjButton, invButton);
+            actionsContainer.append(barcodeButton, invButton);
           } else {
             actionsContainer.append(barcodeButton);
           }
