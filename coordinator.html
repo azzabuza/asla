@@ -833,7 +833,7 @@
 
     async function generateQrCodeDataURL(tripId) {
         const tempQrContainer = document.createElement('div');
-        const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/document-checking.html?id=${tripId}`;
+        const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/invoice-checking.html?id=${tripId}`;
         return new Promise(resolve => {
             new QRCode(tempQrContainer, {
                 text: url,
