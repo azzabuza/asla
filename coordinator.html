@@ -177,7 +177,7 @@
                         <select class="tujuan-select" required>
                           <option value="">Memuat rute...</option>
                         </select>
-                        <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;">Hapus</button>
+                        <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;"><i class="fa-solid fa-trash"></i> Hapus</button>
                       </div>
                     </div>
                     <button type="button" id="addTujuanBtn" class="btn-sm success" style="width: auto; margin-top: 0.5rem;"><i class="fas fa-plus"></i> Tambah Tujuan</button>
@@ -490,7 +490,7 @@
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'btn-sm danger remove-tujuan-btn';
-            removeBtn.innerHTML = 'Hapus';
+            removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus';
 
             newTujuanGroup.append(newSelect, removeBtn);
             elements.tujuanContainer.appendChild(newTujuanGroup);
@@ -731,7 +731,7 @@
             <select class="tujuan-select" required>
               ${allRoutesOptions}
             </select>
-            <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;">Hapus</button>
+            <button type="button" class="btn-sm danger remove-tujuan-btn" style="display: none;"><i class="fa-solid fa-trash"></i> Hapus</button>
           </div>`;
         updateTujuanButtons();
         
