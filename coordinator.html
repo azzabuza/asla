@@ -186,7 +186,7 @@
                   </div>
                   <div class="form-group">
                     <label for="uangJalan">Uang Jalan</label>
-                    <input id="uangJalan" type="number" placeholder="Masukkan jumlah rupiah" required>
+                    <input id="uangJalan" type="text" inputmode="numeric" placeholder="Contoh: 100.000" required>
                   </div>
                   <div class="form-group">
                     <label for="tanggal">Tanggal Keberangkatan</label>
@@ -370,6 +370,7 @@
       qrcodeText: document.getElementById('qrcode-text'),
       downloadBarcodeBtn: document.getElementById('downloadBarcodeBtn'),
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
+      uangJalanInput: document.getElementById('uangJalan'),
     };
     
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
@@ -533,6 +534,16 @@
                 };
             }
         };
+        
+        // Formatter for Uang Jalan input
+        elements.uangJalanInput.addEventListener('keyup', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            if(value) {
+                this.value = parseInt(value, 10).toLocaleString('id-ID');
+            } else {
+                this.value = '';
+            }
+        });
     }
 
     async function loadAllUsers() {
@@ -659,7 +670,7 @@
         asal: document.getElementById('asal').value,
         tujuan: tujuanValues,
         muatan: document.getElementById('muatan').value,
-        uangJalan: document.getElementById('uangJalan').value,
+        uangJalan: elements.uangJalanInput.value.replace(/\./g, ''),
         tanggal: document.getElementById('tanggal').value,
         status: 'submitted', 
         createdAt: Date.now(),
