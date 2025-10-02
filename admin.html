@@ -737,7 +737,7 @@
                 } else {
                     tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
                 }
-                const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
+                const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
                 
                 const description = `<span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ${actionText} <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span>`;
                 const statusCell = el('td');
@@ -841,8 +841,8 @@
             } else {
                 tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
             }
-            const ruteDisplay = `${asalCode} → ${tujuanCodes}`;
-            const tripInfoForDelete = `${asalCode} → ${tujuanCodes}`;
+            const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
+            const tripInfoForDelete = `${asalCode}, ${tujuanCodes}`;
             
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions' });
@@ -1141,7 +1141,7 @@
             } else {
                 tujuanCodes = routeCodeMap[t.tujuan] || t.tujuan;
             }
-            const tripInfo = `${asalCode} ke ${tujuanCodes}`; 
+            const tripInfo = `${asalCode}, ${tujuanCodes}`; 
             if (t.approvedBy && t.approvedAt) { 
                 const coorName = allUsers[t.coorId]?.name || 'Koordinator Dihapus'; 
                 activities.admin.push({ userId: t.approvedBy, time: t.approvedAt, action: `Menyetujui trip dari ${coorName}`, tripId: tripId }); 
@@ -1271,14 +1271,14 @@
               return tripDate >= startDate && tripDate <= endDate;
           });
           dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal} → ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Sopir': t.data.driverName || 'N/A',
+            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal}, ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Sopir': t.data.driverName || 'N/A',
             'No. Kendaraan': t.data.vehicleNumber || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
           bodyForPDF = filteredTrips.map(t => {
             const asalCode = routeCodeMap[t.data.asal] || 'N/A';
             const tujuanCodes = Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || 'N/A');
-            return [`${asalCode} → ${tujuanCodes}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
+            return [`${asalCode}, ${tujuanCodes}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
           });
           headers = ["Rute", "Sopir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
           filename = 'Laporan_Perjalanan';
