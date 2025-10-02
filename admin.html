@@ -139,7 +139,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Cari Sopir / Rute</label>
+                <label>Cari Supir / Rute</label>
                 <input type="text" id="searchTrip" placeholder="Ketikkan sesuatu"/>
               </div>
             </div>
@@ -151,13 +151,14 @@
                     <th>Rute</th>
                     <th>Supir</th>
                     <th>No. Kendaraan</th>
+                    <th>Uang Jalan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="tripList">
-                  <tr><td colspan="7">Memuat data...</td></tr>
+                  <tr><td colspan="8">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -488,7 +489,7 @@
       onDisconnect, firebaseConfig, initializeApp, deleteApp, getAuth,
       createUserWithEmailAndPassword
     } from './firebase.js';
-    import { badge, fmtDate, el } from './utils.js';
+    import { badge, fmtDate, el, idr } from './utils.js';
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
@@ -823,7 +824,7 @@
       }
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
             const tripId = tripEntry.id;
@@ -862,6 +863,7 @@
                 <td data-label="Rute">${ruteDisplay}</td>
                 <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
                 <td data-label="No. Kendaraan">${trip.vehicleNumber || 'N/A'}</td>
+                <td data-label="Uang Jalan">${idr(trip.uangJalan)}</td>
                 <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
             `;
             tr.appendChild(statusCell);
