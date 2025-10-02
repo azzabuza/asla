@@ -278,18 +278,6 @@
     </main>
   </div>
 
-  <div id="mapModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h2 id="mapModalTitle">Lokasi Perjalanan</h2>
-      <div id="map-placeholder">
-        <i class="fas fa-map-marked-alt fa-3x"></i>
-        <p>Fitur pelacakan peta sedang dalam pengembangan.</p>
-        <p>Di sini akan ditampilkan lokasi supir secara real-time.</p>
-      </div>
-    </div>
-  </div>
-
   <div id="barcodeModal" class="modal">
     <div class="modal-content barcode-modal-content">
         <span class="close-modal" id="closeBarcodeModal">&times;</span>
@@ -362,9 +350,6 @@
       exportPdfBtn: document.getElementById('exportPdfBtn'),
       exportExcelBtn: document.getElementById('exportExcelBtn'),
       reportType: document.getElementById('reportType'),
-      mapModal: document.getElementById('mapModal'),
-      mapModalTitle: document.getElementById('mapModalTitle'),
-      closeModal: document.querySelector('#mapModal .close-modal'),
       barcodeModal: document.getElementById('barcodeModal'),
       closeBarcodeModal: document.getElementById('closeBarcodeModal'),
       qrcodeContainer: document.getElementById('qrcode'),
@@ -498,11 +483,9 @@
             }
         });
 
-        elements.closeModal.onclick = () => elements.mapModal.style.display = 'none';
         elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
 
         window.onclick = (event) => {
-          if (event.target == elements.mapModal) elements.mapModal.style.display = "none";
           if (event.target == elements.barcodeModal) elements.barcodeModal.style.display = "none";
         }
 
@@ -852,15 +835,10 @@
           if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
             const sjButton = el('button', '<i class="fas fa-print"></i> SJ', { class: 'btn-sm info' });
             const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
-            const mapButton = el('button', '<i class="fas fa-map-marker-alt"></i> Lacak', { class: 'btn-sm success' });
             
             sjButton.onclick = () => window.open(`surat-jalan.html?id=${tripId}`);
             invButton.onclick = () => window.open(`invoice.html?id=${tripId}`);
-            mapButton.onclick = () => {
-              elements.mapModalTitle.textContent = `Lokasi Perjalanan: ${tripData.driverName}`;
-              elements.mapModal.style.display = 'block';
-            };
-            actionsContainer.append(barcodeButton, sjButton, invButton, mapButton);
+            actionsContainer.append(barcodeButton, sjButton, invButton);
           } else {
             actionsContainer.append(barcodeButton);
           }
