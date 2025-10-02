@@ -300,13 +300,13 @@
       <h2>Cetak Invoice</h2>
       <div class="form-group">
         <label for="recipientName">Nama Penerima/Perusahaan</label>
-        <input type="text" id="recipientName" placeholder="Contoh: PT. Sejahtera Abadi">
+        <input type="text" id="recipientName" placeholder="Ketikkan nama">
       </div>
       <div class="form-group">
         <label for="recipientAddress">Alamat Penerima</label>
-        <textarea id="recipientAddress" rows="3" placeholder="Contoh: Jl. Industri No. 45, Jakarta"></textarea>
+        <textarea id="recipientAddress" rows="3" placeholder="Ketikkan alamat"></textarea>
       </div>
-      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak</button>
+      <button id="printInvoiceBtn" style="width: 100%;"><i class="fas fa-print"></i> Cetak Invoice</button>
     </div>
   </div>
 
@@ -976,7 +976,7 @@
           };
           
           if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
-            const invButton = el('button', '<i class="fas fa-file-invoice"></i> Inv', { class: 'btn-sm info' });
+            const invButton = el('button', '<i class="fas fa-file-invoice"></i> Invoice', { class: 'btn-sm info' });
             invButton.onclick = () => openInvoiceModal(trip);
             actionsContainer.append(barcodeButton, invButton);
           } else {
