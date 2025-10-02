@@ -861,7 +861,7 @@
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
         const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
-        const addressLines = doc.splitTextToSize(companyAddress, 150); // Set max width
+        const addressLines = doc.splitTextToSize(companyAddress, 100); // Set max width
         doc.text(addressLines, 14, 30);
         const addressHeight = (addressLines.length * 5);
         doc.text('Telepon: (021) 555-1234', 14, 30 + addressHeight);
