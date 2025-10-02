@@ -152,6 +152,7 @@
                     <th>Rute</th>
                     <th>Supir</th>
                     <th>No. Kendaraan</th>
+                    <th>Muatan</th>
                     <th>Uang Jalan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
@@ -159,7 +160,7 @@
                   </tr>
                 </thead>
                 <tbody id="tripList">
-                  <tr><td colspan="8">Memuat data...</td></tr>
+                  <tr><td colspan="9">Memuat data...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -826,7 +827,7 @@
       }
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(tripEntry => {
             const tripId = tripEntry.id;
@@ -865,6 +866,7 @@
                 <td data-label="Rute">${ruteDisplay}</td>
                 <td data-label="Sopir">${trip.driverName || 'N/A'}</td>
                 <td data-label="No. Kendaraan">${trip.vehicleNumber || 'N/A'}</td>
+                <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
                 <td data-label="Uang Jalan">${idr(trip.uangJalan)}</td>
                 <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
             `;
