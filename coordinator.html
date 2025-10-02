@@ -859,21 +859,26 @@
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} → ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
+        const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
 
         doc.autoTable({
             startY: 85,
-            head: [['Deskripsi', 'Jumlah']],
+            head: [['Deskripsi', 'Rute', 'Jumlah']],
             body: [
-                [`Jasa Pengiriman Rute: ${ruteDisplay}`, idr(tripData.uangJalan)],
-                [`Sopir: ${tripData.driverName}`, ''],
-                [`Kendaraan: ${tripData.vehicleNumber}`, ''],
-                [`Muatan: ${tripData.muatan}`, ''],
+                [deskripsi, ruteDisplay, idr(tripData.uangJalan)],
             ],
             theme: 'striped',
             headStyles: { fillColor: [22, 34, 53] },
             didDrawPage: function (data) {
+                // Additional Details
+                const startY = data.cursor.y + 10;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Sopir: ${tripData.driverName}`, 14, startY);
+                doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, startY + 5);
+
                 // Total
-                const finalY = data.cursor.y + 10;
+                const finalY = startY + 15;
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'bold');
                 doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
