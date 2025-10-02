@@ -856,12 +856,14 @@
         // Header
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
-        doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
+        doc.text('PT SLA TRUCKING', 14, 22);
         
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
-        doc.text('Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791', 14, 30);
-        doc.text('Telepon: (021) 123-4567', 14, 36);
+        const addressLines = doc.splitTextToSize('Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791', 180);
+        doc.text(addressLines, 14, 30);
+        const addressHeight = (addressLines.length * 5);
+        doc.text('Telepon: (021) 555-1234', 14, 30 + addressHeight);
 
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
@@ -874,19 +876,20 @@
         doc.text(`Tanggal: ${fmtDate(new Date().toISOString().slice(0,10))}`, 200, 38, { align: 'right' });
 
         // Bill To
+        let startY = 36 + addressHeight + 10;
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text('Tagihan Kepada:', 14, 50);
+        doc.text('Tagihan Kepada:', 14, startY);
         doc.setFont('helvetica', 'normal');
-        doc.text(recipientName, 14, 56);
-        doc.text(recipientAddress.split('\n'), 14, 62);
+        doc.text(recipientName, 14, startY + 6);
+        doc.text(recipientAddress.split('\n'), 14, startY + 12);
         
         // AutoTable for items
         const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal} → ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
         const deskripsi = `Jasa Pengiriman "${tripData.muatan}"`;
 
         doc.autoTable({
-            startY: 85,
+            startY: startY + 25,
             head: [['Deskripsi', 'Rute', 'Jumlah']],
             body: [
                 [deskripsi, ruteDisplay, idr(tripData.uangJalan)],
@@ -894,13 +897,13 @@
             theme: 'striped',
             headStyles: { fillColor: [22, 34, 53] },
             didDrawPage: function (data) {
-                const startY = data.cursor.y + 10;
+                const tableEndY = data.cursor.y;
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Sopir: ${tripData.driverName}`, 14, startY);
-                doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, startY + 5);
+                doc.text(`Sopir: ${tripData.driverName}`, 14, tableEndY + 10);
+                doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, tableEndY + 15);
 
-                const finalY = startY + 15;
+                const finalY = tableEndY + 25;
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'bold');
                 doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
