@@ -31,7 +31,6 @@
             </ul>
         </div>
         <div class="sidebar-footer">
-           <a href="#" id="backToPanelBtn" class="button" style="width: 100%; text-align: center; margin-bottom: 1rem; background: var(--gunmetal); color: var(--light-lavender);"><i class="fas fa-arrow-left"></i> Kembali ke Panel</a>
           <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
         </div>
       </div>
@@ -147,7 +146,6 @@
         messageInput: document.getElementById('messageInput'),
         sendMessageBtn: document.getElementById('sendMessageBtn'),
         logoutBtn: document.getElementById('logoutBtn'),
-        backToPanelBtn: document.getElementById('backToPanelBtn'),
         replyingToBanner: document.getElementById('replying-to-banner'),
         replyingToUser: document.getElementById('replying-to-user'),
         replyingToText: document.getElementById('replying-to-text'),
@@ -181,12 +179,7 @@
             elements.userRoleTitle.textContent = currentUserData.role.charAt(0).toUpperCase() + currentUserData.role.slice(1);
             
             if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
-                elements.backToPanelBtn.href = 'admin.html';
                 elements.createGroupBtn.style.display = 'block';
-            } else if (currentUserData.role === 'coordinator') {
-                elements.backToPanelBtn.href = 'coordinator.html';
-            } else { // Driver etc.
-                elements.backToPanelBtn.style.display = 'none';
             }
         }
         
