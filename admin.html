@@ -297,11 +297,11 @@
             <div class="table-controls" style="grid-template-columns: 1fr;">
               <div class="form-group">
                 <label>Cari Supir / Rute / Trip ID</label>
-                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu" />
+                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
               </div>
             </div>
             <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
-                <h3>Total Pengeluaran</h3>
+                <h3>Total Pengeluaran (Uang Jalan)</h3>
                 <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
             </div>
             <div class="table-responsive">
@@ -1565,6 +1565,10 @@
     function handleExport(format) {
       const reportType = elements.reportType.value;
       let dataForExcel, bodyForPDF, headers, filename, title, summary;
+      const statusMap = {
+          submitted: "Menunggu", approved: "Disetujui", delivering: "Dalam Perjalanan",
+          arriving_soon: "Hampir Sampai", arrived: "Selesai", rejected: "Ditolak",
+      };
 
       switch (reportType) {
         case 'trips':
@@ -1578,17 +1582,23 @@
               const tripDate = trip.data.tanggal;
               return tripDate >= startDate && tripDate <= endDate;
           });
+          
           dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal}, ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 'Supir': t.data.driverName || 'N/A',
-            'No. Kendaraan': t.data.vehicleNumber || 'N/A', 'Muatan': t.data.muatan || 'N/A',
-            'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
+            'Rute': `${routeCodeMap[t.data.asal] || t.data.asal}, ${Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || t.data.tujuan)}`, 
+            'Supir': t.data.driverName || 'N/A',
+            'No. Kendaraan': t.data.vehicleNumber || 'N/A', 
+            'Muatan': t.data.muatan || 'N/A',
+            'Uang Jalan': idr(t.data.uangJalan),
+            'Tanggal': fmtDate(t.data.tanggal), 
+            'Status': statusMap[t.data.status] || t.data.status
           }));
           bodyForPDF = dataForExcel.map(Object.values);
-          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
+          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
           filename = 'Laporan_Perjalanan';
           title = `Laporan Perjalanan`;
           summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal Perjalanan: ${filteredTrips.length}`;
           break;
+
         case 'users':
           const allUsersData = Object.values(allUsers);
           dataForExcel = allUsersData.map(u => ({
