@@ -49,8 +49,7 @@
         </header>
         <div class="content-container" id="chat-area">
           <div class="chat-messages" id="message-list">
-             <p class="empty-state">Pilih obrolan untuk ditampilkan.</p>
-          </div>
+             </div>
         </div>
         <div class="chat-input-area">
            <div id="replying-to-banner" class="reply-banner" style="display: none;">
@@ -132,6 +131,7 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
+    let isInitialChatLoad = true; // Flag untuk menandai pemuatan awal
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -186,6 +186,17 @@
         loadAllUsersAndThenChats();
         setupEventListeners();
     });
+    
+    // Fungsi untuk mengelola kelas 'active' pada link chat di sidebar
+    function updateActiveLinkInSidebar() {
+        document.querySelectorAll('#group-list a, #user-list a').forEach(link => {
+            if (link.dataset.chatId === activeChatId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
 
     function loadAllUsersAndThenChats() {
         onValue(ref(db, 'users'), (snapshot) => {
@@ -203,7 +214,7 @@
             
             const generalGroup = { id: 'general', name: 'Diskusi Umum' };
             const liGeneral = el('li');
-            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#' });
+            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
             aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
             liGeneral.appendChild(aGeneral);
             elements.groupList.appendChild(liGeneral);
@@ -216,31 +227,44 @@
                     
                     const li = el('li');
                     const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
-                    const a = el('a', `${icon} ${group.name}`, { href: '#' });
+                    const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
                     a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                     li.appendChild(a);
                     elements.groupList.appendChild(li);
                 });
+            }
+            
+            // Jika ini pemuatan pertama, klik "Diskusi Umum" secara otomatis
+            if (isInitialChatLoad) {
+                aGeneral.click();
+                isInitialChatLoad = false;
+            } else {
+                updateActiveLinkInSidebar(); // Jaga state aktif saat ada pembaruan data
             }
         });
 
         elements.userList.innerHTML = '';
         Object.entries(allUsers).forEach(([uid, userData]) => {
             if (uid === currentUser.uid) return;
+            const chatId = [currentUser.uid, uid].sort().join('_');
             const li = el('li');
             const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
-            const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#' });
+            const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
             a.onclick = (e) => {
                 e.preventDefault();
-                const chatId = [currentUser.uid, uid].sort().join('_');
                 openChat(chatId, userData.name, 'personal', { otherUserId: uid });
             };
             li.appendChild(a);
             elements.userList.appendChild(li);
         });
+        updateActiveLinkInSidebar(); // Jaga state aktif saat ada pembaruan data
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
+        // Set ID chat yang aktif dan perbarui sidebar
+        activeChatId = chatId;
+        updateActiveLinkInSidebar();
+
         if (type === 'group' && metaData && metaData.id !== 'general') {
             const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
             const isMember = metaData.members && metaData.members[currentUser.uid];
@@ -250,7 +274,6 @@
             }
         }
         
-        activeChatId = chatId;
         activeGroupData = (type === 'group') ? metaData : null;
 
         if (type === 'personal') {
