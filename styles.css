@@ -248,10 +248,10 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .main-header-menu li a {
   background: var(--bg-btn-gradient);
   display: block;
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
   margin: 0;
   color: var(--text-inverse-dark-blue-gray);
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 500;
   transition: all 0.2s ease-in-out;
   border-radius: 0.5rem;
