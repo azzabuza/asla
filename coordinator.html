@@ -236,17 +236,24 @@
 
       <div id="page-reports" class="page">
         <section class="card">
-          <h2 class="card-header">Unduh Laporan Sederhana</h2>
+          <h2 class="card-header">Unduh Laporan</h2>
           <div class="card-body">
-            <p style="font-size: 1.5rem; color: var(--light-lavender); margin-bottom: 1rem;">
-              Anda dapat mengunduh data perjalanan yang telah Anda buat atau data kinerja supir dalam format PDF atau Excel.
-            </p>
             <div class="form-group">
               <label for="reportType">Pilih Jenis Laporan</label>
               <select id="reportType">
                 <option value="my_trips">Laporan Perjalanan Saya</option>
                 <option value="driver_performance">Laporan Kinerja Supir</option>
               </select>
+            </div>
+            <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label for="startDate">Dari Tanggal</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div>
+                    <label for="endDate">Sampai Tanggal</label>
+                    <input type="date" id="endDate">
+                </div>
             </div>
             <div class="report-buttons">
               <button id="exportPdfBtn" class="btn-sm danger"><i class="fas fa-file-pdf"></i> Unduh PDF</button>
@@ -350,6 +357,9 @@
       exportPdfBtn: document.getElementById('exportPdfBtn'),
       exportExcelBtn: document.getElementById('exportExcelBtn'),
       reportType: document.getElementById('reportType'),
+      dateFilterContainer: document.getElementById('dateFilterContainer'),
+      startDate: document.getElementById('startDate'),
+      endDate: document.getElementById('endDate'),
       barcodeModal: document.getElementById('barcodeModal'),
       closeBarcodeModal: document.getElementById('closeBarcodeModal'),
       qrcodeContainer: document.getElementById('qrcode'),
@@ -362,6 +372,7 @@
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
     
     let currentUser = null;
+    let currentUserName = 'Koordinator';
     let allMyTrips = [];
     let allDrivers = [];
     let allVehicles = [];
@@ -422,7 +433,8 @@
       const snap = await get(userRef);
       if (!snap.exists()) return;
       const userData = snap.val();
-      elements.userName.textContent = userData.name || 'Koordinator';
+      currentUserName = userData.name || 'Koordinator';
+      elements.userName.textContent = currentUserName;
       elements.userEmail.textContent = currentUser.email;
       await update(userRef, { lastLogin: Date.now(), online: true });
       onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
@@ -530,6 +542,10 @@
             } else {
                 this.value = '';
             }
+        });
+        
+        elements.reportType.addEventListener('change', (e) => {
+            elements.dateFilterContainer.style.display = (e.target.value === 'my_trips') ? 'grid' : 'none';
         });
     }
 
@@ -1014,23 +1030,33 @@
     }
 
     function handleExport(format) {
-      const { jsPDF } = window.jspdf;
       const type = elements.reportType.value;
-      
-      let data, headers, filename, title;
+      let data, headers, filename, title, summary, body;
 
       if (type === 'my_trips') {
+          const startDate = elements.startDate.value;
+          const endDate = elements.endDate.value;
+          if (!startDate || !endDate) {
+              alert("Silakan pilih rentang tanggal terlebih dahulu.");
+              return;
+          }
+          const filteredTrips = allMyTrips.filter(({id, data: t}) => {
+              const tripDate = t.tanggal;
+              return tripDate >= startDate && tripDate <= endDate;
+          });
+
           title = 'Laporan Perjalanan Saya';
           filename = 'laporan_perjalanan_saya';
+          summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nDibuat oleh: ${currentUserName}\nTotal Perjalanan: ${filteredTrips.length}`;
           headers = ["Trip ID", "Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
-          data = allMyTrips.map(({id, data: t}) => {
-              const tujuanDisplay = Array.isArray(t.tujuan) ? t.tujuan.join(', ') : t.tujuan;
-              return {
-                  'Trip ID': id, 'Rute': `${t.asal}, ${tujuanDisplay}`, 'Supir': t.driverName,
-                  'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
-                  'Tanggal': t.tanggal, 'Status': t.status
-              }
-          });
+          data = filteredTrips.map(({id, data: t}) => ({
+              'Trip ID': id, 
+              'Rute': `${routeAddressToCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeAddressToCodeMap[tujuan] || tujuan).join(', ') : (routeAddressToCodeMap[t.tujuan] || t.tujuan)}`, 
+              'Supir': t.driverName, 'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
+              'Tanggal': fmtDate(t.tanggal), 'Status': t.status
+          }));
+          body = data.map(Object.values);
+
       } else { 
           title = 'Laporan Kinerja Supir';
           filename = 'laporan_kinerja_supir';
@@ -1045,10 +1071,9 @@
                   if (trip.status) performance[trip.driverId][trip.status]++;
               }
           });
-          data = Object.values(performance).map(d => ({
-              'Nama Supir': d.name, 'Total': d.total, 'Selesai': d.arrived || 0,
-              'Jalan': d.approved || 0, 'Menunggu': d.submitted || 0, 'Ditolak': d.rejected || 0
-          }));
+          data = Object.values(performance);
+          summary = `Total Supir: ${data.length}`;
+          body = data.map(d => [d.name, d.total, d.arrived || 0, d.approved || 0, d.submitted || 0, d.rejected || 0]);
       }
 
       if (data.length === 0) {
@@ -1057,15 +1082,44 @@
       }
       
       if (format === 'excel') {
-          const worksheet = XLSX.utils.json_to_sheet(data);
+          const worksheet = XLSX.utils.json_to_sheet(data, { origin: 'A2' });
+          XLSX.utils.sheet_add_aoa(worksheet, [[title]], { origin: 'A1' });
           const workbook = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
           XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
       } else { 
+          const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
-          doc.text(title, 14, 16);
-          const body = data.map(Object.values);
-          doc.autoTable({ head: [headers], body: body, startY: 20 });
+          // Header
+          doc.setFontSize(18);
+          doc.setFont('helvetica', 'bold');
+          doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Dahromo 1, RT.02, Segoroyoso, Pleret, Bantul, DIY 55791', 14, 30);
+          doc.setLineWidth(0.5);
+          doc.line(14, 35, 196, 35);
+          // Judul
+          doc.setFontSize(16);
+          doc.setFont('helvetica', 'bold');
+          doc.text(title, 105, 45, { align: 'center' });
+          // Ringkasan
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text(summary, 14, 55);
+          // Tabel
+          doc.autoTable({ 
+              head: [headers], body: body, startY: 70, theme: 'grid',
+              headStyles: { fillColor: [26, 34, 53] }, styles: { fontSize: 9 },
+              didDrawPage: function (data) {
+                  // Footer
+                  const pageCount = doc.internal.getNumberOfPages();
+                  doc.setFontSize(8);
+                  const pageHeight = doc.internal.pageSize.height;
+                  doc.text(`Halaman ${data.pageNumber} dari ${pageCount}`, data.settings.margin.left, pageHeight - 10);
+                  doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 196 - data.settings.margin.right, pageHeight - 10, { align: 'right' });
+              }
+          });
           doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
       }
     }
