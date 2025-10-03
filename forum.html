@@ -233,17 +233,17 @@
             a.onclick = (e) => {
                 e.preventDefault();
                 const chatId = [currentUser.uid, uid].sort().join('_');
-                openChat(chatId, userData.name, 'personal');
+                openChat(chatId, userData.name, 'personal', { otherUserId: uid });
             };
             li.appendChild(a);
             elements.userList.appendChild(li);
         });
     }
 
-    function openChat(chatId, chatName, type, groupData = null) {
-        if (type === 'group' && groupData && groupData.id !== 'general') {
+    function openChat(chatId, chatName, type, metaData = null) {
+        if (type === 'group' && metaData && metaData.id !== 'general') {
             const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-            const isMember = groupData.members && groupData.members[currentUser.uid];
+            const isMember = metaData.members && metaData.members[currentUser.uid];
             if (!isAdmin && !isMember) {
                 alert(`Maaf, sistem mendeteksi bahwa Anda bukan bagian dari grup ${chatName}`);
                 return;
@@ -251,15 +251,25 @@
         }
         
         activeChatId = chatId;
-        activeGroupData = groupData;
-        elements.chatTitle.innerHTML = `<i class="fas fa-${type === 'group' ? 'users' : 'user'}"></i> ${chatName}`;
-        elements.chatSubtitle.textContent = type === 'group' ? `Grup: ${chatName}` : `Percakapan dengan ${chatName}`;
+        activeGroupData = (type === 'group') ? metaData : null;
+
+        if (type === 'personal') {
+            const otherUserId = metaData.otherUserId;
+            const otherUser = allUsers[otherUserId];
+            const roleClass = (otherUser.role || '').replace(' ', '-');
+            elements.chatTitle.innerHTML = `<i class="fas fa-user"></i> ${chatName} <span class="role-badge role-${roleClass}" style="font-size: 1.2rem; vertical-align: middle; margin-left: 1rem;">${otherUser.role}</span>`;
+            elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
+        } else {
+            elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
+            elements.chatSubtitle.textContent = `Grup: ${chatName}`;
+        }
+
         elements.messageInput.disabled = false;
         elements.sendMessageBtn.disabled = false;
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-        elements.manageMembersBtn.style.display = (type === 'group' && groupData && groupData.id !== 'general' && isAdmin) ? 'block' : 'none';
+        elements.manageMembersBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && isAdmin) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
