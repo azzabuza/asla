@@ -27,10 +27,10 @@
       <ul>
         <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
         <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Pantau Perjalanan</a></li>
-        <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Manajemen Keuangan</a></li>
         <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
+        <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Manajemen Keuangan</a></li>
         <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
         <li><a href="#addrutes" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Kendaraan</a></li>
@@ -174,45 +174,6 @@
           </div>
         </section>
       </div>
-
-      <div id="page-finance" class="page">
-        <section class="card">
-          <h2 class="card-header">Data Keuangan Perjalanan</h2>
-          <div class="card-body">
-            <div class="table-controls" style="grid-template-columns: 1fr;">
-              <div class="form-group">
-                <label>Cari Supir / Rute / Trip ID</label>
-                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu" />
-              </div>
-            </div>
-            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
-                <h3>Total Pengeluaran</h3>
-                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Trip ID</th>
-                    <th>Rute</th>
-                    <th>Supir</th>
-                    <th>Tanggal</th>
-                    <th>Uang Jalan</th>
-                  </tr>
-                </thead>
-                <tbody id="financeList">
-                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
-              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
-          </div>
-        </section>
-      </div>
       
       <div id="page-users" class="page">
         <section class="card">
@@ -329,6 +290,45 @@
         </section>
       </div>
 
+      <div id="page-finance" class="page">
+        <section class="card">
+          <h2 class="card-header">Data Keuangan Perjalanan</h2>
+          <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+              <div class="form-group">
+                <label>Cari Supir / Rute / Trip ID</label>
+                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
+              </div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
+                <h3>Total Pengeluaran (Uang Jalan)</h3>
+                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trip ID</th>
+                    <th>Rute</th>
+                    <th>Supir</th>
+                    <th>Tanggal</th>
+                    <th>Uang Jalan</th>
+                  </tr>
+                </thead>
+                <tbody id="financeList">
+                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
+              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
+      
       <div id="page-addusers" class="page">
           <section class="card">
               <h2 class="card-header">Tambah Pengguna Baru</h2>
@@ -1501,31 +1501,70 @@
 
     const { jsPDF } = window.jspdf;
 
-    function exportToExcel(data, filename) {
+    function exportToExcel(data, filename, title) {
         if (data.length === 0) {
           alert("Tidak ada data untuk diekspor.");
           return;
         }
-        const worksheet = XLSX.utils.json_to_sheet(data);
+        const worksheet = XLSX.utils.json_to_sheet(data, { origin: 'A2' });
+        XLSX.utils.sheet_add_aoa(worksheet, [[title]], { origin: 'A1' });
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
         XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    function exportToPDF(headers, body, filename, title) {
+    function exportToPDF(headers, body, filename, title, summary) {
         if (body.length === 0) {
           alert("Tidak ada data untuk diekspor.");
           return;
         }
         const doc = new jsPDF();
-        doc.text(title, 14, 16);
-        doc.autoTable({ head: [headers], body: body, startY: 20 });
+        
+        // Header
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Dahromo 1, RT.02, Segoroyoso, Pleret, Bantul, DIY 55791', 14, 30);
+        doc.setLineWidth(0.5);
+        doc.line(14, 35, 196, 35);
+
+        // Judul Laporan
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, 105, 45, { align: 'center' });
+
+        // Ringkasan
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(summary, 14, 55);
+
+        // Tabel
+        doc.autoTable({ 
+            head: [headers], 
+            body: body, 
+            startY: 60,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 34, 53] }, // --dark-slate-blue
+            styles: { fontSize: 9 },
+            didDrawPage: function (data) {
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(8);
+                const pageHeight = doc.internal.pageSize.height;
+                doc.text(`Halaman ${data.pageNumber} dari ${pageCount}`, data.settings.margin.left, pageHeight - 10);
+                doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 196 - data.settings.margin.right, pageHeight - 10, { align: 'right' });
+            }
+        });
+
         doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
     }
     
     function handleExport(format) {
       const reportType = elements.reportType.value;
-      let dataForExcel, bodyForPDF, headers, filename, title;
+      let dataForExcel, bodyForPDF, headers, filename, title, summary;
 
       switch (reportType) {
         case 'trips':
@@ -1544,17 +1583,15 @@
             'No. Kendaraan': t.data.vehicleNumber || 'N/A', 'Muatan': t.data.muatan || 'N/A',
             'Tanggal': fmtDate(t.data.tanggal), 'Status': t.data.status
           }));
-          bodyForPDF = filteredTrips.map(t => {
-            const asalCode = routeCodeMap[t.data.asal] || 'N/A';
-            const tujuanCodes = Array.isArray(t.data.tujuan) ? t.data.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.data.tujuan] || 'N/A');
-            return [`${asalCode}, ${tujuanCodes}`, t.data.driverName || 'N/A', t.data.vehicleNumber || 'N/A', t.data.muatan || 'N/A', fmtDate(t.data.tanggal), t.data.status];
-          });
+          bodyForPDF = dataForExcel.map(Object.values);
           headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
           filename = 'Laporan_Perjalanan';
-          title = `Laporan Perjalanan (${startDate} s/d ${endDate})`;
+          title = `Laporan Perjalanan`;
+          summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal Perjalanan: ${filteredTrips.length}`;
           break;
         case 'users':
-          dataForExcel = Object.values(allUsers).map(u => ({
+          const allUsersData = Object.values(allUsers);
+          dataForExcel = allUsersData.map(u => ({
             'Nama': u.name || '-', 'Role': u.role || '-',
             'Login Terakhir': u.lastLogin ? new Date(u.lastLogin).toLocaleString('id-ID') : '-',
             'Status': u.online ? 'Online' : 'Offline'
@@ -1562,25 +1599,28 @@
           bodyForPDF = dataForExcel.map(Object.values);
           headers = ["Nama", "Role", "Login Terakhir", "Status"];
           filename = 'Laporan_Pengguna';
-          title = 'Laporan Semua Pengguna';
+          title = 'Laporan Data Pengguna';
+          summary = `Total Pengguna: ${allUsersData.length}`;
           break;
         case 'routes':
           dataForExcel = allRoutes.map(r => ({ 'Kode': r.data.code, 'Alamat/Lokasi': r.data.address }));
           bodyForPDF = dataForExcel.map(Object.values);
           headers = ["Kode", "Alamat/Lokasi"];
           filename = 'Laporan_Rute';
-          title = 'Laporan Semua Rute';
+          title = 'Laporan Data Rute';
+          summary = `Total Rute: ${allRoutes.length}`;
           break;
         case 'vehicles':
           dataForExcel = allVehicles.map(v => ({ 'No. Kendaraan': v.data.vehicleNumber, 'Unit': v.data.unit, 'Kepemilikan': v.data.ownership }));
           bodyForPDF = dataForExcel.map(Object.values);
           headers = ["No. Kendaraan", "Unit", "Kepemilikan"];
           filename = 'Laporan_Kendaraan';
-          title = 'Laporan Semua Kendaraan';
+          title = 'Laporan Data Kendaraan';
+          summary = `Total Kendaraan: ${allVehicles.length}`;
           break;
       }
-      if (format === 'excel') { exportToExcel(dataForExcel, filename); } 
-      else if (format === 'pdf') { exportToPDF(headers, bodyForPDF, filename, title); }
+      if (format === 'excel') { exportToExcel(dataForExcel, filename, title); } 
+      else if (format === 'pdf') { exportToPDF(headers, bodyForPDF, filename, title, summary); }
     }
     
     async function handleBackup() {
