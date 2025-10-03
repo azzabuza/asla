@@ -97,6 +97,10 @@
           <label for="groupNameInput">Nama Grup</label>
           <input type="text" id="groupNameInput" placeholder="Contoh: Koordinasi Proyek X" required>
         </div>
+        <div class="form-group">
+          <label for="groupDescriptionInput">Deskripsi Grup</label>
+          <textarea id="groupDescriptionInput" placeholder="Jelaskan tujuan dari grup ini..." rows="3" style="resize: vertical;"></textarea>
+        </div>
         <button type="submit" style="width: 100%;">Buat Grup</button>
       </form>
     </div>
@@ -160,6 +164,7 @@
         closeCreateGroupModal: document.getElementById('closeCreateGroupModal'),
         createGroupForm: document.getElementById('createGroupForm'),
         groupNameInput: document.getElementById('groupNameInput'),
+        groupDescriptionInput: document.getElementById('groupDescriptionInput'),
         manageMembersBtn: document.getElementById('manageMembersBtn'),
         manageMembersModal: document.getElementById('manageMembersModal'),
         closeManageMembersModal: document.getElementById('closeManageMembersModal'),
@@ -284,7 +289,9 @@
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
-            elements.chatSubtitle.textContent = `Grup: ${chatName}`;
+            // Menampilkan deskripsi grup jika ada
+            const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
+            elements.chatSubtitle.textContent = groupDescription;
         }
 
         elements.messageInput.disabled = false;
@@ -398,12 +405,14 @@
     async function handleCreateGroup(e) {
         e.preventDefault();
         const groupName = elements.groupNameInput.value.trim();
+        const groupDescription = elements.groupDescriptionInput.value.trim();
         if (!groupName) return;
 
         try {
             const newGroupRef = push(ref(db, 'groups'));
             await set(newGroupRef, {
                 name: groupName,
+                description: groupDescription,
                 createdBy: currentUser.uid,
                 createdAt: serverTimestamp(),
                 members: { [currentUser.uid]: true }
