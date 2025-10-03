@@ -1431,6 +1431,8 @@ body.light-mode .modal-content {
   text-transform: uppercase;
 }
 .chat-messages {
+  box-sizing: border-box;
+  background-color: var(--dark-blue-gray);
   flex-grow: 1;
   overflow-y: auto;
   padding: 1rem;
