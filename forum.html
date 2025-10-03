@@ -20,7 +20,10 @@
           <small id="userEmail">Memuat...</small>
         </div>
         <div id="chat-list-container" class="sidebar-menu">
-          <h4 class="chat-list-header">Grup Chat</h4>
+          <div class="chat-list-header-wrapper">
+            <h4 class="chat-list-header">Grup Chat</h4>
+            <button id="createGroupBtn" class="btn-sm" style="display: none;"><i class="fas fa-plus"></i></button>
+          </div>
           <ul id="group-list">
              </ul>
           <h4 class="chat-list-header">Personal Chat</h4>
@@ -40,6 +43,9 @@
           <div class="main-header-content">
             <h1 id="chatTitle"><i class="fas fa-comments"></i> Selamat Datang di Forum</h1>
             <p id="chatSubtitle">Pilih grup atau pengguna untuk memulai percakapan.</p>
+          </div>
+          <div class="main-header-menu">
+            <button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button>
           </div>
         </header>
         <div class="content-container" id="chat-area" style="display: flex; flex-direction: column; height: calc(100% - 6rem);">
@@ -69,7 +75,7 @@
       <span class="close-modal" id="closeReportModal">&times;</span>
       <h2>Laporkan Pesan</h2>
       <p style="font-size: 1.5rem; color: var(--slate-gray); margin: 1rem 0;">Anda akan melaporkan pesan berikut:</p>
-      <p id="reportedMessageText" style="background-color: var(--gunmetal); padding: 1rem; border-radius: 0.5rem; font-style: italic; font-size: 1.4rem;"></p>
+      <p id="reportedMessageText" class="modal-quote"></p>
       <div class="form-group">
         <label for="reportReason">Alasan Pelaporan</label>
         <select id="reportReason">
@@ -84,13 +90,47 @@
     </div>
   </div>
 
+  <div id="createGroupModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeCreateGroupModal">&times;</span>
+      <h2>Buat Grup Baru</h2>
+      <form id="createGroupForm">
+        <div class="form-group">
+          <label for="groupNameInput">Nama Grup</label>
+          <input type="text" id="groupNameInput" placeholder="Contoh: Koordinasi Proyek X" required>
+        </div>
+        <button type="submit" style="width: 100%;">Buat Grup</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="manageMembersModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <span class="close-modal" id="closeManageMembersModal">&times;</span>
+      <h2 id="manageMembersTitle">Kelola Anggota</h2>
+      <div class="members-management-container">
+        <div class="members-list-container">
+          <h4>Anggota Saat Ini</h4>
+          <ul id="currentMembersList" class="modal-user-list"></ul>
+        </div>
+        <div class="members-list-container">
+          <h4>Tambah Anggota Baru</h4>
+          <ul id="addMembersList" class="modal-user-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo } from './firebase.js';
     import { el } from './utils.js';
 
     let currentUser = null;
     let currentUserData = null;
+    let allUsers = {};
     let activeChatId = null;
+    let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
     
@@ -117,13 +157,21 @@
         reportedMessageText: document.getElementById('reportedMessageText'),
         reportReason: document.getElementById('reportReason'),
         submitReportBtn: document.getElementById('submitReportBtn'),
+        createGroupBtn: document.getElementById('createGroupBtn'),
+        createGroupModal: document.getElementById('createGroupModal'),
+        closeCreateGroupModal: document.getElementById('closeCreateGroupModal'),
+        createGroupForm: document.getElementById('createGroupForm'),
+        groupNameInput: document.getElementById('groupNameInput'),
+        manageMembersBtn: document.getElementById('manageMembersBtn'),
+        manageMembersModal: document.getElementById('manageMembersModal'),
+        closeManageMembersModal: document.getElementById('closeManageMembersModal'),
+        manageMembersTitle: document.getElementById('manageMembersTitle'),
+        currentMembersList: document.getElementById('currentMembersList'),
+        addMembersList: document.getElementById('addMembersList'),
     };
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = 'index.html';
-            return;
-        }
+        if (!user) { window.location.href = 'index.html'; return; }
         currentUser = user;
         const userSnap = await get(ref(db, `users/${currentUser.uid}`));
         if (userSnap.exists()) {
@@ -132,65 +180,87 @@
             elements.userEmail.textContent = currentUser.email;
             elements.userRoleTitle.textContent = currentUserData.role.charAt(0).toUpperCase() + currentUserData.role.slice(1);
             
-            // Setup back button
             if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
                 elements.backToPanelBtn.href = 'admin.html';
+                elements.createGroupBtn.style.display = 'block';
             } else if (currentUserData.role === 'coordinator') {
                 elements.backToPanelBtn.href = 'coordinator.html';
-            } else {
+            } else { // Driver etc.
                 elements.backToPanelBtn.style.display = 'none';
             }
         }
         
-        loadChatLists();
+        loadAllUsersAndThenChats();
         setupEventListeners();
     });
 
-    function loadChatLists() {
-        // Load Group Chats
-        const groups = [{ id: 'general', name: 'Diskusi Umum' }];
-        elements.groupList.innerHTML = '';
-        groups.forEach(group => {
-            const li = el('li');
-            const a = el('a', `<i class="fas fa-users"></i> ${group.name}`, { href: '#' });
-            a.onclick = (e) => {
-                e.preventDefault();
-                openChat(group.id, group.name, 'group');
-            };
-            li.appendChild(a);
-            elements.groupList.appendChild(li);
-        });
-
-        // Load Users for Personal Chat
+    function loadAllUsersAndThenChats() {
         onValue(ref(db, 'users'), (snapshot) => {
-            elements.userList.innerHTML = '';
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    if (child.key === currentUser.uid) return; // Don't list self
-                    const userData = child.val();
-                    const li = el('li');
-                    const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
-                    const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#' });
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        const chatId = [currentUser.uid, child.key].sort().join('_');
-                        openChat(chatId, userData.name, 'personal');
-                    };
-                    li.appendChild(a);
-                    elements.userList.appendChild(li);
-                });
+            if(snapshot.exists()) {
+                allUsers = snapshot.val();
+                loadChatLists(); // Load chats after we have all user data
             }
         });
     }
 
-    function openChat(chatId, chatName, type) {
+    function loadChatLists() {
+        const groupsRef = ref(db, 'groups');
+        onValue(groupsRef, (snapshot) => {
+            elements.groupList.innerHTML = '';
+            // Add default general chat
+            const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+            const liGeneral = el('li');
+            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#' });
+            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group'); };
+            liGeneral.appendChild(aGeneral);
+            elements.groupList.appendChild(liGeneral);
+
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    const group = { id: child.key, ...child.val() };
+                    const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+                    const isMember = group.members && group.members[currentUser.uid];
+                    
+                    if(isAdmin || isMember) {
+                        const li = el('li');
+                        const a = el('a', `<i class="fas fa-users"></i> ${group.name}`, { href: '#' });
+                        a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
+                        li.appendChild(a);
+                        elements.groupList.appendChild(li);
+                    }
+                });
+            }
+        });
+
+        // Load Users for Personal Chat
+        elements.userList.innerHTML = '';
+        Object.entries(allUsers).forEach(([uid, userData]) => {
+            if (uid === currentUser.uid) return;
+            const li = el('li');
+            const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
+            const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#' });
+            a.onclick = (e) => {
+                e.preventDefault();
+                const chatId = [currentUser.uid, uid].sort().join('_');
+                openChat(chatId, userData.name, 'personal');
+            };
+            li.appendChild(a);
+            elements.userList.appendChild(li);
+        });
+    }
+
+    function openChat(chatId, chatName, type, groupData = null) {
         activeChatId = chatId;
+        activeGroupData = groupData;
         elements.chatTitle.innerHTML = `<i class="fas fa-${type === 'group' ? 'users' : 'user'}"></i> ${chatName}`;
-        elements.chatSubtitle.textContent = type === 'group' ? 'Grup Diskusi Umum' : `Percakapan dengan ${chatName}`;
+        elements.chatSubtitle.textContent = type === 'group' ? `Grup: ${chatName}` : `Percakapan dengan ${chatName}`;
         elements.messageInput.disabled = false;
         elements.sendMessageBtn.disabled = false;
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
+        const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+        elements.manageMembersBtn.style.display = (type === 'group' && groupData && isAdmin) ? 'block' : 'none';
+
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = '';
@@ -245,11 +315,7 @@
     }
     
     function setReplyingTo(msgId, msgData) {
-        replyingTo = {
-            id: msgId,
-            senderName: msgData.senderName,
-            text: msgData.text,
-        };
+        replyingTo = { id: msgId, senderName: msgData.senderName, text: msgData.text };
         elements.replyingToUser.textContent = msgData.senderName;
         elements.replyingToText.textContent = msgData.text;
         elements.replyingToBanner.style.display = 'flex';
@@ -275,14 +341,10 @@
     async function submitReport() {
         if (!messageToReport) return;
         const reportData = {
-            messageId: messageToReport.id,
-            chatId: activeChatId,
-            reportedUserId: messageToReport.senderId,
-            reporterUserId: currentUser.uid,
-            messageText: messageToReport.text,
-            reason: elements.reportReason.value,
-            timestamp: serverTimestamp(),
-            status: 'pending'
+            messageId: messageToReport.id, chatId: activeChatId,
+            reportedUserId: messageToReport.senderId, reporterUserId: currentUser.uid,
+            messageText: messageToReport.text, reason: elements.reportReason.value,
+            timestamp: serverTimestamp(), status: 'pending'
         };
         try {
             await push(ref(db, 'reports'), reportData);
@@ -294,6 +356,82 @@
         }
     }
 
+    async function handleCreateGroup(e) {
+        e.preventDefault();
+        const groupName = elements.groupNameInput.value.trim();
+        if (!groupName) return;
+
+        try {
+            const newGroupRef = push(ref(db, 'groups'));
+            await set(newGroupRef, {
+                name: groupName,
+                createdBy: currentUser.uid,
+                createdAt: serverTimestamp(),
+                members: { [currentUser.uid]: true } // Creator is the first member
+            });
+            elements.createGroupForm.reset();
+            elements.createGroupModal.style.display = 'none';
+        } catch (error) {
+            console.error("Error creating group:", error);
+            alert("Gagal membuat grup.");
+        }
+    }
+
+    function openManageMembersModal() {
+        if (!activeGroupData) return;
+        elements.manageMembersTitle.textContent = `Kelola Anggota: ${activeGroupData.name}`;
+        elements.currentMembersList.innerHTML = '';
+        elements.addMembersList.innerHTML = '';
+
+        const members = activeGroupData.members || {};
+        
+        Object.keys(allUsers).forEach(uid => {
+            const user = allUsers[uid];
+            const li = el('li', '', { class: 'modal-user-item' });
+            li.textContent = user.name;
+
+            if(members[uid]) { // User is a member
+                if (uid !== activeGroupData.createdBy) { // Can't remove creator
+                    const removeBtn = el('button', 'Keluarkan', { class: 'btn-sm danger' });
+                    removeBtn.onclick = () => removeMemberFromGroup(uid);
+                    li.appendChild(removeBtn);
+                } else {
+                    const creatorBadge = el('span', 'Creator', { class: 'creator-badge' });
+                    li.appendChild(creatorBadge);
+                }
+                elements.currentMembersList.appendChild(li);
+            } else { // User is not a member
+                const addBtn = el('button', 'Tambah', { class: 'btn-sm success' });
+                addBtn.onclick = () => addMemberToGroup(uid);
+                li.appendChild(addBtn);
+                elements.addMembersList.appendChild(li);
+            }
+        });
+
+        elements.manageMembersModal.style.display = 'block';
+    }
+
+    async function addMemberToGroup(userId) {
+        if(!activeGroupData) return;
+        const updates = {};
+        updates[`/groups/${activeGroupData.id}/members/${userId}`] = true;
+        await update(ref(db), updates);
+        activeGroupData.members[userId] = true; // Update local state
+        openManageMembersModal(); // Refresh modal
+    }
+
+    async function removeMemberFromGroup(userId) {
+        if(!activeGroupData || userId === activeGroupData.createdBy) return;
+        if(confirm(`Yakin ingin mengeluarkan ${allUsers[userId].name} dari grup?`)) {
+            const updates = {};
+            updates[`/groups/${activeGroupData.id}/members/${userId}`] = null;
+            await update(ref(db), updates);
+            delete activeGroupData.members[userId]; // Update local state
+            openManageMembersModal(); // Refresh modal
+        }
+    }
+
+
     function setupEventListeners() {
         elements.messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -301,15 +439,11 @@
             if (!messageText || !activeChatId) return;
 
             const messageData = {
-                senderId: currentUser.uid,
-                senderName: currentUserData.name,
-                text: messageText,
-                timestamp: serverTimestamp()
+                senderId: currentUser.uid, senderName: currentUserData.name,
+                text: messageText, timestamp: serverTimestamp()
             };
 
-            if (replyingTo) {
-                messageData.replyingToId = replyingTo.id;
-            }
+            if (replyingTo) { messageData.replyingToId = replyingTo.id; }
 
             const newMessageRef = push(ref(db, `chats/${activeChatId}`));
             set(newMessageRef, messageData);
@@ -322,8 +456,20 @@
         elements.cancelReplyBtn.onclick = cancelReply;
         elements.closeReportModal.onclick = closeReportModal;
         elements.submitReportBtn.onclick = submitReport;
-    }
 
+        elements.createGroupBtn.onclick = () => elements.createGroupModal.style.display = 'block';
+        elements.closeCreateGroupModal.onclick = () => elements.createGroupModal.style.display = 'none';
+        elements.createGroupForm.addEventListener('submit', handleCreateGroup);
+        
+        elements.manageMembersBtn.onclick = openManageMembersModal;
+        elements.closeManageMembersModal.onclick = () => elements.manageMembersModal.style.display = 'none';
+
+        window.onclick = (event) => {
+            if (event.target == elements.reportModal) closeReportModal();
+            if (event.target == elements.createGroupModal) elements.createGroupModal.style.display = 'none';
+            if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
+        };
+    }
   </script>
 </body>
 </html>
