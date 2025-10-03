@@ -1462,6 +1462,7 @@ body.light-mode .modal-content {
   padding: 1rem;
   border-radius: 1rem;
   font-size: 1.5rem;
+  color: var(--light-lavender);
   position: relative;
 }
 .message-wrapper.sent {
@@ -1474,7 +1475,6 @@ body.light-mode .modal-content {
 }
 .message-wrapper.received .message-bubble {
   background-color: var(--gunmetal);
-  color: var(--light-lavender);
   border-radius: 1rem 1rem 1rem 0;
 }
 .message-header {
