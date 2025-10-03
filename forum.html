@@ -198,7 +198,7 @@
         onValue(ref(db, 'users'), (snapshot) => {
             if(snapshot.exists()) {
                 allUsers = snapshot.val();
-                loadChatLists(); // Load chats after we have all user data
+                loadChatLists();
             }
         });
     }
@@ -207,32 +207,30 @@
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
             elements.groupList.innerHTML = '';
-            // Add default general chat
+            
             const generalGroup = { id: 'general', name: 'Diskusi Umum' };
             const liGeneral = el('li');
             const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#' });
-            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group'); };
+            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
             liGeneral.appendChild(aGeneral);
             elements.groupList.appendChild(liGeneral);
 
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const group = { id: child.key, ...child.val() };
-                    const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
                     const isMember = group.members && group.members[currentUser.uid];
+                    const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
                     
-                    if(isAdmin || isMember) {
-                        const li = el('li');
-                        const a = el('a', `<i class="fas fa-users"></i> ${group.name}`, { href: '#' });
-                        a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
-                        li.appendChild(a);
-                        elements.groupList.appendChild(li);
-                    }
+                    const li = el('li');
+                    const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
+                    const a = el('a', `${icon} ${group.name}`, { href: '#' });
+                    a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
+                    li.appendChild(a);
+                    elements.groupList.appendChild(li);
                 });
             }
         });
 
-        // Load Users for Personal Chat
         elements.userList.innerHTML = '';
         Object.entries(allUsers).forEach(([uid, userData]) => {
             if (uid === currentUser.uid) return;
@@ -250,6 +248,15 @@
     }
 
     function openChat(chatId, chatName, type, groupData = null) {
+        if (type === 'group' && groupData && groupData.id !== 'general') {
+            const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+            const isMember = groupData.members && groupData.members[currentUser.uid];
+            if (!isAdmin && !isMember) {
+                alert(`Maaf, sistem mendeteksi bahwa Anda bukan bagian dari grup ${chatName}`);
+                return;
+            }
+        }
+        
         activeChatId = chatId;
         activeGroupData = groupData;
         elements.chatTitle.innerHTML = `<i class="fas fa-${type === 'group' ? 'users' : 'user'}"></i> ${chatName}`;
@@ -259,7 +266,7 @@
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-        elements.manageMembersBtn.style.display = (type === 'group' && groupData && isAdmin) ? 'block' : 'none';
+        elements.manageMembersBtn.style.display = (type === 'group' && groupData && groupData.id !== 'general' && isAdmin) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
@@ -367,7 +374,7 @@
                 name: groupName,
                 createdBy: currentUser.uid,
                 createdAt: serverTimestamp(),
-                members: { [currentUser.uid]: true } // Creator is the first member
+                members: { [currentUser.uid]: true }
             });
             elements.createGroupForm.reset();
             elements.createGroupModal.style.display = 'none';
@@ -390,8 +397,8 @@
             const li = el('li', '', { class: 'modal-user-item' });
             li.textContent = user.name;
 
-            if(members[uid]) { // User is a member
-                if (uid !== activeGroupData.createdBy) { // Can't remove creator
+            if(members[uid]) {
+                if (uid !== activeGroupData.createdBy) {
                     const removeBtn = el('button', 'Keluarkan', { class: 'btn-sm danger' });
                     removeBtn.onclick = () => removeMemberFromGroup(uid);
                     li.appendChild(removeBtn);
@@ -400,7 +407,7 @@
                     li.appendChild(creatorBadge);
                 }
                 elements.currentMembersList.appendChild(li);
-            } else { // User is not a member
+            } else {
                 const addBtn = el('button', 'Tambah', { class: 'btn-sm success' });
                 addBtn.onclick = () => addMemberToGroup(uid);
                 li.appendChild(addBtn);
@@ -416,8 +423,9 @@
         const updates = {};
         updates[`/groups/${activeGroupData.id}/members/${userId}`] = true;
         await update(ref(db), updates);
-        activeGroupData.members[userId] = true; // Update local state
-        openManageMembersModal(); // Refresh modal
+        if (!activeGroupData.members) activeGroupData.members = {};
+        activeGroupData.members[userId] = true;
+        openManageMembersModal();
     }
 
     async function removeMemberFromGroup(userId) {
@@ -426,11 +434,10 @@
             const updates = {};
             updates[`/groups/${activeGroupData.id}/members/${userId}`] = null;
             await update(ref(db), updates);
-            delete activeGroupData.members[userId]; // Update local state
-            openManageMembersModal(); // Refresh modal
+            delete activeGroupData.members[userId];
+            openManageMembersModal();
         }
     }
-
 
     function setupEventListeners() {
         elements.messageForm.addEventListener('submit', (e) => {
