@@ -8,6 +8,7 @@
   --dark-blue-gray: #121828;
   --dark-slate-blue: #1a2235;
   --gunmetal: #242f48;
+  --light-gunmetal: #323d56;
   --dark-blue-gray-80: rgba(18, 24, 40, 0.8);
   --gray: #555555;
   --white: #ffffff;
@@ -1458,7 +1459,7 @@ body.light-mode .modal-content {
   gap: 1rem;
 }
 .message-bubble {
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   border-radius: 1rem;
   font-size: 1.5rem;
   position: relative;
@@ -1468,8 +1469,7 @@ body.light-mode .modal-content {
   flex-direction: row-reverse;
 }
 .message-wrapper.sent .message-bubble {
-  background: var(--bg-btn-gradient);
-  color: var(--text-inverse-dark-blue-gray);
+  background: var(--light-gunmetal);
   border-radius: 1rem 1rem 0 1rem;
 }
 .message-wrapper.received .message-bubble {
