@@ -962,7 +962,7 @@
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const actionsContainer = el('div', '', { class: 'trip-actions', style: 'display:flex; gap: 1rem;' });
           
-          const barcodeButton = el('button', '<i class="fas fa-qrcode"></i>', { class: 'btn-sm' });
+          const barcodeButton = el('button', '<i class="fas fa-qrcode"></i> Kode', { class: 'btn-sm' });
           barcodeButton.onclick = () => {
               elements.qrcodeText.textContent = tripId;
               elements.qrcodeContainer.innerHTML = '';
