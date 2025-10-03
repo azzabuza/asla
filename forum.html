@@ -281,7 +281,9 @@
         const msgBubble = el('div', '', { class: 'message-bubble' });
 
         const senderName = isMe ? 'Anda' : msgData.senderName;
-        const header = el('p', senderName, { class: 'message-header' });
+        const roleClass = (msgData.senderRole || '').replace(' ', '-');
+        const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${msgData.senderRole}</span>`;
+        const header = el('p', headerHTML, { class: 'message-header' });
         
         let repliedMsgHtml = '';
         if (msgData.replyingToId) {
@@ -439,8 +441,11 @@
             if (!messageText || !activeChatId) return;
 
             const messageData = {
-                senderId: currentUser.uid, senderName: currentUserData.name,
-                text: messageText, timestamp: serverTimestamp()
+                senderId: currentUser.uid,
+                senderName: currentUserData.name,
+                senderRole: currentUserData.role,
+                text: messageText,
+                timestamp: serverTimestamp()
             };
 
             if (replyingTo) { messageData.replyingToId = replyingTo.id; }
