@@ -7,6 +7,9 @@
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
@@ -38,6 +41,7 @@
         <li><a href="#documentation" class="nav-link"><i class="fas fa-file-alt"></i> Dokumentasi Laporan</a></li>
         <li id="lockdown-menu-item" style="display: none;"><a href="#lockdown" class="nav-link"><i class="fas fa-lock"></i> Lockdown Pengguna</a></li>
         <li id="backup-menu-item" style="display: none;"><a href="#backup" class="nav-link"><i class="fas fa-database"></i> Pencadangan Data</a></li>
+        <li id="tampilan-menu-item" style="display: none;"><a href="#tampilan" class="nav-link"><i class="fas fa-palette"></i> Tampilan</a></li>
       </ul>
       </div>
       <div class="sidebar-footer">
@@ -517,6 +521,45 @@
           </div>
         </section>
       </div>
+      
+      <div id="page-tampilan" class="page">
+        <section class="card">
+            <h2 class="card-header">Tema & Huruf</h2>
+            <div class="card-body">
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="themeToggle" style="margin: 0;">Mode Terang</label>
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <hr>
+                <div class="form-group">
+                    <label for="fontSelector">Pilih Font</label>
+                    <select id="fontSelector">
+                        <option value="'Poppins', sans-serif">Poppins (Default)</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Lato', sans-serif">Lato</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+        <section class="card">
+            <h2 class="card-header">Kepadatan Tampilan</h2>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Pilih tingkat kepadatan untuk tabel dan daftar</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="density" value="comfortable" checked> Lega</label>
+                        <label><input type="radio" name="density" value="default"> Normal</label>
+                        <label><input type="radio" name="density" value="compact"> Rapat</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
 </div>
 <footer class="main-footer">
         <p><strong style="color: var(--orange);">PERINGATAN:</strong> Setiap kali akan eksekusi data silahkan lakukan pengecekan berkala sebelum melakukan submit.</p>
@@ -563,7 +606,8 @@
         performance: { title: '<i class="fas fa-chart-line"></i> Kinerja Role', subtitle: 'Lihat ringkasan aktivitas berdasarkan peran.' },
         documentation: { title: '<i class="fas fa-file-alt"></i> Dokumentasi Laporan', subtitle: 'Buat dan unduh laporan dari data sistem.' },
         lockdown: { title: '<i class="fas fa-lock"></i> Lockdown', subtitle: 'Nonaktifkan sementara pengguna bermasalah.' },
-        backup: { title: '<i class="fas fa-database"></i> Backup & Restore', subtitle: 'Kelola pencadangan dan pemulihan data sistem.' }
+        backup: { title: '<i class="fas fa-database"></i> Backup & Restore', subtitle: 'Kelola pencadangan dan pemulihan data sistem.' },
+        tampilan: { title: '<i class="fas fa-palette"></i> Pengaturan Tampilan', subtitle: 'Kustomisasi tampilan panel admin sesuai preferensi Anda.' }
     };
 
     const elements = {
@@ -634,6 +678,7 @@
         exportPdfBtn: document.getElementById('exportPdfBtn'),
         exportExcelBtn: document.getElementById('exportExcelBtn'),
         lockdownMenuItem: document.getElementById('lockdown-menu-item'),
+        tampilanMenuItem: document.getElementById('tampilan-menu-item'),
         lockdownUserList: document.getElementById('lockdownUserList'),
         massLockdownSwitch: document.getElementById('massLockdownSwitch'),
         backupMenuItem: document.getElementById('backup-menu-item'),
@@ -647,6 +692,9 @@
         recipientName: document.getElementById('recipientName'),
         recipientAddress: document.getElementById('recipientAddress'),
         totalUangJalan: document.getElementById('totalUangJalan'),
+        themeToggle: document.getElementById('themeToggle'),
+        fontSelector: document.getElementById('fontSelector'),
+        densityRadios: document.querySelectorAll('input[name="density"]'),
     };
 
     let currentUser = null;
@@ -743,6 +791,7 @@
         if (currentUserData.role === 'super admin') {
             elements.lockdownMenuItem.style.display = 'block';
             elements.backupMenuItem.style.display = 'block';
+            elements.tampilanMenuItem.style.display = 'block';
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -751,6 +800,8 @@
         await update(userRef, { lastLogin: Date.now(), online: true });
         onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
         
+        loadDisplayPreferences();
+        setupDisplayEventListeners();
         await loadRoutes();
         loadInitialData();
 
@@ -1690,6 +1741,48 @@
         reader.onerror = () => { alert('Gagal membaca file.'); };
         reader.readAsText(file);
     }
+    
+    function setupDisplayEventListeners() {
+        elements.themeToggle.addEventListener('change', (e) => {
+            const isLight = e.target.checked;
+            document.body.classList.toggle('light-mode', isLight);
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+
+        elements.fontSelector.addEventListener('change', (e) => {
+            const font = e.target.value;
+            document.body.style.fontFamily = font;
+            localStorage.setItem('font', font);
+        });
+
+        elements.densityRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const density = e.target.value;
+                document.body.dataset.density = density;
+                localStorage.setItem('density', density);
+            });
+        });
+    }
+
+    function loadDisplayPreferences() {
+        const theme = localStorage.getItem('theme');
+        const font = localStorage.getItem('font');
+        const density = localStorage.getItem('density') || 'default';
+
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            elements.themeToggle.checked = true;
+        }
+
+        if (font) {
+            document.body.style.fontFamily = font;
+            elements.fontSelector.value = font;
+        }
+
+        document.body.dataset.density = density;
+        document.querySelector(`input[name="density"][value="${density}"]`).checked = true;
+    }
+
 
     elements.downloadBackupBtn.addEventListener('click', handleBackup);
     elements.restoreBackupBtn.addEventListener('click', handleRestore);
