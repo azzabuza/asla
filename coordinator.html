@@ -1032,6 +1032,10 @@
     function handleExport(format) {
       const type = elements.reportType.value;
       let data, headers, filename, title, summary, body;
+      const statusMap = {
+          submitted: "Menunggu", approved: "Disetujui", delivering: "Dalam Perjalanan",
+          arriving_soon: "Hampir Sampai", arrived: "Selesai", rejected: "Ditolak",
+      };
 
       if (type === 'my_trips') {
           const startDate = elements.startDate.value;
@@ -1048,12 +1052,16 @@
           title = 'Laporan Perjalanan Saya';
           filename = 'laporan_perjalanan_saya';
           summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nDibuat oleh: ${currentUserName}\nTotal Perjalanan: ${filteredTrips.length}`;
-          headers = ["Trip ID", "Rute", "Supir", "No. Kendaraan", "Muatan", "Tanggal", "Status"];
+          headers = ["Trip ID", "Rute", "Supir", "No. Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
           data = filteredTrips.map(({id, data: t}) => ({
               'Trip ID': id, 
               'Rute': `${routeAddressToCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeAddressToCodeMap[tujuan] || tujuan).join(', ') : (routeAddressToCodeMap[t.tujuan] || t.tujuan)}`, 
-              'Supir': t.driverName, 'No. Kendaraan': t.vehicleNumber, 'Muatan': t.muatan,
-              'Tanggal': fmtDate(t.tanggal), 'Status': t.status
+              'Supir': t.driverName, 
+              'No. Kendaraan': t.vehicleNumber, 
+              'Muatan': t.muatan,
+              'Uang Jalan': idr(t.uangJalan),
+              'Tanggal': fmtDate(t.tanggal), 
+              'Status': statusMap[t.status] || t.status
           }));
           body = data.map(Object.values);
 
