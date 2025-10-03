@@ -30,6 +30,7 @@
         <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
+        <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Manajemen Keuangan</a></li>
         <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
         <li><a href="#addrutes" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Kendaraan</a></li>
@@ -288,6 +289,45 @@
           </div>
         </section>
       </div>
+
+      <div id="page-finance" class="page">
+        <section class="card">
+          <h2 class="card-header">Data Keuangan Perjalanan</h2>
+          <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+              <div class="form-group">
+                <label>Cari Supir / Rute / Trip ID</label>
+                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
+              </div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
+                <h3>Total Pemasukan (Uang Jalan)</h3>
+                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trip ID</th>
+                    <th>Rute</th>
+                    <th>Supir</th>
+                    <th>Tanggal</th>
+                    <th>Uang Jalan</th>
+                  </tr>
+                </thead>
+                <tbody id="financeList">
+                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
+              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
       
       <div id="page-addusers" class="page">
           <section class="card">
@@ -516,6 +556,7 @@
         users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
         vehicles: { title: '<i class="fas fa-car"></i> Manajemen Kendaraan', subtitle: 'Kelola daftar kendaraan operasional.' },
+        finance: { title: '<i class="fas fa-wallet"></i> Manajemen Keuangan', subtitle: 'Lacak semua transaksi uang jalan dari perjalanan.' },
         addusers: { title: '<i class="fas fa-user-plus"></i> Tambah Pengguna', subtitle: 'Buat akun baru untuk pengguna.' },
         addrutes: { title: '<i class="fas fa-plus-circle"></i> Tambah Rute', subtitle: 'Tambahkan rute baru ke dalam sistem.' },
         addvehicles: { title: '<i class="fas fa-car-side"></i> Tambah Kendaraan', subtitle: 'Tambahkan kendaraan baru ke dalam sistem.' },
@@ -541,6 +582,7 @@
         searchTrip: document.getElementById('searchTrip'),
         searchRoute: document.getElementById('searchRoute'),
         searchVehicle: document.getElementById('searchVehicle'),
+        searchFinance: document.getElementById('searchFinance'),
         logoutBtn: document.getElementById('logoutBtn'),
         addUserForm: document.getElementById('addUserForm'),
         addUserStatus: document.getElementById('addUserStatus'),
@@ -551,6 +593,7 @@
         addVehicleForm: document.getElementById('addVehicleForm'),
         addVehicleStatus: document.getElementById('addVehicleStatus'),
         vehicleList: document.getElementById('vehicleList'),
+        financeList: document.getElementById('financeList'),
         paginationControls: document.getElementById('pagination-controls'),
         prevBtn: document.getElementById('prevBtn'),
         nextBtn: document.getElementById('nextBtn'),
@@ -567,6 +610,10 @@
         prevVehicleBtn: document.getElementById('prevVehicleBtn'),
         nextVehicleBtn: document.getElementById('nextVehicleBtn'),
         vehiclePageInfo: document.getElementById('vehiclePageInfo'),
+        financePaginationControls: document.getElementById('finance-pagination-controls'),
+        prevFinanceBtn: document.getElementById('prevFinanceBtn'),
+        nextFinanceBtn: document.getElementById('nextFinanceBtn'),
+        financePageInfo: document.getElementById('financePageInfo'),
         totalTrips: document.getElementById('totalTrips'),
         tripsThisMonth: document.getElementById('tripsThisMonth'),
         tripsLastMonth: document.getElementById('tripsLastMonth'),
@@ -599,6 +646,7 @@
         printInvoiceBtn: document.getElementById('printInvoiceBtn'),
         recipientName: document.getElementById('recipientName'),
         recipientAddress: document.getElementById('recipientAddress'),
+        totalUangJalan: document.getElementById('totalUangJalan'),
     };
 
     let currentUser = null;
@@ -613,6 +661,7 @@
     let currentUserPage = 1;
     let currentRoutePage = 1;
     let currentVehiclePage = 1;
+    let currentFinancePage = 1;
     let currentActivityPage = 1;
     const activityRowsPerPage = 5;
     const rowsPerPage = 20;
@@ -742,6 +791,7 @@
             }
             allTrips.sort((a, b) => b.data.createdAt - a.data.createdAt);
             displayTrips(1);
+            displayFinance(1);
             loadDashboardStats();
             loadRoleStats(); 
         });
@@ -758,6 +808,7 @@
         elements.searchTrip.oninput = () => displayTrips(1);
         elements.searchRoute.oninput = () => displayRoutes(1);
         elements.searchVehicle.oninput = () => displayVehicles(1);
+        elements.searchFinance.oninput = () => displayFinance(1);
     }
 
     function displayRecentActivity(page) {
@@ -1222,6 +1273,64 @@
         });
         const totalPages = Math.ceil(filteredVehicles.length / rowsPerPage); 
         if (currentVehiclePage < totalPages) { displayVehicles(currentVehiclePage + 1); }
+    });
+
+    function displayFinance(page) {
+      elements.financeList.innerHTML = '';
+      currentFinancePage = page;
+      const searchTerm = elements.searchFinance.value.toLowerCase();
+      const filteredTrips = allTrips.filter(tripEntry => {
+        const trip = tripEntry.data;
+        const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
+        return !searchTerm ||
+              (tripEntry.id || '').toLowerCase().includes(searchTerm) ||
+              (trip.driverName || '').toLowerCase().includes(searchTerm) ||
+              (trip.asal || '').toLowerCase().includes(searchTerm) ||
+              tujuanText.toLowerCase().includes(searchTerm);
+      });
+      
+      const totalUangJalan = filteredTrips.reduce((sum, trip) => sum + (Number(trip.data.uangJalan) || 0), 0);
+      elements.totalUangJalan.textContent = idr(totalUangJalan);
+
+      const start = (currentFinancePage - 1) * rowsPerPage;
+      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+
+      elements.financePaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
+      if (paginatedTrips.length === 0) {
+        elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data keuangan ditemukan.</td></tr>';
+      } else {
+        paginatedTrips.forEach(tripEntry => {
+          const { id: tripId, data: trip } = tripEntry;
+          const tr = el('tr');
+          const asalCode = routeCodeMap[trip.asal] || trip.asal;
+          const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
+          const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
+          tr.innerHTML = `
+            <td data-label="Trip ID">${tripId}</td>
+            <td data-label="Rute">${ruteDisplay}</td>
+            <td data-label="Supir">${trip.driverName || 'N/A'}</td>
+            <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
+            <td data-label="Uang Jalan">${idr(trip.uangJalan)}</td>
+          `;
+          elements.financeList.appendChild(tr);
+        });
+      }
+
+      const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+      elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages}`;
+      elements.prevFinanceBtn.disabled = currentFinancePage === 1;
+      elements.nextFinanceBtn.disabled = currentFinancePage === totalPages;
+    }
+    elements.prevFinanceBtn.addEventListener('click', () => { if (currentFinancePage > 1) displayFinance(currentFinancePage - 1); });
+    elements.nextFinanceBtn.addEventListener('click', () => {
+        const searchTerm = elements.searchFinance.value.toLowerCase();
+        const filteredTrips = allTrips.filter(tripEntry => {
+            const trip = tripEntry.data;
+            const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
+            return !searchTerm || (tripEntry.id || '').toLowerCase().includes(searchTerm) || (trip.driverName || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
+        });
+        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+        if (currentFinancePage < totalPages) displayFinance(currentFinancePage + 1);
     });
 
     elements.addVehicleForm.addEventListener('submit', async (e) => { 
