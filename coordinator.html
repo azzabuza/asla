@@ -294,23 +294,6 @@
     </div>
   </div>
 
-  <div id="invoiceModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" id="closeInvoiceModal"><i class="fa-solid fa-xmark"></i></span>
-      <h2 style="margin: 0 0 2rem 0">Internal Invoice Otomatis</h2>
-      <div class="form-group">
-        <label for="recipientName">Penerima</label>
-        <input type="text" id="recipientName" placeholder="Ketikkan nama" autocomplete="off" required>
-      </div>
-      <div class="form-group">
-        <label for="recipientAddress">Alamat</label>
-        <textarea id="recipientAddress" rows="3" style="resize: none;" placeholder="Ketikkan alamat" autocomplete="off" required></textarea>
-      </div>
-      <button id="printInvoiceBtn" style="width: 100%;"><i class="fa-solid fa-file-arrow-down"></i> Unduh Invoice</button>
-    </div>
-  </div>
-
-
   <script type="module">
     import { 
       auth, onAuthStateChanged, signOut, db, ref, get, push, set, onValue, 
@@ -374,11 +357,6 @@
       downloadBarcodeBtn: document.getElementById('downloadBarcodeBtn'),
       printBarcodeBtn: document.getElementById('printBarcodeBtn'),
       uangJalanInput: document.getElementById('uangJalan'),
-      invoiceModal: document.getElementById('invoiceModal'),
-      closeInvoiceModal: document.getElementById('closeInvoiceModal'),
-      printInvoiceBtn: document.getElementById('printInvoiceBtn'),
-      recipientName: document.getElementById('recipientName'),
-      recipientAddress: document.getElementById('recipientAddress'),
     };
     
     document.getElementById('tanggal').min = new Date().toISOString().split("T")[0];
@@ -391,7 +369,6 @@
     let allRoutesOptions = '';
     let routeAddressToCodeMap = {};
     let notifications = [];
-    let currentTripForInvoice = null;
     let currentCoorPage = 1;
     let currentCoorActivityPage = 1;
     const coorActivityRowsPerPage = 5;
@@ -505,19 +482,9 @@
         });
 
         elements.closeBarcodeModal.onclick = () => elements.barcodeModal.style.display = 'none';
-        elements.closeInvoiceModal.onclick = () => {
-            elements.invoiceModal.style.display = 'none';
-            elements.recipientName.value = '';
-            elements.recipientAddress.value = '';
-        }
-
+        
         window.onclick = (event) => {
           if (event.target == elements.barcodeModal) elements.barcodeModal.style.display = "none";
-          if (event.target == elements.invoiceModal) {
-            elements.invoiceModal.style.display = "none";
-            elements.recipientName.value = '';
-            elements.recipientAddress.value = '';
-          }
         }
 
         elements.downloadBarcodeBtn.onclick = () => {
@@ -562,21 +529,6 @@
                 }).format(number);
             } else {
                 this.value = '';
-            }
-        });
-
-        elements.printInvoiceBtn.addEventListener('click', () => {
-            const recipientName = elements.recipientName.value;
-            const recipientAddress = elements.recipientAddress.value;
-            if (!recipientName.trim() || !recipientAddress.trim()) {
-                alert('Nama dan Alamat Penerima tidak boleh kosong.');
-                return;
-            }
-            if(currentTripForInvoice) {
-                generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice.data, recipientName, recipientAddress);
-                elements.invoiceModal.style.display = 'none';
-                elements.recipientName.value = '';
-                elements.recipientAddress.value = '';
             }
         });
     }
@@ -832,105 +784,6 @@
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
     }
 
-    async function generateQrCodeDataURL(tripId) {
-        const tempQrContainer = document.createElement('div');
-        const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/invoice-checking.html?id=${tripId}`;
-        return new Promise(resolve => {
-            new QRCode(tempQrContainer, {
-                text: url,
-                width: 128,
-                height: 128,
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            setTimeout(() => {
-                const canvas = tempQrContainer.querySelector('canvas');
-                resolve(canvas.toDataURL());
-            }, 100);
-        });
-    }
-
-    async function generateInvoicePDF(tripId, tripData, recipientName, recipientAddress) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const qrCodeDataUrl = await generateQrCodeDataURL(tripId);
-
-        // Header
-        doc.setFontSize(20);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
-        
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
-        const addressLines = doc.splitTextToSize(companyAddress, 100); 
-        doc.text(addressLines, 14, 30);
-        const addressHeight = (addressLines.length * 5);
-        doc.text('Telepon: (021) 555-1234', 14, 30 + addressHeight);
-
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.text('INVOICE', 200, 22, { align: 'right' });
-
-        // Invoice Info
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`No. Invoice: ${tripId}`, 200, 32, { align: 'right' });
-        doc.text(`Tanggal: ${fmtDate(new Date().toISOString().slice(0,10))}`, 200, 38, { align: 'right' });
-
-        // Bill To
-        let startY = 36 + addressHeight + 10;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Tagihan Kepada:', 14, startY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(recipientName, 14, startY + 6);
-        doc.text(recipientAddress.split('\n'), 14, startY + 12);
-        
-        // AutoTable for items
-        const ruteDisplay = `${routeAddressToCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeAddressToCodeMap[t] || t).join(', ') : (routeAddressToCodeMap[tripData.tujuan] || tripData.tujuan)}`;
-        const deskripsi = `Pengiriman ${tripData.muatan}`;
-
-        doc.autoTable({
-            startY: startY + 25,
-            head: [['Trip ID', 'Deskripsi', 'Rute', 'Keberangkatan', 'Jumlah']],
-            body: [
-                [tripId, deskripsi, ruteDisplay, fmtDate(tripData.tanggal), idr(tripData.uangJalan)],
-            ],
-            theme: 'striped',
-            headStyles: { fillColor: [22, 34, 53], fontSize: 10 },
-            bodyStyles: { fontSize: 10 },
-            didDrawPage: function (data) {
-                const tableEndY = data.cursor.y;
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Supir: ${tripData.driverName}`, 14, tableEndY + 10);
-                doc.text(`Kendaraan: ${tripData.vehicleNumber}`, 14, tableEndY + 15);
-
-                const finalY = tableEndY + 25;
-                doc.setFontSize(11);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
-                doc.text(idr(tripData.uangJalan), 200, finalY, { align: 'right' });
-
-                const pageHeight = doc.internal.pageSize.height;
-                doc.addImage(qrCodeDataUrl, 'PNG', 14, pageHeight - 50, 40, 40);
-                doc.setFontSize(8);
-                doc.text('Scan untuk Verifikasi', 16, pageHeight - 8);
-                
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'italic');
-                doc.text('Terima kasih atas kepercayaan Anda.', 200, pageHeight - 20, { align: 'right' });
-                doc.text('Pembayaran ke BCA 123456789 a/n PT Maju Mundur Syantiq.', 200, pageHeight - 14, { align: 'right' });
-            }
-        });
-
-        doc.save(`Invoice-${tripId}.pdf`);
-    }
-
-    function openInvoiceModal(trip) {
-      currentTripForInvoice = trip;
-      elements.invoiceModal.style.display = 'block';
-    }
-    
     function displayMyTrips(page) {
       elements.tripList.innerHTML = '';
       currentCoorPage = page;
@@ -974,14 +827,8 @@
               });
               elements.barcodeModal.style.display = 'block';
           };
-          
-          if (tripData.status === 'approved' || tripData.status === 'delivering' || tripData.status === 'arriving_soon' || tripData.status === 'arrived') {
-            const invButton = el('button', '<i class="fas fa-file-invoice"></i> Invoice', { class: 'btn-sm info' });
-            invButton.onclick = () => openInvoiceModal(trip);
-            actionsContainer.append(barcodeButton, invButton);
-          } else {
-            actionsContainer.append(barcodeButton);
-          }
+          actionsContainer.append(barcodeButton);
+
           actionsCell.appendChild(actionsContainer);
           const statusCell = el('td', '', {'data-label': 'Status'});
           statusCell.appendChild(badge(tripData.status));
