@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Forum & Chat</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="content-wrapper">
+    <nav class="sidebar">
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h2 id="userRoleTitle">Forum</h2>
+        </div>
+        <div class="sidebar-account">
+          <p id="userName">Memuat...</p>
+          <small id="userEmail">Memuat...</small>
+        </div>
+        <div id="chat-list-container" class="sidebar-menu">
+          <h4 class="chat-list-header">Grup Chat</h4>
+          <ul id="group-list">
+             </ul>
+          <h4 class="chat-list-header">Personal Chat</h4>
+          <ul id="user-list">
+            </ul>
+        </div>
+        <div class="sidebar-footer">
+           <a href="#" id="backToPanelBtn" class="button" style="width: 100%; text-align: center; margin-bottom: 1rem; background: var(--gunmetal); color: var(--light-lavender);"><i class="fas fa-arrow-left"></i> Kembali ke Panel</a>
+          <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="main-wrapper">
+        <header class="main-header">
+          <div class="main-header-content">
+            <h1 id="chatTitle"><i class="fas fa-comments"></i> Selamat Datang di Forum</h1>
+            <p id="chatSubtitle">Pilih grup atau pengguna untuk memulai percakapan.</p>
+          </div>
+        </header>
+        <div class="content-container" id="chat-area" style="display: flex; flex-direction: column; height: calc(100% - 6rem);">
+          <div class="chat-messages" id="message-list">
+             <p class="empty-state">Pilih obrolan untuk ditampilkan.</p>
+          </div>
+          <div class="chat-input-area">
+             <div id="replying-to-banner" class="reply-banner" style="display: none;">
+                <div>
+                    <p class="reply-banner-header">Membalas kepada <strong id="replying-to-user"></strong></p>
+                    <p id="replying-to-text" class="reply-banner-text"></p>
+                </div>
+                <button id="cancel-reply-btn">&times;</button>
+             </div>
+            <form id="messageForm" class="chat-form">
+              <input type="text" id="messageInput" placeholder="Ketik pesan Anda..." autocomplete="off" disabled>
+              <button type="submit" id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeReportModal">&times;</span>
+      <h2>Laporkan Pesan</h2>
+      <p style="font-size: 1.5rem; color: var(--slate-gray); margin: 1rem 0;">Anda akan melaporkan pesan berikut:</p>
+      <p id="reportedMessageText" style="background-color: var(--gunmetal); padding: 1rem; border-radius: 0.5rem; font-style: italic; font-size: 1.4rem;"></p>
+      <div class="form-group">
+        <label for="reportReason">Alasan Pelaporan</label>
+        <select id="reportReason">
+          <option value="ancaman">Ancaman atau Kekerasan</option>
+          <option value="sara">Ujaran Kebencian (SARA)</option>
+          <option value="cabul">Konten Tidak Pantas/Cabul</option>
+          <option value="spam">Spam atau Penipuan</option>
+          <option value="lainnya">Lainnya</option>
+        </select>
+      </div>
+      <button id="submitReportBtn" style="width: 100%;">Kirim Laporan</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo } from './firebase.js';
+    import { el } from './utils.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let activeChatId = null;
+    let replyingTo = null;
+    let messageToReport = null;
+    
+    const elements = {
+        userName: document.getElementById('userName'),
+        userEmail: document.getElementById('userEmail'),
+        userRoleTitle: document.getElementById('userRoleTitle'),
+        userList: document.getElementById('user-list'),
+        groupList: document.getElementById('group-list'),
+        chatTitle: document.getElementById('chatTitle'),
+        chatSubtitle: document.getElementById('chatSubtitle'),
+        messageList: document.getElementById('message-list'),
+        messageForm: document.getElementById('messageForm'),
+        messageInput: document.getElementById('messageInput'),
+        sendMessageBtn: document.getElementById('sendMessageBtn'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        backToPanelBtn: document.getElementById('backToPanelBtn'),
+        replyingToBanner: document.getElementById('replying-to-banner'),
+        replyingToUser: document.getElementById('replying-to-user'),
+        replyingToText: document.getElementById('replying-to-text'),
+        cancelReplyBtn: document.getElementById('cancel-reply-btn'),
+        reportModal: document.getElementById('reportModal'),
+        closeReportModal: document.getElementById('closeReportModal'),
+        reportedMessageText: document.getElementById('reportedMessageText'),
+        reportReason: document.getElementById('reportReason'),
+        submitReportBtn: document.getElementById('submitReportBtn'),
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+        currentUser = user;
+        const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+        if (userSnap.exists()) {
+            currentUserData = userSnap.val();
+            elements.userName.textContent = currentUserData.name || 'Pengguna';
+            elements.userEmail.textContent = currentUser.email;
+            elements.userRoleTitle.textContent = currentUserData.role.charAt(0).toUpperCase() + currentUserData.role.slice(1);
+            
+            // Setup back button
+            if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
+                elements.backToPanelBtn.href = 'admin.html';
+            } else if (currentUserData.role === 'coordinator') {
+                elements.backToPanelBtn.href = 'coordinator.html';
+            } else {
+                elements.backToPanelBtn.style.display = 'none';
+            }
+        }
+        
+        loadChatLists();
+        setupEventListeners();
+    });
+
+    function loadChatLists() {
+        // Load Group Chats
+        const groups = [{ id: 'general', name: 'Diskusi Umum' }];
+        elements.groupList.innerHTML = '';
+        groups.forEach(group => {
+            const li = el('li');
+            const a = el('a', `<i class="fas fa-users"></i> ${group.name}`, { href: '#' });
+            a.onclick = (e) => {
+                e.preventDefault();
+                openChat(group.id, group.name, 'group');
+            };
+            li.appendChild(a);
+            elements.groupList.appendChild(li);
+        });
+
+        // Load Users for Personal Chat
+        onValue(ref(db, 'users'), (snapshot) => {
+            elements.userList.innerHTML = '';
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    if (child.key === currentUser.uid) return; // Don't list self
+                    const userData = child.val();
+                    const li = el('li');
+                    const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
+                    const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#' });
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        const chatId = [currentUser.uid, child.key].sort().join('_');
+                        openChat(chatId, userData.name, 'personal');
+                    };
+                    li.appendChild(a);
+                    elements.userList.appendChild(li);
+                });
+            }
+        });
+    }
+
+    function openChat(chatId, chatName, type) {
+        activeChatId = chatId;
+        elements.chatTitle.innerHTML = `<i class="fas fa-${type === 'group' ? 'users' : 'user'}"></i> ${chatName}`;
+        elements.chatSubtitle.textContent = type === 'group' ? 'Grup Diskusi Umum' : `Percakapan dengan ${chatName}`;
+        elements.messageInput.disabled = false;
+        elements.sendMessageBtn.disabled = false;
+        elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
+        
+        const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
+        onValue(messagesRef, (snapshot) => {
+            elements.messageList.innerHTML = '';
+            if (!snapshot.exists()) {
+                elements.messageList.innerHTML = '<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>';
+                return;
+            }
+            snapshot.forEach(child => {
+                displayMessage(child.key, child.val());
+            });
+            elements.messageList.scrollTop = elements.messageList.scrollHeight;
+        });
+    }
+
+    async function displayMessage(msgId, msgData) {
+        const isMe = msgData.senderId === currentUser.uid;
+        const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}` });
+        const msgBubble = el('div', '', { class: 'message-bubble' });
+
+        const senderName = isMe ? 'Anda' : msgData.senderName;
+        const header = el('p', senderName, { class: 'message-header' });
+        
+        let repliedMsgHtml = '';
+        if (msgData.replyingToId) {
+            const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
+            if (repliedMsgSnap.exists()) {
+                const repliedMsg = repliedMsgSnap.val();
+                repliedMsgHtml = `<div class="replied-message">
+                    <p class="replied-header">${repliedMsg.senderName}</p>
+                    <p class="replied-text">${repliedMsg.text}</p>
+                </div>`;
+            }
+        }
+
+        const text = el('p', msgData.text, { class: 'message-text' });
+        const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const footer = el('p', time, { class: 'message-footer' });
+        
+        const actions = el('div', '', { class: 'message-actions' });
+        const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
+        replyBtn.onclick = () => setReplyingTo(msgId, msgData);
+        
+        const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm danger' });
+        reportBtn.onclick = () => openReportModal(msgId, msgData);
+        
+        actions.append(replyBtn, reportBtn);
+
+        msgBubble.innerHTML = repliedMsgHtml;
+        msgBubble.append(header, text, footer);
+        msgWrapper.append(msgBubble, actions);
+        elements.messageList.appendChild(msgWrapper);
+    }
+    
+    function setReplyingTo(msgId, msgData) {
+        replyingTo = {
+            id: msgId,
+            senderName: msgData.senderName,
+            text: msgData.text,
+        };
+        elements.replyingToUser.textContent = msgData.senderName;
+        elements.replyingToText.textContent = msgData.text;
+        elements.replyingToBanner.style.display = 'flex';
+        elements.messageInput.focus();
+    }
+
+    function cancelReply() {
+        replyingTo = null;
+        elements.replyingToBanner.style.display = 'none';
+    }
+
+    function openReportModal(msgId, msgData) {
+        messageToReport = { id: msgId, ...msgData };
+        elements.reportedMessageText.textContent = `"${msgData.text}" oleh ${msgData.senderName}`;
+        elements.reportModal.style.display = 'block';
+    }
+
+    function closeReportModal() {
+        elements.reportModal.style.display = 'none';
+        messageToReport = null;
+    }
+    
+    async function submitReport() {
+        if (!messageToReport) return;
+        const reportData = {
+            messageId: messageToReport.id,
+            chatId: activeChatId,
+            reportedUserId: messageToReport.senderId,
+            reporterUserId: currentUser.uid,
+            messageText: messageToReport.text,
+            reason: elements.reportReason.value,
+            timestamp: serverTimestamp(),
+            status: 'pending'
+        };
+        try {
+            await push(ref(db, 'reports'), reportData);
+            alert('Laporan Anda telah dikirim. Terima kasih.');
+            closeReportModal();
+        } catch(e) {
+            alert('Gagal mengirim laporan. Coba lagi.');
+            console.error(e);
+        }
+    }
+
+    function setupEventListeners() {
+        elements.messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = elements.messageInput.value.trim();
+            if (!messageText || !activeChatId) return;
+
+            const messageData = {
+                senderId: currentUser.uid,
+                senderName: currentUserData.name,
+                text: messageText,
+                timestamp: serverTimestamp()
+            };
+
+            if (replyingTo) {
+                messageData.replyingToId = replyingTo.id;
+            }
+
+            const newMessageRef = push(ref(db, `chats/${activeChatId}`));
+            set(newMessageRef, messageData);
+            
+            elements.messageInput.value = '';
+            cancelReply();
+        });
+
+        elements.logoutBtn.addEventListener('click', () => signOut(auth));
+        elements.cancelReplyBtn.onclick = cancelReply;
+        elements.closeReportModal.onclick = closeReportModal;
+        elements.submitReportBtn.onclick = submitReport;
+    }
+
+  </script>
+</body>
+</html>
