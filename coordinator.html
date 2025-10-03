@@ -31,6 +31,7 @@
         <li><a href="#performance" class="nav-link"><i class="fas fa-chart-bar"></i> Kinerja Supir</a></li>
         <li><a href="#availability" class="nav-link"><i class="fas fa-users-cog"></i> Ketersediaan</a></li>
         <li><a href="#reports" class="nav-link"><i class="fas fa-file-download"></i> Laporan</a></li>
+        <li><a href="#tampilan" class="nav-link"><i class="fas fa-palette"></i> Tampilan</a></li>
         <li><a href="#notifications" class="nav-link"><i class="fas fa-bell"></i> Notifikasi <span id="notificationCount" class="notification-badge" style="display:none;">0</span></a></li>
       </ul>
         </div>
@@ -263,6 +264,35 @@
         </section>
       </div>
 
+      <div id="page-tampilan" class="page">
+        <section class="card">
+          <h2 class="card-header">Tema Tampilan</h2>
+          <div class="card-body">
+            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="themeToggle" style="margin: 0;">Mode Terang</label>
+              <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="card-header">Font Tampilan</h2>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="fontSelector">Pilih Font</label>
+              <select id="fontSelector">
+                <option value="'Poppins', sans-serif">Poppins (Default)</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Lato', sans-serif">Lato</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+              </select>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <div id="page-notifications" class="page">
         <section class="card">
           <h2 class="card-header">Pusat Notifikasi</h2>
@@ -315,6 +345,7 @@
         performance: { title: '<i class="fas fa-chart-bar"></i> Kinerja Supir', subtitle: 'Lihat ringkasan performa dari semua supir.' },
         availability: { title: '<i class="fas fa-users-cog"></i> Ketersediaan', subtitle: 'Pantau status supir dan kendaraan secara real-time.' },
         reports: { title: '<i class="fas fa-file-download"></i> Laporan', subtitle: 'Unduh data perjalanan dan kinerja dalam format PDF atau Excel.' },
+        tampilan: { title: '<i class="fas fa-palette"></i> Tampilan', subtitle: 'Sesuaikan tampilan antarmuka sistem.' },
         notifications: { title: '<i class="fas fa-bell"></i> Notifikasi', subtitle: 'Lihat semua pembaruan penting terkait perjalanan Anda.' }
     };
 
@@ -360,6 +391,8 @@
       dateFilterContainer: document.getElementById('dateFilterContainer'),
       startDate: document.getElementById('startDate'),
       endDate: document.getElementById('endDate'),
+      themeToggle: document.getElementById('themeToggle'),
+      fontSelector: document.getElementById('fontSelector'),
       barcodeModal: document.getElementById('barcodeModal'),
       closeBarcodeModal: document.getElementById('closeBarcodeModal'),
       qrcodeContainer: document.getElementById('qrcode'),
@@ -413,6 +446,44 @@
         });
     }
     setupCoordinatorNavigation();
+
+    // Theme and Font Logic
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+      } else {
+        document.body.classList.remove('light-mode');
+      }
+    }
+
+    function applyFont(font) {
+      document.body.style.fontFamily = font;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        const savedFont = localStorage.getItem('font') || "'Poppins', sans-serif";
+
+        applyTheme(savedTheme);
+        applyFont(savedFont);
+
+        if (savedTheme === 'light') {
+            elements.themeToggle.checked = true;
+        }
+        elements.fontSelector.value = savedFont;
+
+        elements.themeToggle.addEventListener('change', (e) => {
+            const theme = e.target.checked ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+        });
+
+        elements.fontSelector.addEventListener('change', (e) => {
+            const font = e.target.value;
+            localStorage.setItem('font', font);
+            applyFont(font);
+        });
+    });
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = 'index.html';
