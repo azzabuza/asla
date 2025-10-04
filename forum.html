@@ -413,14 +413,13 @@
         elements.manageGroupBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && (isAdmin || isCreator)) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
-        onValue(messagesRef, async (snapshot) => { // PERBAIKAN: Menjadikan callback async
+        onValue(messagesRef, async (snapshot) => { 
             elements.messageList.innerHTML = '';
             if (!snapshot.exists()) {
                 elements.messageList.innerHTML = '<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>';
                 return;
             }
             
-            // PERBAIKAN: Menggunakan Promise.all untuk menunggu semua pesan dirender
             const promises = [];
             snapshot.forEach(child => {
                 promises.push(displayMessage(child.key, child.val()));
@@ -428,8 +427,10 @@
 
             await Promise.all(promises);
 
-            // PERBAIKAN: Scroll ke bawah SETELAH semua promise selesai
-            elements.messageList.scrollTop = elements.messageList.scrollHeight;
+            // PERBAIKAN: Gunakan setTimeout(..., 0) untuk memastikan DOM telah dirender
+            setTimeout(() => {
+                elements.messageList.scrollTop = elements.messageList.scrollHeight;
+            }, 0);
         });
     }
 
