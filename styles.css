@@ -1558,13 +1558,15 @@ body.light-mode .replied-message {
   opacity: 0.9;
 }
 .chat-list-header-wrapper {
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-right: 1.5rem;
+  padding-right: 1rem;
 }
 
 .modal-quote {
+  box-sizing: border-box;
   background-color: var(--gunmetal);
   padding: 1rem;
   border-radius: 0.5rem;
