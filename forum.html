@@ -163,8 +163,9 @@
     let replyingTo = null;
     let messageToReport = null;
     let isInitialChatLoad = true;
-    let chatReadTimestamps = {}; // Untuk menyimpan timestamp terakhir dibaca
-    
+    let chatReadTimestamps = {};
+    let activeUnreadListeners = {}; // PERBAIKAN: Untuk melacak listener aktif
+
     const elements = {
         userName: document.getElementById('userName'),
         userEmail: document.getElementById('userEmail'),
@@ -224,20 +225,30 @@
             }
         }
         
-        // Memuat timestamp chat yang terakhir dibaca
         const readStatusRef = ref(db, `users/${currentUser.uid}/chats`);
         onValue(readStatusRef, (snapshot) => {
             chatReadTimestamps = snapshot.val() || {};
-            loadAllUsersAndThenChats();
+            // PERBAIKAN: Tidak memanggil loadChatLists di sini untuk menghindari re-render total
+            // Cukup perbarui UI counter yang ada
+            updateAllCountersUI();
         });
 
+        loadAllUsersAndThenChats(); // Cukup panggil sekali untuk inisialisasi
         setupEventListeners();
     });
+
+    // PERBAIKAN: Fungsi baru untuk mematikan semua listener
+    function cleanupUnreadListeners() {
+        for (const chatId in activeUnreadListeners) {
+            const unsubscribe = activeUnreadListeners[chatId];
+            unsubscribe();
+        }
+        activeUnreadListeners = {};
+    }
     
     // Fungsi untuk mengubah teks URL menjadi link aktif
     function linkify(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        // Ganti plain text dengan elemen sementara untuk mencegah double-escaping
         const tempElement = document.createElement('div');
         tempElement.textContent = text;
         
@@ -272,11 +283,16 @@
     
     // Fungsi untuk menghitung pesan belum dibaca dan memperbarui UI
     function updateUnreadCount(chatId, linkElement) {
-        const lastRead = chatReadTimestamps[chatId]?.lastRead || 0;
+        // PERBAIKAN: Mencegah duplikasi listener
+        if (activeUnreadListeners[chatId]) {
+            return;
+        }
+
         const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
 
-        onValue(messagesRef, (snapshot) => {
+        const unsubscribe = onValue(messagesRef, (snapshot) => {
             let unreadCount = 0;
+            const lastRead = chatReadTimestamps[chatId]?.lastRead || 0;
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const msg = child.val();
@@ -285,12 +301,16 @@
                     }
                 });
             }
+            
+            // PERBAIKAN: Cari elemen link lagi jika sudah tidak ada
+            const currentLink = document.querySelector(`.sidebar-menu a[data-chat-id="${chatId}"]`);
+            if (!currentLink) return;
 
-            let counter = linkElement.querySelector('.unread-counter');
+            let counter = currentLink.querySelector('.unread-counter');
             if (unreadCount > 0 && chatId !== activeChatId) {
                 if (!counter) {
                     counter = el('span', unreadCount, { class: 'unread-counter' });
-                    linkElement.appendChild(counter);
+                    currentLink.appendChild(counter);
                 }
                 counter.textContent = unreadCount;
                 counter.style.display = 'block';
@@ -299,29 +319,48 @@
                     counter.style.display = 'none';
                 }
             }
-        }, { onlyOnce: true }); // onlyOnce agar tidak memicu listener terus-menerus
+        });
+
+        // PERBAIKAN: Simpan fungsi unsubscribe
+        activeUnreadListeners[chatId] = unsubscribe;
+    }
+    
+    // PERBAIKAN: Fungsi baru untuk mengupdate semua counter saat lastRead berubah
+    function updateAllCountersUI() {
+        const allLinks = document.querySelectorAll('.sidebar-menu a[data-chat-id]');
+        allLinks.forEach(link => {
+            const chatId = link.dataset.chatId;
+            // Panggil kembali fungsi updateUnreadCount, tapi listener tidak akan duplikat
+            updateUnreadCount(chatId, link); 
+        });
     }
 
     function loadChatLists() {
+        // PERBAIKAN: Bersihkan listener lama sebelum merender ulang daftar
+        cleanupUnreadListeners();
+
+        const groupSearchTerm = elements.searchGroup.value.toLowerCase();
+        elements.groupList.innerHTML = '';
+        
+        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+        if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
+            const liGeneral = el('li');
+            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
+            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+            liGeneral.appendChild(aGeneral);
+            elements.groupList.appendChild(liGeneral);
+            updateUnreadCount('general', aGeneral);
+        }
+
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
-            const groupSearchTerm = elements.searchGroup.value.toLowerCase();
-            elements.groupList.innerHTML = '';
-            
-            const generalGroup = { id: 'general', name: 'Diskusi Umum' };
-            if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
-                const liGeneral = el('li');
-                const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
-                aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
-                liGeneral.appendChild(aGeneral);
-                elements.groupList.appendChild(liGeneral);
-                updateUnreadCount('general', aGeneral);
-            }
-
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const group = { id: child.key, ...child.val() };
                     if (group.name.toLowerCase().includes(groupSearchTerm)) {
+                        // Cek apakah elemen sudah ada untuk menghindari duplikasi saat onValue terpanggil lagi
+                        if (document.querySelector(`a[data-chat-id="${group.id}"]`)) return;
+
                         const isMember = group.members && group.members[currentUser.uid];
                         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
                         
@@ -342,7 +381,7 @@
             } else {
                 updateActiveLinkInSidebar();
             }
-        });
+        }, { onlyOnce: true }); // Tetap onlyOnce di sini agar daftar grup tidak re-render terus
 
         const userSearchTerm = elements.searchUser.value.toLowerCase();
         elements.userList.innerHTML = '';
@@ -366,7 +405,6 @@
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
-        // Hapus counter dari chat sebelumnya jika ada
         if (activeChatId) {
             const prevLink = document.querySelector(`.sidebar-menu a[data-chat-id="${activeChatId}"] .unread-counter`);
             if(prevLink) prevLink.style.display = 'none';
@@ -375,7 +413,6 @@
         activeChatId = chatId;
         updateActiveLinkInSidebar();
 
-        // Update timestamp terakhir dibaca di database
         const readStatusRef = ref(db, `users/${currentUser.uid}/chats/${chatId}`);
         set(readStatusRef, { lastRead: serverTimestamp() });
 
@@ -413,16 +450,23 @@
         elements.manageGroupBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && (isAdmin || isCreator)) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
-        onValue(messagesRef, (snapshot) => {
+        onValue(messagesRef, async (snapshot) => {
             elements.messageList.innerHTML = '';
             if (!snapshot.exists()) {
                 elements.messageList.innerHTML = '<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>';
                 return;
             }
+            
+            const promises = [];
             snapshot.forEach(child => {
-                displayMessage(child.key, child.val());
+                promises.push(displayMessage(child.key, child.val()));
             });
-            elements.messageList.scrollTop = elements.messageList.scrollHeight;
+
+            await Promise.all(promises);
+            
+            setTimeout(() => {
+                elements.messageList.scrollTop = elements.messageList.scrollHeight;
+            }, 0);
         });
     }
 
@@ -464,7 +508,7 @@
             }
 
             const text = el('p', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text); // Gunakan fungsi linkify di sini
+            text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
             
