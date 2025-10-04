@@ -397,9 +397,16 @@
     async function displayMessage(msgId, msgData) {
         const isMe = msgData.senderId === currentUser.uid;
         const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
-        const msgBubble = el('div', '', { class: 'message-bubble' });
 
         if (msgData.deleted) {
+            const timeSinceDeleted = Date.now() - msgData.timestamp;
+            const timeRemaining = 5000 - timeSinceDeleted;
+
+            if (timeRemaining <= 0) {
+                return; // Jangan tampilkan sama sekali jika sudah lebih dari 5 detik
+            }
+
+            const msgBubble = el('div', '', { class: 'message-bubble' });
             const text = el('p', msgData.text, { class: 'message-text' });
             text.style.fontStyle = 'italic';
             text.style.opacity = '0.7';
@@ -407,16 +414,17 @@
             const footer = el('p', time, { class: 'message-footer' });
             msgBubble.append(text, footer);
             msgWrapper.append(msgBubble);
-            
-            // ## PERUBAHAN DI SINI: Timer diubah menjadi 5 detik ##
+            elements.messageList.appendChild(msgWrapper);
+
             setTimeout(() => {
                 const deletedMsgElement = document.getElementById(`msg-${msgId}`);
                 if (deletedMsgElement) {
                     deletedMsgElement.remove();
                 }
-            }, 5000); // 5000 milidetik = 5 detik
+            }, timeRemaining);
 
         } else {
+            const msgBubble = el('div', '', { class: 'message-bubble' });
             const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
             const senderName = isMe ? 'Anda' : senderInfo.name;
             const senderRole = msgData.senderRole || senderInfo.role;
@@ -464,8 +472,8 @@
             msgBubble.innerHTML = repliedMsgHtml;
             msgBubble.append(header, text, footer);
             msgWrapper.append(msgBubble, actions);
+            elements.messageList.appendChild(msgWrapper);
         }
-        elements.messageList.appendChild(msgWrapper);
     }
     
     async function deleteMessage(msgId, msgData) {
@@ -477,17 +485,11 @@
             return;
         }
 
-        const confirmationText = 'Apakah Anda yakin ingin menghapus pesan ini? Aksi ini tidak dapat dibatalkan.';
-        if (!confirm(confirmationText)) {
+        if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) {
             return;
         }
 
-        let deletedText = '';
-        if (isMe) {
-            deletedText = `Pesan telah dihapus pengirim (${currentUserData.name})`;
-        } else { 
-            deletedText = `Pesan telah dihapus oleh ${currentUserData.role}.`;
-        }
+        let deletedText = isMe ? `Pesan telah dihapus pengirim (${currentUserData.name})` : `Pesan telah dihapus oleh ${currentUserData.role}.`;
 
         const updates = {
             text: deletedText,
@@ -501,7 +503,7 @@
             await update(ref(db, `chats/${activeChatId}/${msgId}`), updates);
         } catch (error) {
             console.error("Error deleting message:", error);
-            alert("Gagal menghapus pesan. Silakan coba lagi.");
+            alert("Gagal menghapus pesan.");
         }
     }
 
@@ -539,10 +541,10 @@
         };
         try {
             await push(ref(db, 'reports'), reportData);
-            alert('Laporan Anda telah dikirim. Terima kasih.');
+            alert('Laporan Anda telah dikirim.');
             closeReportModal();
         } catch(e) {
-            alert('Gagal mengirim laporan. Coba lagi.');
+            alert('Gagal mengirim laporan.');
             console.error(e);
         }
     }
@@ -658,7 +660,7 @@
             elements.manageGroupModal.style.display = 'none';
         } catch (error) {
             console.error('Gagal memperbarui grup:', error);
-            alert('Gagal memperbarui grup. Silakan coba lagi.');
+            alert('Gagal memperbarui grup.');
         }
     }
 
@@ -687,7 +689,7 @@
 
         } catch (error) {
             console.error('Gagal menghapus grup:', error);
-            alert('Gagal menghapus grup. Silakan coba lagi.');
+            alert('Gagal menghapus grup.');
         }
     }
 
