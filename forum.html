@@ -219,6 +219,22 @@
         setupEventListeners();
     });
     
+    // Fungsi untuk mengubah teks URL menjadi link aktif
+    function linkify(text) {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        // Ganti plain text dengan elemen sementara untuk mencegah double-escaping
+        const tempElement = document.createElement('div');
+        tempElement.textContent = text;
+        
+        return tempElement.innerHTML.replace(urlRegex, function(url) {
+            let href = url;
+            if (!href.match(/^(https?|ftp|file):\/\//)) {
+                href = 'https://' + href;
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+
     // Fungsi untuk mengelola kelas 'active' pada link chat di sidebar
     function updateActiveLinkInSidebar() {
         document.querySelectorAll('#group-list a, #user-list a').forEach(link => {
@@ -382,7 +398,8 @@
                 }
             }
 
-            const text = el('p', msgData.text, { class: 'message-text' });
+            const text = el('p', '', { class: 'message-text' });
+            text.innerHTML = linkify(msgData.text); // Gunakan fungsi linkify di sini
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
             
