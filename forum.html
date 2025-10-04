@@ -7,6 +7,23 @@
   <title>Forum & Chat</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* CSS untuk Dot Counter Pesan Belum Dibaca */
+    .unread-counter {
+      background-color: var(--red);
+      color: var(--white);
+      border-radius: 50%;
+      padding: 0.1rem 0.6rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-left: auto; /* Mendorong counter ke kanan */
+      line-height: 1.5;
+    }
+    .sidebar-menu li a {
+        display: flex; /* Menggunakan flexbox untuk alignment */
+        align-items: center;
+    }
+  </style>
 </head>
 <body>
   <div class="content-wrapper">
@@ -162,7 +179,8 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
-    let isInitialChatLoad = true; // Flag untuk menandai pemuatan awal
+    let isInitialChatLoad = true;
+    let chatReadTimestamps = {}; // Untuk menyimpan timestamp terakhir dibaca
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -223,7 +241,13 @@
             }
         }
         
-        loadAllUsersAndThenChats();
+        // Memuat timestamp chat yang terakhir dibaca
+        const readStatusRef = ref(db, `users/${currentUser.uid}/chats`);
+        onValue(readStatusRef, (snapshot) => {
+            chatReadTimestamps = snapshot.val() || {};
+            loadAllUsersAndThenChats();
+        });
+
         setupEventListeners();
     });
     
@@ -262,6 +286,38 @@
             }
         });
     }
+    
+    // Fungsi untuk menghitung pesan belum dibaca dan memperbarui UI
+    function updateUnreadCount(chatId, linkElement) {
+        const lastRead = chatReadTimestamps[chatId]?.lastRead || 0;
+        const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
+
+        onValue(messagesRef, (snapshot) => {
+            let unreadCount = 0;
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    const msg = child.val();
+                    if (msg.timestamp > lastRead && msg.senderId !== currentUser.uid) {
+                        unreadCount++;
+                    }
+                });
+            }
+
+            let counter = linkElement.querySelector('.unread-counter');
+            if (unreadCount > 0 && chatId !== activeChatId) {
+                if (!counter) {
+                    counter = el('span', unreadCount, { class: 'unread-counter' });
+                    linkElement.appendChild(counter);
+                }
+                counter.textContent = unreadCount;
+                counter.style.display = 'block';
+            } else {
+                if (counter) {
+                    counter.style.display = 'none';
+                }
+            }
+        }, { onlyOnce: true }); // onlyOnce agar tidak memicu listener terus-menerus
+    }
 
     function loadChatLists() {
         const groupsRef = ref(db, 'groups');
@@ -276,6 +332,7 @@
                 aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
                 liGeneral.appendChild(aGeneral);
                 elements.groupList.appendChild(liGeneral);
+                updateUnreadCount('general', aGeneral);
             }
 
             if (snapshot.exists()) {
@@ -291,6 +348,7 @@
                         a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                         li.appendChild(a);
                         elements.groupList.appendChild(li);
+                        updateUnreadCount(group.id, a);
                     }
                 });
             }
@@ -318,15 +376,25 @@
                 };
                 li.appendChild(a);
                 elements.userList.appendChild(li);
+                updateUnreadCount(chatId, a);
             }
         });
         updateActiveLinkInSidebar();
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
-        // Set ID chat yang aktif dan perbarui sidebar
+        // Hapus counter dari chat sebelumnya jika ada
+        if (activeChatId) {
+            const prevLink = document.querySelector(`.sidebar-menu a[data-chat-id="${activeChatId}"] .unread-counter`);
+            if(prevLink) prevLink.style.display = 'none';
+        }
+        
         activeChatId = chatId;
         updateActiveLinkInSidebar();
+
+        // Update timestamp terakhir dibaca di database
+        const readStatusRef = ref(db, `users/${currentUser.uid}/chats/${chatId}`);
+        set(readStatusRef, { lastRead: serverTimestamp() });
 
         if (type === 'group' && metaData && metaData.id !== 'general') {
             const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
@@ -347,7 +415,6 @@
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
-            // Menampilkan deskripsi grup jika ada
             const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
             elements.chatSubtitle.textContent = groupDescription;
         }
