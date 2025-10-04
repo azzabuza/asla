@@ -162,10 +162,8 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
-    let isInitialChatLoad = true;
-    let chatReadTimestamps = {};
-    let activeUnreadListeners = {}; // PERBAIKAN: Untuk melacak listener aktif
-
+    let isInitialChatLoad = true; // Flag untuk menandai pemuatan awal
+    
     const elements = {
         userName: document.getElementById('userName'),
         userEmail: document.getElementById('userEmail'),
@@ -225,30 +223,14 @@
             }
         }
         
-        const readStatusRef = ref(db, `users/${currentUser.uid}/chats`);
-        onValue(readStatusRef, (snapshot) => {
-            chatReadTimestamps = snapshot.val() || {};
-            // PERBAIKAN: Tidak memanggil loadChatLists di sini untuk menghindari re-render total
-            // Cukup perbarui UI counter yang ada
-            updateAllCountersUI();
-        });
-
-        loadAllUsersAndThenChats(); // Cukup panggil sekali untuk inisialisasi
+        loadAllUsersAndThenChats();
         setupEventListeners();
     });
-
-    // PERBAIKAN: Fungsi baru untuk mematikan semua listener
-    function cleanupUnreadListeners() {
-        for (const chatId in activeUnreadListeners) {
-            const unsubscribe = activeUnreadListeners[chatId];
-            unsubscribe();
-        }
-        activeUnreadListeners = {};
-    }
     
     // Fungsi untuk mengubah teks URL menjadi link aktif
     function linkify(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        // Ganti plain text dengan elemen sementara untuk mencegah double-escaping
         const tempElement = document.createElement('div');
         tempElement.textContent = text;
         
@@ -280,87 +262,26 @@
             }
         });
     }
-    
-    // Fungsi untuk menghitung pesan belum dibaca dan memperbarui UI
-    function updateUnreadCount(chatId, linkElement) {
-        // PERBAIKAN: Mencegah duplikasi listener
-        if (activeUnreadListeners[chatId]) {
-            return;
-        }
-
-        const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
-
-        const unsubscribe = onValue(messagesRef, (snapshot) => {
-            let unreadCount = 0;
-            const lastRead = chatReadTimestamps[chatId]?.lastRead || 0;
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    const msg = child.val();
-                    if (msg.timestamp > lastRead && msg.senderId !== currentUser.uid) {
-                        unreadCount++;
-                    }
-                });
-            }
-            
-            // PERBAIKAN: Cari elemen link lagi jika sudah tidak ada
-            const currentLink = document.querySelector(`.sidebar-menu a[data-chat-id="${chatId}"]`);
-            if (!currentLink) return;
-
-            let counter = currentLink.querySelector('.unread-counter');
-            if (unreadCount > 0 && chatId !== activeChatId) {
-                if (!counter) {
-                    counter = el('span', unreadCount, { class: 'unread-counter' });
-                    currentLink.appendChild(counter);
-                }
-                counter.textContent = unreadCount;
-                counter.style.display = 'block';
-            } else {
-                if (counter) {
-                    counter.style.display = 'none';
-                }
-            }
-        });
-
-        // PERBAIKAN: Simpan fungsi unsubscribe
-        activeUnreadListeners[chatId] = unsubscribe;
-    }
-    
-    // PERBAIKAN: Fungsi baru untuk mengupdate semua counter saat lastRead berubah
-    function updateAllCountersUI() {
-        const allLinks = document.querySelectorAll('.sidebar-menu a[data-chat-id]');
-        allLinks.forEach(link => {
-            const chatId = link.dataset.chatId;
-            // Panggil kembali fungsi updateUnreadCount, tapi listener tidak akan duplikat
-            updateUnreadCount(chatId, link); 
-        });
-    }
 
     function loadChatLists() {
-        // PERBAIKAN: Bersihkan listener lama sebelum merender ulang daftar
-        cleanupUnreadListeners();
-
-        const groupSearchTerm = elements.searchGroup.value.toLowerCase();
-        elements.groupList.innerHTML = '';
-        
-        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
-        if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
-            const liGeneral = el('li');
-            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
-            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
-            liGeneral.appendChild(aGeneral);
-            elements.groupList.appendChild(liGeneral);
-            updateUnreadCount('general', aGeneral);
-        }
-
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
+            const groupSearchTerm = elements.searchGroup.value.toLowerCase();
+            elements.groupList.innerHTML = '';
+            
+            const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+            if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
+                const liGeneral = el('li');
+                const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
+                aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+                liGeneral.appendChild(aGeneral);
+                elements.groupList.appendChild(liGeneral);
+            }
+
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const group = { id: child.key, ...child.val() };
                     if (group.name.toLowerCase().includes(groupSearchTerm)) {
-                        // Cek apakah elemen sudah ada untuk menghindari duplikasi saat onValue terpanggil lagi
-                        if (document.querySelector(`a[data-chat-id="${group.id}"]`)) return;
-
                         const isMember = group.members && group.members[currentUser.uid];
                         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
                         
@@ -370,7 +291,6 @@
                         a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                         li.appendChild(a);
                         elements.groupList.appendChild(li);
-                        updateUnreadCount(group.id, a);
                     }
                 });
             }
@@ -381,7 +301,7 @@
             } else {
                 updateActiveLinkInSidebar();
             }
-        }, { onlyOnce: true }); // Tetap onlyOnce di sini agar daftar grup tidak re-render terus
+        });
 
         const userSearchTerm = elements.searchUser.value.toLowerCase();
         elements.userList.innerHTML = '';
@@ -398,23 +318,15 @@
                 };
                 li.appendChild(a);
                 elements.userList.appendChild(li);
-                updateUnreadCount(chatId, a);
             }
         });
         updateActiveLinkInSidebar();
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
-        if (activeChatId) {
-            const prevLink = document.querySelector(`.sidebar-menu a[data-chat-id="${activeChatId}"] .unread-counter`);
-            if(prevLink) prevLink.style.display = 'none';
-        }
-        
+        // Set ID chat yang aktif dan perbarui sidebar
         activeChatId = chatId;
         updateActiveLinkInSidebar();
-
-        const readStatusRef = ref(db, `users/${currentUser.uid}/chats/${chatId}`);
-        set(readStatusRef, { lastRead: serverTimestamp() });
 
         if (type === 'group' && metaData && metaData.id !== 'general') {
             const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
@@ -435,6 +347,7 @@
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
+            // Menampilkan deskripsi grup jika ada
             const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
             elements.chatSubtitle.textContent = groupDescription;
         }
@@ -450,23 +363,16 @@
         elements.manageGroupBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && (isAdmin || isCreator)) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
-        onValue(messagesRef, async (snapshot) => {
+        onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = '';
             if (!snapshot.exists()) {
                 elements.messageList.innerHTML = '<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>';
                 return;
             }
-            
-            const promises = [];
             snapshot.forEach(child => {
-                promises.push(displayMessage(child.key, child.val()));
+                displayMessage(child.key, child.val());
             });
-
-            await Promise.all(promises);
-            
-            setTimeout(() => {
-                elements.messageList.scrollTop = elements.messageList.scrollHeight;
-            }, 0);
+            elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
     }
 
@@ -508,7 +414,7 @@
             }
 
             const text = el('p', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text);
+            text.innerHTML = linkify(msgData.text); // Gunakan fungsi linkify di sini
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
             
