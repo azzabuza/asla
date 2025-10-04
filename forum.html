@@ -408,13 +408,13 @@
             msgBubble.append(text, footer);
             msgWrapper.append(msgBubble);
             
-            // ## PERBAIKAN DI SINI: Hapus pesan setelah 1 menit ##
+            // ## PERUBAHAN DI SINI: Timer diubah menjadi 5 detik ##
             setTimeout(() => {
                 const deletedMsgElement = document.getElementById(`msg-${msgId}`);
                 if (deletedMsgElement) {
                     deletedMsgElement.remove();
                 }
-            }, 60000); // 60000 milidetik = 1 menit
+            }, 5000); // 5000 milidetik = 5 detik
 
         } else {
             const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
@@ -493,7 +493,7 @@
             text: deletedText,
             deleted: true,
             deletedBy: currentUser.uid,
-            timestamp: serverTimestamp(), // Menambahkan timestamp saat dihapus
+            timestamp: serverTimestamp(),
             replyingToId: null, 
         };
 
