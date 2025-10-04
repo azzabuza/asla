@@ -310,7 +310,9 @@
             if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
                 const chatId = [currentUser.uid, uid].sort().join('_');
                 const li = el('li');
-                const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem; color: var(--green);"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem; color: var(--slate-gray);"></i>';
+                // ## PERBAIKAN DI SINI ##
+                // Menghapus style inline dan mengandalkan kelas CSS dari styles.css
+                const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online"></i>' : '<i class="fas fa-circle status-offline"></i>';
                 const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
                 a.onclick = (e) => {
                     e.preventDefault();
