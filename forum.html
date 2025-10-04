@@ -162,7 +162,7 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
-    let isInitialChatLoad = true; // Flag untuk menandai pemuatan awal
+    let isInitialChatLoad = true;
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -214,7 +214,6 @@
         currentUser = user;
         const userRef = ref(db, `users/${currentUser.uid}`);
 
-        // ## PERBAIKAN DI SINI: Menambahkan listener real-time untuk status lockdown ##
         onValue(userRef, (snapshot) => {
             if (snapshot.exists()) {
                 const userData = snapshot.val();
@@ -225,7 +224,6 @@
                     });
                 }
             } else {
-                // Jika data pengguna tidak ada lagi
                 alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
                 signOut(auth).then(() => {
                     window.location.href = 'login.html';
@@ -252,7 +250,6 @@
         setupEventListeners();
     });
     
-    // Fungsi untuk mengubah teks URL menjadi link aktif
     function linkify(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         const tempElement = document.createElement('div');
@@ -267,7 +264,6 @@
         });
     }
 
-    // Fungsi untuk mengelola kelas 'active' pada link chat di sidebar
     function updateActiveLinkInSidebar() {
         document.querySelectorAll('#group-list a, #user-list a').forEach(link => {
             if (link.dataset.chatId === activeChatId) {
@@ -400,7 +396,7 @@
 
     async function displayMessage(msgId, msgData) {
         const isMe = msgData.senderId === currentUser.uid;
-        const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}` });
+        const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
         const msgBubble = el('div', '', { class: 'message-bubble' });
 
         if (msgData.deleted) {
@@ -411,6 +407,15 @@
             const footer = el('p', time, { class: 'message-footer' });
             msgBubble.append(text, footer);
             msgWrapper.append(msgBubble);
+            
+            // ## PERBAIKAN DI SINI: Hapus pesan setelah 1 menit ##
+            setTimeout(() => {
+                const deletedMsgElement = document.getElementById(`msg-${msgId}`);
+                if (deletedMsgElement) {
+                    deletedMsgElement.remove();
+                }
+            }, 60000); // 60000 milidetik = 1 menit
+
         } else {
             const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
             const senderName = isMe ? 'Anda' : senderInfo.name;
@@ -488,6 +493,7 @@
             text: deletedText,
             deleted: true,
             deletedBy: currentUser.uid,
+            timestamp: serverTimestamp(), // Menambahkan timestamp saat dihapus
             replyingToId: null, 
         };
 
