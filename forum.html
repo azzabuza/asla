@@ -24,9 +24,15 @@
             <h4 class="chat-list-header">Grup Chat</h4>
             <button id="createGroupBtn" class="btn-sm" style="display: none;"><i class="fas fa-plus"></i></button>
           </div>
+          <div class="form-group" style="padding: 0 1.5rem;">
+            <input type="text" id="searchGroup" placeholder="Cari grup..." style="padding: 0.8rem 1.2rem; font-size: 1.3rem;">
+          </div>
           <ul id="group-list">
              </ul>
           <h4 class="chat-list-header">Personal Chat</h4>
+          <div class="form-group" style="padding: 0 1.5rem;">
+            <input type="text" id="searchUser" placeholder="Cari nama..." style="padding: 0.8rem 1.2rem; font-size: 1.3rem;">
+          </div>
           <ul id="user-list">
             </ul>
         </div>
@@ -163,6 +169,8 @@
         userEmail: document.getElementById('userEmail'),
         userList: document.getElementById('user-list'),
         groupList: document.getElementById('group-list'),
+        searchGroup: document.getElementById('searchGroup'),
+        searchUser: document.getElementById('searchUser'),
         chatTitle: document.getElementById('chatTitle'),
         chatSubtitle: document.getElementById('chatSubtitle'),
         messageList: document.getElementById('message-list'),
@@ -258,54 +266,61 @@
     function loadChatLists() {
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
+            const groupSearchTerm = elements.searchGroup.value.toLowerCase();
             elements.groupList.innerHTML = '';
             
             const generalGroup = { id: 'general', name: 'Diskusi Umum' };
-            const liGeneral = el('li');
-            const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
-            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
-            liGeneral.appendChild(aGeneral);
-            elements.groupList.appendChild(liGeneral);
+            if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
+                const liGeneral = el('li');
+                const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
+                aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+                liGeneral.appendChild(aGeneral);
+                elements.groupList.appendChild(liGeneral);
+            }
 
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const group = { id: child.key, ...child.val() };
-                    const isMember = group.members && group.members[currentUser.uid];
-                    const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-                    
-                    const li = el('li');
-                    const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
-                    const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
-                    a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
-                    li.appendChild(a);
-                    elements.groupList.appendChild(li);
+                    if (group.name.toLowerCase().includes(groupSearchTerm)) {
+                        const isMember = group.members && group.members[currentUser.uid];
+                        const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+                        
+                        const li = el('li');
+                        const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
+                        const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
+                        a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
+                        li.appendChild(a);
+                        elements.groupList.appendChild(li);
+                    }
                 });
             }
             
-            // Jika ini pemuatan pertama, klik "Diskusi Umum" secara otomatis
-            if (isInitialChatLoad) {
-                aGeneral.click();
+            if (isInitialChatLoad && elements.groupList.firstChild) {
+                elements.groupList.firstChild.querySelector('a').click();
                 isInitialChatLoad = false;
             } else {
-                updateActiveLinkInSidebar(); // Jaga state aktif saat ada pembaruan data
+                updateActiveLinkInSidebar();
             }
         });
 
+        const userSearchTerm = elements.searchUser.value.toLowerCase();
         elements.userList.innerHTML = '';
         Object.entries(allUsers).forEach(([uid, userData]) => {
             if (uid === currentUser.uid) return;
-            const chatId = [currentUser.uid, uid].sort().join('_');
-            const li = el('li');
-            const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
-            const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
-            a.onclick = (e) => {
-                e.preventDefault();
-                openChat(chatId, userData.name, 'personal', { otherUserId: uid });
-            };
-            li.appendChild(a);
-            elements.userList.appendChild(li);
+            if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
+                const chatId = [currentUser.uid, uid].sort().join('_');
+                const li = el('li');
+                const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
+                const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    openChat(chatId, userData.name, 'personal', { otherUserId: uid });
+                };
+                li.appendChild(a);
+                elements.userList.appendChild(li);
+            }
         });
-        updateActiveLinkInSidebar(); // Jaga state aktif saat ada pembaruan data
+        updateActiveLinkInSidebar();
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
@@ -649,6 +664,9 @@
     }
 
     function setupEventListeners() {
+        elements.searchGroup.addEventListener('input', loadChatLists);
+        elements.searchUser.addEventListener('input', loadChatLists);
+
         elements.messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const messageText = elements.messageInput.value.trim();
