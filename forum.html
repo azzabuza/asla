@@ -154,7 +154,7 @@
 
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo } from './firebase.js';
+    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
     import { el } from './utils.js';
 
     let currentUser = null;
@@ -214,7 +214,8 @@
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'index.html'; return; }
         currentUser = user;
-        const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+        const userRef = ref(db, `users/${currentUser.uid}`);
+        const userSnap = await get(userRef);
         if (userSnap.exists()) {
             currentUserData = userSnap.val();
             elements.userName.textContent = currentUserData.name || 'Pengguna';
@@ -223,6 +224,11 @@
             if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
                 elements.createGroupBtn.style.display = 'block';
             }
+
+            // ## PERBAIKAN DI SINI: Menambahkan onDisconnect ##
+            const presenceRef = ref(db, `users/${user.uid}/online`);
+            await set(presenceRef, true);
+            onDisconnect(presenceRef).set(false);
         }
         
         loadAllUsersAndThenChats();
@@ -691,7 +697,17 @@
             cancelReply();
         });
 
-        elements.logoutBtn.addEventListener('click', () => signOut(auth));
+        elements.logoutBtn.addEventListener('click', () => {
+          if (currentUser) {
+            const presenceRef = ref(db, `users/${currentUser.uid}/online`);
+            set(presenceRef, false).then(() => {
+              signOut(auth);
+            });
+          } else {
+            signOut(auth);
+          }
+        });
+
         elements.cancelReplyBtn.onclick = cancelReply;
         elements.closeReportModal.onclick = closeReportModal;
         elements.submitReportBtn.onclick = submitReport;
