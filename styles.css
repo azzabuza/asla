@@ -1437,7 +1437,7 @@ body.light-mode .modal-content {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 .chat-input-area {
   padding: 1rem;
@@ -1472,11 +1472,11 @@ body.light-mode .modal-content {
 }
 .message-wrapper.sent .message-bubble {
   background-color: var(--dark-blue-gray);
-  border-radius: 1rem 1rem 0 1rem;
+  border-radius: 1rem 1rem 0.5rem 1rem;
 }
 .message-wrapper.received .message-bubble {
   background-color: var(--gunmetal);
-  border-radius: 1rem 1rem 1rem 0;
+  border-radius: 1rem 1rem 1rem 0.5rem;
 }
 .message-header {
   font-weight: 600;
