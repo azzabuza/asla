@@ -1379,61 +1379,167 @@ body {
 
 /* === LIGHT MODE THEME === */
 body.light-mode {
+  /* ## Variabel Warna Dasar ## */
   --dark-blue-gray: #f4f7fa;
   --dark-slate-blue: #ffffff;
   --gunmetal: #e2e8f0;
+  --light-gunmetal: #eef2f7;
   --dark-blue-gray-80: rgba(255, 255, 255, 0.8);
   --gray: #64748b;
   --white: #ffffff;
   --lighter-dark-blue: #cbd5e1;
-
   --bg-gradient: linear-gradient(90deg, rgba(244, 247, 250, 0.9), rgba(244, 247, 250, 0.8));
 
+  /* ## Variabel Teks ## */
   --light-lavender: #1e293b;
   --slate-gray: #475569;
   --text-inverse-dark-blue-gray: #ffffff;
   --cyan: #0ea5e9;
 
+  /* ## Variabel Border ## */
   --border-gunmetal: #e2e8f0;
 }
 
-body.light-mode .stat-card {
-  background-color: #ffffff;
+/* ## Penyesuaian Komponen Spesifik ## */
+body.light-mode .stat-card,
+body.light-mode .card,
+body.light-mode .trip-card,
+body.light-mode .resource-card,
+body.light-mode .profile-card {
+  background-color: var(--dark-slate-blue);
   border: 1px solid var(--border-gunmetal);
-}
-
-body.light-mode .card {
-  background-color: #ffffff;
-  border: 1px solid var(--border-gunmetal);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 body.light-mode .main-header-menu li a {
+  color: var(--text-inverse-dark-blue-gray);
+}
+
+body.light-mode .sidebar-menu li a:hover {
+  background-color: var(--light-gunmetal);
+  color: var(--cyan);
+}
+
+body.light-mode .sidebar-menu li a.active {
+  color: var(--text-inverse-dark-blue-gray);
+}
+
+body.light-mode .logout-button:hover {
+  color: var(--white);
+}
+
+body.light-mode input, 
+body.light-mode select, 
+body.light-mode textarea {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-gunmetal);
   color: var(--light-lavender);
 }
 
-body.light-mode input, body.light-mode select, body.light-mode textarea {
-  background-color: #f8fafc;
-  border: 1px solid var(--border-gunmetal);
+body.light-mode input::placeholder, 
+body.light-mode textarea::placeholder {
+  color: #94a3b8;
 }
 
-body.light-mode input::placeholder, body.light-mode textarea::placeholder {
-  color: #94a3b8;
+body.light-mode input:focus, 
+body.light-mode select:focus, 
+body.light-mode textarea:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+}
+
+body.light-mode input::file-selector-button {
+    color: var(--text-inverse-dark-blue-gray);
 }
 
 body.light-mode table th {
   background-color: #f1f5f9;
+  color: var(--slate-gray);
+  border-bottom: 1px solid var(--border-gunmetal);
 }
+
 body.light-mode table td {
-  background-color: #ffffff;
+  background-color: var(--dark-slate-blue);
   border-bottom: 1px solid var(--border-gunmetal);
 }
 
 body.light-mode tbody tr:hover {
-    background-color: #f8fafc;
+  background-color: #f8fafc;
 }
+
+body.light-mode tbody tr:last-child td {
+    border-bottom: none;
+}
+
 body.light-mode .modal-content {
-    background-color: #ffffff;
+  background-color: var(--dark-slate-blue);
+  border: 1px solid var(--border-gunmetal);
 }
+
+body.light-mode .modal-quote {
+  background-color: var(--light-gunmetal);
+}
+
+body.light-mode .tab-link:hover {
+  background-color: var(--light-gunmetal);
+  color: var(--cyan);
+}
+
+body.light-mode .tab-link.active {
+  background-color: var(--dark-blue-gray);
+  color: var(--light-lavender);
+  border: 1px solid var(--border-gunmetal);
+  border-bottom: none;
+}
+
+body.light-mode .bottom-nav {
+    background-color: var(--dark-slate-blue);
+    border-top: 1px solid var(--border-gunmetal);
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+}
+
+/* ## Bagian Chat & Forum ## */
+body.light-mode .message-wrapper.sent .message-bubble {
+  background-color: #e0f2fe;
+  color: #0c4a6e;
+}
+
+body.light-mode .message-wrapper.sent .message-header {
+  color: #0ea5e9;
+}
+
+body.light-mode .message-wrapper.received .message-bubble {
+  background-color: var(--gunmetal);
+  color: var(--light-lavender);
+}
+
+body.light-mode .reply-banner {
+  background-color: var(--light-gunmetal);
+  border-left-color: var(--cyan);
+}
+
+body.light-mode .reply-banner-text {
+  color: var(--slate-gray);
+}
+
+body.light-mode #cancel-reply-btn {
+  color: var(--slate-gray);
+}
+
+body.light-mode .replied-message {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-left-color: var(--cyan);
+}
+
+body.light-mode .replied-header {
+  color: var(--cyan);
+}
+
+body.light-mode .replied-text {
+  color: var(--slate-gray);
+  opacity: 1;
+}
+
 
 /* === FORUM & CHAT STYLES === */
 .sidebar-menu .chat-list-header {
