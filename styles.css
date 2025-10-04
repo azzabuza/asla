@@ -16,8 +16,10 @@
 
   /* Background Gradient */
   --bg-gradient: linear-gradient(90deg, rgb(18, 24, 40, 0.9), rgb(18, 24, 40, 0.8));
-  --bg-btn-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  --gradient-reef: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  --gradient-feme: linear-gradient(90deg, #00c6ff, #0072ff);
   --bg-btn-gradient-green: linear-gradient(90deg, #1cd8d2, #93edc7);
+  --gradient-aqualicious: linear-gradient(90deg, #50c9c3, #96deda);
 
   /* Text Colors */
   --light-lavender: #e0e5f5;
@@ -80,7 +82,7 @@ body {
   background-color: var(--gunmetal);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   border-radius: 1rem;
 }
 h1, h2, h3, h4 {
@@ -174,7 +176,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   color: var(--light-lavender);
 }
 .sidebar-menu li a.active {
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   color: var(--text-inverse-dark-blue-gray);
 }
 .sidebar-footer {
@@ -249,7 +251,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   gap: 1rem;
 }
 .main-header-menu li a {
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   display: block;
   padding: 0.5rem 1rem;
   margin: 0;
@@ -360,7 +362,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 /* === TOMBOL (BUTTONS) === */
 button, .button {
   box-sizing: border-box;
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   color: var(--text-inverse-dark-blue-gray);
   padding: 1rem 2rem;
   margin: 0;
@@ -485,7 +487,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 input::file-selector-button {
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   color: var(--text-inverse-dark-blue-gray);
   font-size: 1rem;
   font-weight: 500;
@@ -723,7 +725,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   line-height: 1.1;
 }
 .hero h1 span {
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -822,7 +824,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   height: 4rem;
   padding: 1rem;
   border-radius: 50%;
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   color: var(--text-inverse-dark-blue-gray);
   display: inline-block;
 }
@@ -914,7 +916,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 /* CTA Section */
 .cta-section {
   box-sizing: border-box;
-  background: var(--bg-btn-gradient-green);
+  background: var(--gradient-feme);
   border-radius: 1rem;
   padding: 2rem;
   text-align: center;
