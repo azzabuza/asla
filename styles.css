@@ -559,9 +559,20 @@ tbody tr:hover { background-color: var(--gunmetal); }
 }
 
 .text-secondary { color: var(--slate-gray); }
-.status-online { color: var(--green); }
-.status-offline { color: var(--slate-gray); }
-.status-online i, .status-offline i { font-size: 1.5rem; vertical-align: middle; }
+
+/* ## PERBAIKAN DI SINI ## */
+/* Menggabungkan style untuk status online/offline ke dalam satu blok */
+.status-online {
+  color: var(--green);
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+.status-offline {
+  color: var(--slate-gray);
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+
 .badge, .role-badge {
   font-size: 1.5rem;
   font-weight: 500;
