@@ -294,7 +294,7 @@
             const generalGroup = { id: 'general', name: 'Diskusi Umum' };
             if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
                 const liGeneral = el('li');
-                const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
+                const aGeneral = el('a', `<i class="fa-solid fa-user-group"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
                 aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
                 liGeneral.appendChild(aGeneral);
                 elements.groupList.appendChild(liGeneral);
@@ -308,7 +308,7 @@
                         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
                         
                         const li = el('li');
-                        const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
+                        const icon = isMember || isAdmin ? '<i class="fa-solid fa-user-group"></i>' : '<i class="fas fa-lock"></i>';
                         const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
                         a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                         li.appendChild(a);
@@ -332,7 +332,7 @@
             if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
                 const chatId = [currentUser.uid, uid].sort().join('_');
                 const li = el('li');
-                const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online"></i>' : '<i class="fas fa-circle status-offline"></i>';
+                const onlineIndicator = userData.online ? '<i class="fa-solid fa-user status-online"></i>' : '<i class="fa-solid fa-user status-offline"></i>';
                 const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
                 a.onclick = (e) => {
                     e.preventDefault();
@@ -367,7 +367,7 @@
             elements.chatTitle.innerHTML = `<i class="fas fa-user"></i> ${chatName} <span class="role-badge role-${roleClass}" style="font-size: 1.2rem; vertical-align: middle; margin-left: 1rem;">${otherUser.role}</span>`;
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
-            elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
+            elements.chatTitle.innerHTML = `<i class="fa-solid fa-user-group"></i> ${chatName}`;
             const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
             elements.chatSubtitle.textContent = groupDescription;
         }
