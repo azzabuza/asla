@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+  <audio id="notificationSound" src="https://res.cloudinary.com/drdmim3lu/video/upload/v1709910893/notification_prvnhm.mp3" preload="auto"></audio>
   <div class="content-wrapper">
     <nav class="sidebar">
       <div class="sidebar-wrapper">
@@ -24,14 +25,14 @@
             <h4 class="chat-list-header">Grup Chat</h4>
             <button id="createGroupBtn" class="btn-sm" style="display: none;"><i class="fas fa-plus"></i></button>
           </div>
-          <div class="form-group" style="margin: 0">
-            <input type="text" id="searchGroup" style="background: var(--gunmetal);" placeholder="Cari grup...">
+          <div class="form-group" style="padding: 0 1.5rem;">
+            <input type="text" id="searchGroup" placeholder="Cari grup..." style="padding: 0.8rem 1.2rem; font-size: 1.3rem;">
           </div>
           <ul id="group-list">
              </ul>
           <h4 class="chat-list-header">Personal Chat</h4>
-          <div class="form-group" style="margin: 0">
-            <input type="text" id="searchUser" style="background: var(--gunmetal);" placeholder="Cari nama">
+          <div class="form-group" style="padding: 0 1.5rem;">
+            <input type="text" id="searchUser" placeholder="Cari nama..." style="padding: 0.8rem 1.2rem; font-size: 1.3rem;">
           </div>
           <ul id="user-list">
             </ul>
@@ -152,7 +153,7 @@
 
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo } from './firebase.js';
+    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, startAt } from './firebase.js';
     import { el } from './utils.js';
 
     let currentUser = null;
@@ -162,7 +163,9 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
-    let isInitialChatLoad = true; // Flag untuk menandai pemuatan awal
+    let isInitialChatLoad = true;
+    let unreadCounts = {};
+    let chatListeners = {};
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -178,6 +181,7 @@
         messageInput: document.getElementById('messageInput'),
         sendMessageBtn: document.getElementById('sendMessageBtn'),
         logoutBtn: document.getElementById('logoutBtn'),
+        notificationSound: document.getElementById('notificationSound'),
         replyingToBanner: document.getElementById('replying-to-banner'),
         replyingToUser: document.getElementById('replying-to-user'),
         replyingToText: document.getElementById('replying-to-text'),
@@ -221,16 +225,16 @@
             if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
                 elements.createGroupBtn.style.display = 'block';
             }
+            // Simpan last seen saat login
+            set(ref(db, `users/${currentUser.uid}/lastSeen`), serverTimestamp());
         }
         
         loadAllUsersAndThenChats();
         setupEventListeners();
     });
     
-    // Fungsi untuk mengubah teks URL menjadi link aktif
     function linkify(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        // Ganti plain text dengan elemen sementara untuk mencegah double-escaping
         const tempElement = document.createElement('div');
         tempElement.textContent = text;
         
@@ -243,58 +247,73 @@
         });
     }
 
-    // Fungsi untuk mengelola kelas 'active' pada link chat di sidebar
     function updateActiveLinkInSidebar() {
         document.querySelectorAll('#group-list a, #user-list a').forEach(link => {
-            if (link.dataset.chatId === activeChatId) {
+            const chatId = link.dataset.chatId;
+            const unreadDot = link.querySelector('.unread-dot');
+            
+            if (chatId === activeChatId) {
                 link.classList.add('active');
+                if (unreadDot) unreadDot.style.display = 'none';
+                unreadCounts[chatId] = 0; // Reset saat chat dibuka
             } else {
                 link.classList.remove('active');
+                if (unreadCounts[chatId] > 0) {
+                    if (unreadDot) {
+                        unreadDot.textContent = unreadCounts[chatId] > 9 ? '9+' : unreadCounts[chatId];
+                        unreadDot.style.display = 'flex';
+                    } else {
+                        const newDot = el('span', unreadCounts[chatId] > 9 ? '9+' : unreadCounts[chatId], { class: 'unread-dot' });
+                        link.appendChild(newDot);
+                    }
+                } else {
+                    if (unreadDot) unreadDot.style.display = 'none';
+                }
             }
         });
     }
 
-    function loadAllUsersAndThenChats() {
-        onValue(ref(db, 'users'), (snapshot) => {
-            if(snapshot.exists()) {
-                allUsers = snapshot.val();
-                loadChatLists();
-            }
-        });
+    async function loadAllUsersAndThenChats() {
+        const usersSnap = await get(ref(db, 'users'));
+        if(usersSnap.exists()) {
+            allUsers = usersSnap.val();
+            loadChatLists();
+            listenToAllChats();
+        }
     }
 
     function loadChatLists() {
+        const groupSearchTerm = elements.searchGroup.value.toLowerCase();
+        elements.groupList.innerHTML = '';
+        
+        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+        if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
+            const liGeneral = el('li');
+            const aGeneral = el('a', `<span><i class="fas fa-users"></i> ${generalGroup.name}</span>`, { href: '#', 'data-chat-id': 'general' });
+            aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+            liGeneral.appendChild(aGeneral);
+            elements.groupList.appendChild(liGeneral);
+        }
+
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
-            const groupSearchTerm = elements.searchGroup.value.toLowerCase();
-            elements.groupList.innerHTML = '';
-            
-            const generalGroup = { id: 'general', name: 'Diskusi Umum' };
-            if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
-                const liGeneral = el('li');
-                const aGeneral = el('a', `<i class="fas fa-users"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
-                aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
-                liGeneral.appendChild(aGeneral);
-                elements.groupList.appendChild(liGeneral);
-            }
-
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     const group = { id: child.key, ...child.val() };
                     if (group.name.toLowerCase().includes(groupSearchTerm)) {
                         const isMember = group.members && group.members[currentUser.uid];
                         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-                        
-                        const li = el('li');
-                        const icon = isMember || isAdmin ? '<i class="fas fa-users"></i>' : '<i class="fas fa-lock"></i>';
-                        const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
-                        a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
-                        li.appendChild(a);
-                        elements.groupList.appendChild(li);
+                        if(isMember || isAdmin) {
+                            const li = el('li');
+                            const icon = '<i class="fas fa-users"></i>';
+                            const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': group.id });
+                            a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
+                            li.appendChild(a);
+                            elements.groupList.appendChild(li);
+                        }
                     }
                 });
             }
-            
             if (isInitialChatLoad && elements.groupList.firstChild) {
                 elements.groupList.firstChild.querySelector('a').click();
                 isInitialChatLoad = false;
@@ -311,11 +330,8 @@
                 const chatId = [currentUser.uid, uid].sort().join('_');
                 const li = el('li');
                 const onlineIndicator = userData.online ? '<i class="fas fa-circle status-online" style="font-size: 0.8rem;"></i>' : '<i class="fas fa-circle status-offline" style="font-size: 0.8rem;"></i>';
-                const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
-                a.onclick = (e) => {
-                    e.preventDefault();
-                    openChat(chatId, userData.name, 'personal', { otherUserId: uid });
-                };
+                const a = el('a', `<span>${onlineIndicator} ${userData.name || 'Tanpa Nama'}</span>`, { href: '#', 'data-chat-id': chatId });
+                a.onclick = (e) => { e.preventDefault(); openChat(chatId, userData.name, 'personal', { otherUserId: uid }); };
                 li.appendChild(a);
                 elements.userList.appendChild(li);
             }
@@ -323,16 +339,70 @@
         updateActiveLinkInSidebar();
     }
 
-    function openChat(chatId, chatName, type, metaData = null) {
-        // Set ID chat yang aktif dan perbarui sidebar
-        activeChatId = chatId;
-        updateActiveLinkInSidebar();
+    async function listenToAllChats() {
+        const userLastSeen = currentUserData.lastSeen || Date.now();
+        
+        // Gabungkan semua chat ID (grup dan personal)
+        let chatIdsToListen = ['general'];
+        
+        const groupsSnap = await get(ref(db, 'groups'));
+        if (groupsSnap.exists()) {
+            groupsSnap.forEach(child => {
+                const group = { id: child.key, ...child.val() };
+                const isMember = group.members && group.members[currentUser.uid];
+                const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+                if(isMember || isAdmin) chatIdsToListen.push(group.id);
+            });
+        }
+        
+        Object.keys(allUsers).forEach(uid => {
+            if (uid !== currentUser.uid) {
+                chatIdsToListen.push([currentUser.uid, uid].sort().join('_'));
+            }
+        });
 
+        chatIdsToListen.forEach(chatId => {
+            if (chatListeners[chatId]) return; // Hindari duplikasi listener
+            
+            const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'), startAt(userLastSeen));
+            chatListeners[chatId] = onValue(messagesRef, (snapshot) => {
+                let count = 0;
+                snapshot.forEach(child => {
+                    const msg = child.val();
+                    if(msg.senderId !== currentUser.uid && !msg.deleted) {
+                        count++;
+                    }
+                });
+
+                if (count > 0 && chatId !== activeChatId) {
+                    const oldUnread = unreadCounts[chatId] || 0;
+                    unreadCounts[chatId] = count;
+                    if (unreadCounts[chatId] > oldUnread) {
+                        elements.notificationSound.play().catch(e => console.log("Gagal memutar audio:", e));
+                    }
+                } else {
+                    unreadCounts[chatId] = 0;
+                }
+                updateActiveLinkInSidebar();
+            });
+        });
+    }
+
+    async function openChat(chatId, chatName, type, metaData = null) {
+        activeChatId = chatId;
+        
+        // Reset unread count and update sidebar
+        unreadCounts[chatId] = 0;
+        updateActiveLinkInSidebar();
+        
+        // Simpan last seen saat membuka chat
+        await set(ref(db, `users/${currentUser.uid}/lastSeen`), serverTimestamp());
+        
         if (type === 'group' && metaData && metaData.id !== 'general') {
             const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
             const isMember = metaData.members && metaData.members[currentUser.uid];
             if (!isAdmin && !isMember) {
-                alert(`Maaf, sistem mendeteksi bahwa Anda bukan bagian dari grup ${chatName}`);
+                alert(`Maaf, Anda bukan bagian dari grup ${chatName}`);
                 return;
             }
         }
@@ -347,9 +417,7 @@
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
-            // Menampilkan deskripsi grup jika ada
-            const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
-            elements.chatSubtitle.textContent = groupDescription;
+            elements.chatSubtitle.textContent = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
         }
 
         elements.messageInput.disabled = false;
@@ -414,7 +482,7 @@
             }
 
             const text = el('p', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text); // Gunakan fungsi linkify di sini
+            text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
             
@@ -444,37 +512,12 @@
     async function deleteMessage(msgId, msgData) {
         const isMe = msgData.senderId === currentUser.uid;
         const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-        
-        if (!isMe && !isAdminOrSuperAdmin) {
-            alert('Anda tidak memiliki izin untuk menghapus pesan ini.');
-            return;
-        }
+        if (!isMe && !isAdminOrSuperAdmin) return alert('Anda tidak memiliki izin.');
+        if (!confirm('Yakin ingin hapus pesan ini?')) return;
 
-        const confirmationText = 'Apakah Anda yakin ingin menghapus pesan ini? Aksi ini tidak dapat dibatalkan.';
-        if (!confirm(confirmationText)) {
-            return;
-        }
-
-        let deletedText = '';
-        if (isMe) {
-            deletedText = `Pesan telah dihapus pengirim (${currentUserData.name})`;
-        } else { 
-            deletedText = `Pesan telah dihapus oleh ${currentUserData.role}.`;
-        }
-
-        const updates = {
-            text: deletedText,
-            deleted: true,
-            deletedBy: currentUser.uid,
-            replyingToId: null, 
-        };
-
-        try {
-            await update(ref(db, `chats/${activeChatId}/${msgId}`), updates);
-        } catch (error) {
-            console.error("Error deleting message:", error);
-            alert("Gagal menghapus pesan. Silakan coba lagi.");
-        }
+        const deletedText = isMe ? `Pesan telah dihapus pengirim (${currentUserData.name})` : `Pesan telah dihapus oleh ${currentUserData.role}.`;
+        const updates = { text: deletedText, deleted: true, deletedBy: currentUser.uid, replyingToId: null };
+        await update(ref(db, `chats/${activeChatId}/${msgId}`), updates).catch(e => alert("Gagal: " + e.message));
     }
 
     function setReplyingTo(msgId, msgData) {
@@ -509,37 +552,25 @@
             messageText: messageToReport.text, reason: elements.reportReason.value,
             timestamp: serverTimestamp(), status: 'pending'
         };
-        try {
-            await push(ref(db, 'reports'), reportData);
-            alert('Laporan Anda telah dikirim. Terima kasih.');
-            closeReportModal();
-        } catch(e) {
-            alert('Gagal mengirim laporan. Coba lagi.');
-            console.error(e);
-        }
+        await push(ref(db, 'reports'), reportData);
+        alert('Laporan terkirim.');
+        closeReportModal();
     }
 
     async function handleCreateGroup(e) {
         e.preventDefault();
         const groupName = elements.groupNameInput.value.trim();
-        const groupDescription = elements.groupDescriptionInput.value.trim();
         if (!groupName) return;
-
-        try {
-            const newGroupRef = push(ref(db, 'groups'));
-            await set(newGroupRef, {
-                name: groupName,
-                description: groupDescription,
-                createdBy: currentUser.uid,
-                createdAt: serverTimestamp(),
-                members: { [currentUser.uid]: true }
-            });
-            elements.createGroupForm.reset();
-            elements.createGroupModal.style.display = 'none';
-        } catch (error) {
-            console.error("Error creating group:", error);
-            alert("Gagal membuat grup.");
-        }
+        const newGroupRef = push(ref(db, 'groups'));
+        await set(newGroupRef, {
+            name: groupName,
+            description: elements.groupDescriptionInput.value.trim(),
+            createdBy: currentUser.uid,
+            createdAt: serverTimestamp(),
+            members: { [currentUser.uid]: true }
+        });
+        elements.createGroupForm.reset();
+        elements.createGroupModal.style.display = 'none';
     }
 
     function openManageMembersModal() {
@@ -547,22 +578,18 @@
         elements.manageMembersTitle.textContent = `Kelola Anggota: ${activeGroupData.name}`;
         elements.currentMembersList.innerHTML = '';
         elements.addMembersList.innerHTML = '';
-
         const members = activeGroupData.members || {};
         
         Object.keys(allUsers).forEach(uid => {
             const user = allUsers[uid];
-            const li = el('li', '', { class: 'modal-user-item' });
-            li.textContent = user.name;
-
+            const li = el('li', user.name, { class: 'modal-user-item' });
             if(members[uid]) {
                 if (uid !== activeGroupData.createdBy) {
                     const removeBtn = el('button', 'Keluarkan', { class: 'btn-sm danger' });
                     removeBtn.onclick = () => removeMemberFromGroup(uid);
                     li.appendChild(removeBtn);
                 } else {
-                    const creatorBadge = el('span', 'Creator', { class: 'creator-badge' });
-                    li.appendChild(creatorBadge);
+                    li.appendChild(el('span', 'Creator', { class: 'creator-badge' }));
                 }
                 elements.currentMembersList.appendChild(li);
             } else {
@@ -572,15 +599,12 @@
                 elements.addMembersList.appendChild(li);
             }
         });
-
         elements.manageMembersModal.style.display = 'block';
     }
 
     async function addMemberToGroup(userId) {
         if(!activeGroupData) return;
-        const updates = {};
-        updates[`/groups/${activeGroupData.id}/members/${userId}`] = true;
-        await update(ref(db), updates);
+        await update(ref(db, `/groups/${activeGroupData.id}/members`), { [userId]: true });
         if (!activeGroupData.members) activeGroupData.members = {};
         activeGroupData.members[userId] = true;
         openManageMembersModal();
@@ -588,10 +612,8 @@
 
     async function removeMemberFromGroup(userId) {
         if(!activeGroupData || userId === activeGroupData.createdBy) return;
-        if(confirm(`Yakin ingin mengeluarkan ${allUsers[userId].name} dari grup?`)) {
-            const updates = {};
-            updates[`/groups/${activeGroupData.id}/members/${userId}`] = null;
-            await update(ref(db), updates);
+        if(confirm(`Yakin ingin mengeluarkan ${allUsers[userId].name}?`)) {
+            await set(ref(db, `/groups/${activeGroupData.id}/members/${userId}`), null);
             delete activeGroupData.members[userId];
             openManageMembersModal();
         }
@@ -602,12 +624,9 @@
         elements.manageGroupTitle.textContent = `Kelola Grup: ${activeGroupData.name}`;
         elements.groupNameEditInput.value = activeGroupData.name || '';
         elements.groupDescriptionEditInput.value = activeGroupData.description || '';
-
         const isCreator = activeGroupData.createdBy === currentUser.uid;
         const isSuperAdmin = currentUserData.role === 'super admin';
-        
         elements.deleteGroupBtn.style.display = (isCreator || isSuperAdmin) ? 'block' : 'none';
-        
         elements.manageGroupModal.style.display = 'block';
     }
 
@@ -615,52 +634,28 @@
         e.preventDefault();
         if (!activeGroupData) return;
         const newName = elements.groupNameEditInput.value.trim();
-        const newDescription = elements.groupDescriptionEditInput.value.trim();
-        if (!newName) {
-            alert('Nama grup tidak boleh kosong.');
-            return;
-        }
-
-        try {
-            await update(ref(db, `groups/${activeGroupData.id}`), {
-                name: newName,
-                description: newDescription
-            });
-            alert('Informasi grup berhasil diperbarui.');
-            elements.manageGroupModal.style.display = 'none';
-        } catch (error) {
-            console.error('Gagal memperbarui grup:', error);
-            alert('Gagal memperbarui grup. Silakan coba lagi.');
-        }
+        if (!newName) return alert('Nama grup tidak boleh kosong.');
+        await update(ref(db, `groups/${activeGroupData.id}`), {
+            name: newName,
+            description: elements.groupDescriptionEditInput.value.trim()
+        });
+        alert('Grup diperbarui.');
+        elements.manageGroupModal.style.display = 'none';
     }
 
     async function handleDeleteGroup() {
         if (!activeGroupData) return;
-        const groupName = activeGroupData.name;
-        
-        if (!confirm(`PERINGATAN!\nAnda akan menghapus grup "${groupName}".\nSemua riwayat percakapan di dalam grup ini juga akan dihapus secara permanen.\n\nAksi ini tidak dapat dibatalkan. Lanjutkan?`)) {
-            return;
-        }
+        if (!confirm(`PERINGATAN!\nHapus grup "${activeGroupData.name}"?\nSemua chat di dalamnya akan hilang permanen.`)) return;
+        if (!confirm(`KONFIRMASI AKHIR!\nYakin hapus grup "${activeGroupData.name}"?`)) return;
 
-        if (!confirm(`KONFIRMASI AKHIR!\nAnda benar-benar yakin ingin menghapus grup "${groupName}"?`)) {
-            return;
-        }
-
-        try {
-            const updates = {};
-            updates[`/groups/${activeGroupData.id}`] = null;
-            updates[`/chats/${activeGroupData.id}`] = null;
-
-            await update(ref(db), updates);
-            alert(`Grup "${groupName}" telah berhasil dihapus.`);
-            
-            elements.manageGroupModal.style.display = 'none';
-            document.querySelector('#group-list a[data-chat-id="general"]').click();
-
-        } catch (error) {
-            console.error('Gagal menghapus grup:', error);
-            alert('Gagal menghapus grup. Silakan coba lagi.');
-        }
+        const updates = {
+            [`/groups/${activeGroupData.id}`]: null,
+            [`/chats/${activeGroupData.id}`]: null
+        };
+        await update(ref(db), updates);
+        alert(`Grup "${activeGroupData.name}" dihapus.`);
+        elements.manageGroupModal.style.display = 'none';
+        document.querySelector('#group-list a[data-chat-id="general"]').click();
     }
 
     function setupEventListeners() {
@@ -669,41 +664,36 @@
 
         elements.messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const messageText = elements.messageInput.value.trim();
-            if (!messageText || !activeChatId) return;
-
+            const text = elements.messageInput.value.trim();
+            if (!text || !activeChatId) return;
             const messageData = {
-                senderId: currentUser.uid,
-                senderName: currentUserData.name,
-                senderRole: currentUserData.role,
-                text: messageText,
-                timestamp: serverTimestamp()
+                senderId: currentUser.uid, senderName: currentUserData.name,
+                senderRole: currentUserData.role, text, timestamp: serverTimestamp()
             };
-
-            if (replyingTo) { messageData.replyingToId = replyingTo.id; }
-
-            const newMessageRef = push(ref(db, `chats/${activeChatId}`));
-            set(newMessageRef, messageData);
-            
+            if (replyingTo) messageData.replyingToId = replyingTo.id;
+            push(ref(db, `chats/${activeChatId}`), messageData);
             elements.messageInput.value = '';
             cancelReply();
         });
 
-        elements.logoutBtn.addEventListener('click', () => signOut(auth));
+        elements.logoutBtn.onclick = () => {
+            set(ref(db, `users/${currentUser.uid}/lastSeen`), serverTimestamp());
+            signOut(auth);
+        };
         elements.cancelReplyBtn.onclick = cancelReply;
         elements.closeReportModal.onclick = closeReportModal;
         elements.submitReportBtn.onclick = submitReport;
 
         elements.createGroupBtn.onclick = () => elements.createGroupModal.style.display = 'block';
         elements.closeCreateGroupModal.onclick = () => elements.createGroupModal.style.display = 'none';
-        elements.createGroupForm.addEventListener('submit', handleCreateGroup);
+        elements.createGroupForm.onsubmit = handleCreateGroup;
         
         elements.manageMembersBtn.onclick = openManageMembersModal;
         elements.closeManageMembersModal.onclick = () => elements.manageMembersModal.style.display = 'none';
 
         elements.manageGroupBtn.onclick = openManageGroupModal;
         elements.closeManageGroupModal.onclick = () => elements.manageGroupModal.style.display = 'none';
-        elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
+        elements.manageGroupForm.onsubmit = handleUpdateGroup;
         elements.deleteGroupBtn.onclick = handleDeleteGroup;
 
         window.onclick = (event) => {
