@@ -564,9 +564,14 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .status-online { color: var(--green); }
 .status-offline { color: var(--slate-gray); }
 
-/* Untuk ikon titik status di Forum Chat, dibuat lebih spesifik */
-.sidebar-menu li a .status-online { color: var(--green); }
-.sidebar-menu li a .status-offline { color: var(--slate-gray); }
+/* ## PERBAIKAN FINAL DI SINI ## */
+/* Aturan ini memastikan warna ikon status tidak terpengaruh oleh style lain */
+.sidebar-menu li a .status-online {
+  color: var(--green) !important;
+}
+.sidebar-menu li a .status-offline {
+  color: var(--slate-gray) !important;
+}
 
 .badge, .role-badge {
   font-size: 1.5rem;
