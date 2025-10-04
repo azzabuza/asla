@@ -506,8 +506,11 @@
       currentUserName = userData.name || 'Koordinator';
       elements.userName.textContent = currentUserName;
       elements.userEmail.textContent = currentUser.email;
-      await update(userRef, { lastLogin: Date.now(), online: true });
-      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
+      
+      // ## PERBAIKAN DI SINI: Menambahkan onDisconnect ##
+      const presenceRef = ref(db, `users/${user.uid}/online`);
+      await set(presenceRef, true);
+      onDisconnect(presenceRef).set(false);
       
       await loadRoutes();
       loadAllUsers();
