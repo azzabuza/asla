@@ -46,6 +46,7 @@
           </div>
           <div class="main-header-menu">
             <button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button>
+            <button id="manageGroupBtn" class="btn-sm" style="display: none; margin-left: 1rem;"><i class="fas fa-edit"></i> Kelola Grup</button>
           </div>
         </header>
         <div class="content-container" id="chat-area">
@@ -124,6 +125,25 @@
     </div>
   </div>
 
+  <div id="manageGroupModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeManageGroupModal"><i class="fa-solid fa-xmark"></i></span>
+      <h2 id="manageGroupTitle">Kelola Grup</h2>
+      <form id="manageGroupForm">
+        <div class="form-group">
+          <label for="groupNameEditInput">Nama Grup</label>
+          <input type="text" id="groupNameEditInput" required>
+        </div>
+        <div class="form-group">
+          <label for="groupDescriptionEditInput">Deskripsi Grup</label>
+          <textarea id="groupDescriptionEditInput" rows="3" style="resize: none;"></textarea>
+        </div>
+        <button type="submit" style="width: 100%; margin-bottom: 1rem;">Simpan Perubahan</button>
+      </form>
+      <button id="deleteGroupBtn" class="logout-button" style="width: 100%; display: none;"><i class="fas fa-trash"></i> Hapus Grup Ini</button>
+    </div>
+  </div>
+
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo } from './firebase.js';
@@ -171,6 +191,14 @@
         manageMembersTitle: document.getElementById('manageMembersTitle'),
         currentMembersList: document.getElementById('currentMembersList'),
         addMembersList: document.getElementById('addMembersList'),
+        manageGroupBtn: document.getElementById('manageGroupBtn'),
+        manageGroupModal: document.getElementById('manageGroupModal'),
+        closeManageGroupModal: document.getElementById('closeManageGroupModal'),
+        manageGroupTitle: document.getElementById('manageGroupTitle'),
+        manageGroupForm: document.getElementById('manageGroupForm'),
+        groupNameEditInput: document.getElementById('groupNameEditInput'),
+        groupDescriptionEditInput: document.getElementById('groupDescriptionEditInput'),
+        deleteGroupBtn: document.getElementById('deleteGroupBtn'),
     };
 
     onAuthStateChanged(auth, async (user) => {
@@ -298,7 +326,10 @@
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
         const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+        const isCreator = metaData && metaData.createdBy === currentUser.uid;
+        
         elements.manageMembersBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && isAdmin) ? 'block' : 'none';
+        elements.manageGroupBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && (isAdmin || isCreator)) ? 'block' : 'none';
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
@@ -534,6 +565,72 @@
         }
     }
 
+    function openManageGroupModal() {
+        if (!activeGroupData) return;
+        elements.manageGroupTitle.textContent = `Kelola Grup: ${activeGroupData.name}`;
+        elements.groupNameEditInput.value = activeGroupData.name || '';
+        elements.groupDescriptionEditInput.value = activeGroupData.description || '';
+
+        const isCreator = activeGroupData.createdBy === currentUser.uid;
+        const isSuperAdmin = currentUserData.role === 'super admin';
+        
+        elements.deleteGroupBtn.style.display = (isCreator || isSuperAdmin) ? 'block' : 'none';
+        
+        elements.manageGroupModal.style.display = 'block';
+    }
+
+    async function handleUpdateGroup(e) {
+        e.preventDefault();
+        if (!activeGroupData) return;
+        const newName = elements.groupNameEditInput.value.trim();
+        const newDescription = elements.groupDescriptionEditInput.value.trim();
+        if (!newName) {
+            alert('Nama grup tidak boleh kosong.');
+            return;
+        }
+
+        try {
+            await update(ref(db, `groups/${activeGroupData.id}`), {
+                name: newName,
+                description: newDescription
+            });
+            alert('Informasi grup berhasil diperbarui.');
+            elements.manageGroupModal.style.display = 'none';
+        } catch (error) {
+            console.error('Gagal memperbarui grup:', error);
+            alert('Gagal memperbarui grup. Silakan coba lagi.');
+        }
+    }
+
+    async function handleDeleteGroup() {
+        if (!activeGroupData) return;
+        const groupName = activeGroupData.name;
+        
+        if (!confirm(`PERINGATAN!\nAnda akan menghapus grup "${groupName}".\nSemua riwayat percakapan di dalam grup ini juga akan dihapus secara permanen.\n\nAksi ini tidak dapat dibatalkan. Lanjutkan?`)) {
+            return;
+        }
+
+        if (!confirm(`KONFIRMASI AKHIR!\nAnda benar-benar yakin ingin menghapus grup "${groupName}"?`)) {
+            return;
+        }
+
+        try {
+            const updates = {};
+            updates[`/groups/${activeGroupData.id}`] = null;
+            updates[`/chats/${activeGroupData.id}`] = null;
+
+            await update(ref(db), updates);
+            alert(`Grup "${groupName}" telah berhasil dihapus.`);
+            
+            elements.manageGroupModal.style.display = 'none';
+            document.querySelector('#group-list a[data-chat-id="general"]').click();
+
+        } catch (error) {
+            console.error('Gagal menghapus grup:', error);
+            alert('Gagal menghapus grup. Silakan coba lagi.');
+        }
+    }
+
     function setupEventListeners() {
         elements.messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -569,10 +666,16 @@
         elements.manageMembersBtn.onclick = openManageMembersModal;
         elements.closeManageMembersModal.onclick = () => elements.manageMembersModal.style.display = 'none';
 
+        elements.manageGroupBtn.onclick = openManageGroupModal;
+        elements.closeManageGroupModal.onclick = () => elements.manageGroupModal.style.display = 'none';
+        elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
+        elements.deleteGroupBtn.onclick = handleDeleteGroup;
+
         window.onclick = (event) => {
             if (event.target == elements.reportModal) closeReportModal();
             if (event.target == elements.createGroupModal) elements.createGroupModal.style.display = 'none';
             if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
+            if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
         };
     }
   </script>
