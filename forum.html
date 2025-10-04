@@ -51,10 +51,8 @@
             <p id="chatSubtitle">Pilih grup atau pengguna untuk memulai percakapan.</p>
           </div>
           <div class="main-header-menu">
-            <ul>
-          <li><button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button></li>
-          <li><button id="manageGroupBtn" class="btn-sm" style="display: none; margin-left: 1rem;"><i class="fas fa-edit"></i> Kelola Grup</button></li>
-        </ul>
+            <button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button>
+            <button id="manageGroupBtn" class="btn-sm" style="display: none; margin-left: 1rem;"><i class="fas fa-edit"></i> Kelola Grup</button>
           </div>
         </header>
         <div class="content-container" id="chat-area">
@@ -215,6 +213,26 @@
         if (!user) { window.location.href = 'index.html'; return; }
         currentUser = user;
         const userRef = ref(db, `users/${currentUser.uid}`);
+
+        // ## PERBAIKAN DI SINI: Menambahkan listener real-time untuk status lockdown ##
+        onValue(userRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                if (userData.locked) {
+                    alert('Akun Anda telah dinonaktifkan oleh administrator. Anda akan dikeluarkan.');
+                    signOut(auth).then(() => {
+                        window.location.href = 'login.html';
+                    });
+                }
+            } else {
+                // Jika data pengguna tidak ada lagi
+                alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
+                signOut(auth).then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+
         const userSnap = await get(userRef);
         if (userSnap.exists()) {
             currentUserData = userSnap.val();
@@ -225,7 +243,6 @@
                 elements.createGroupBtn.style.display = 'block';
             }
 
-            // ## PERBAIKAN DI SINI: Menambahkan onDisconnect ##
             const presenceRef = ref(db, `users/${user.uid}/online`);
             await set(presenceRef, true);
             onDisconnect(presenceRef).set(false);
@@ -238,7 +255,6 @@
     // Fungsi untuk mengubah teks URL menjadi link aktif
     function linkify(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        // Ganti plain text dengan elemen sementara untuk mencegah double-escaping
         const tempElement = document.createElement('div');
         tempElement.textContent = text;
         
@@ -332,7 +348,6 @@
     }
 
     function openChat(chatId, chatName, type, metaData = null) {
-        // Set ID chat yang aktif dan perbarui sidebar
         activeChatId = chatId;
         updateActiveLinkInSidebar();
 
@@ -355,7 +370,6 @@
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fas fa-users"></i> ${chatName}`;
-            // Menampilkan deskripsi grup jika ada
             const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
             elements.chatSubtitle.textContent = groupDescription;
         }
@@ -422,7 +436,7 @@
             }
 
             const text = el('p', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text); // Gunakan fungsi linkify di sini
+            text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
             
