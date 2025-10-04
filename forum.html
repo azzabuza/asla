@@ -319,46 +319,101 @@
         const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}` });
         const msgBubble = el('div', '', { class: 'message-bubble' });
 
-        const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
-        const senderName = isMe ? 'Anda' : senderInfo.name;
-        const senderRole = msgData.senderRole || senderInfo.role;
-        const roleClass = (senderRole || '').replace(' ', '-');
-        
-        const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${senderRole}</span>`;
-        const header = el('p', '', { class: 'message-header' });
-        header.innerHTML = headerHTML;
-        
-        let repliedMsgHtml = '';
-        if (msgData.replyingToId) {
-            const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
-            if (repliedMsgSnap.exists()) {
-                const repliedMsg = repliedMsgSnap.val();
-                repliedMsgHtml = `<div class="replied-message">
-                    <p class="replied-header">${repliedMsg.senderName}</p>
-                    <p class="replied-text">${repliedMsg.text}</p>
-                </div>`;
+        if (msgData.deleted) {
+            const text = el('p', msgData.text, { class: 'message-text' });
+            text.style.fontStyle = 'italic';
+            text.style.opacity = '0.7';
+            const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const footer = el('p', time, { class: 'message-footer' });
+            msgBubble.append(text, footer);
+            msgWrapper.append(msgBubble);
+        } else {
+            const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
+            const senderName = isMe ? 'Anda' : senderInfo.name;
+            const senderRole = msgData.senderRole || senderInfo.role;
+            const roleClass = (senderRole || '').replace(' ', '-');
+            
+            const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${senderRole}</span>`;
+            const header = el('p', '', { class: 'message-header' });
+            header.innerHTML = headerHTML;
+            
+            let repliedMsgHtml = '';
+            if (msgData.replyingToId) {
+                const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
+                if (repliedMsgSnap.exists()) {
+                    const repliedMsg = repliedMsgSnap.val();
+                    if (!repliedMsg.deleted) {
+                        repliedMsgHtml = `<div class="replied-message">
+                            <p class="replied-header">${repliedMsg.senderName}</p>
+                            <p class="replied-text">${repliedMsg.text}</p>
+                        </div>`;
+                    }
+                }
             }
+
+            const text = el('p', msgData.text, { class: 'message-text' });
+            const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const footer = el('p', time, { class: 'message-footer' });
+            
+            const actions = el('div', '', { class: 'message-actions' });
+            const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
+            replyBtn.onclick = () => setReplyingTo(msgId, msgData);
+            
+            const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm danger' });
+            reportBtn.onclick = () => openReportModal(msgId, msgData);
+            
+            actions.append(replyBtn, reportBtn);
+
+            const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+            if (isMe || isAdminOrSuperAdmin) {
+                const deleteBtn = el('button', '<i class="fas fa-trash"></i>', { class: 'btn-sm danger' });
+                deleteBtn.onclick = () => deleteMessage(msgId, msgData);
+                actions.append(deleteBtn);
+            }
+
+            msgBubble.innerHTML = repliedMsgHtml;
+            msgBubble.append(header, text, footer);
+            msgWrapper.append(msgBubble, actions);
         }
-
-        const text = el('p', msgData.text, { class: 'message-text' });
-        const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const footer = el('p', time, { class: 'message-footer' });
-        
-        const actions = el('div', '', { class: 'message-actions' });
-        const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
-        replyBtn.onclick = () => setReplyingTo(msgId, msgData);
-        
-        const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm danger' });
-        reportBtn.onclick = () => openReportModal(msgId, msgData);
-        
-        actions.append(replyBtn, reportBtn);
-
-        msgBubble.innerHTML = repliedMsgHtml;
-        msgBubble.append(header, text, footer);
-        msgWrapper.append(msgBubble, actions);
         elements.messageList.appendChild(msgWrapper);
     }
     
+    async function deleteMessage(msgId, msgData) {
+        const isMe = msgData.senderId === currentUser.uid;
+        const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+        
+        if (!isMe && !isAdminOrSuperAdmin) {
+            alert('Anda tidak memiliki izin untuk menghapus pesan ini.');
+            return;
+        }
+
+        const confirmationText = 'Apakah Anda yakin ingin menghapus pesan ini? Aksi ini tidak dapat dibatalkan.';
+        if (!confirm(confirmationText)) {
+            return;
+        }
+
+        let deletedText = '';
+        if (isMe) {
+            deletedText = `Pesan telah dihapus pengirim (${currentUserData.name})`;
+        } else { 
+            deletedText = `Pesan telah dihapus oleh ${currentUserData.role}.`;
+        }
+
+        const updates = {
+            text: deletedText,
+            deleted: true,
+            deletedBy: currentUser.uid,
+            replyingToId: null, 
+        };
+
+        try {
+            await update(ref(db, `chats/${activeChatId}/${msgId}`), updates);
+        } catch (error) {
+            console.error("Error deleting message:", error);
+            alert("Gagal menghapus pesan. Silakan coba lagi.");
+        }
+    }
+
     function setReplyingTo(msgId, msgData) {
         replyingTo = { id: msgId, senderName: msgData.senderName, text: msgData.text };
         elements.replyingToUser.textContent = msgData.senderName;
