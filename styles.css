@@ -1612,19 +1612,3 @@ body.light-mode .replied-message {
   padding: 0.2rem 0.6rem;
   border-radius: 0.5rem;
 }
-
-/* CSS untuk Dot Counter Pesan Belum Dibaca */
-.unread-counter {
-  background-color: var(--red);
-  color: var(--white);
-  border-radius: 50%;
-  padding: 0.1rem 0.6rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-left: auto; /* Mendorong counter ke kanan */
-  line-height: 1.5;
-}
-.sidebar-menu li a {
-    display: flex; /* Menggunakan flexbox untuk alignment */
-    align-items: center;
-}
