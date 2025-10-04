@@ -422,6 +422,7 @@
             snapshot.forEach(child => {
                 displayMessage(child.key, child.val());
             });
+            // Auto-scroll ke bawah
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
     }
