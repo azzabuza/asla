@@ -560,18 +560,13 @@ tbody tr:hover { background-color: var(--gunmetal); }
 
 .text-secondary { color: var(--slate-gray); }
 
-/* ## PERBAIKAN DI SINI ## */
-/* Menggabungkan style untuk status online/offline ke dalam satu blok */
-.status-online {
-  color: var(--green);
-  font-size: 0.8rem;
-  vertical-align: middle;
-}
-.status-offline {
-  color: var(--slate-gray);
-  font-size: 0.8rem;
-  vertical-align: middle;
-}
+/* Untuk teks status di halaman Admin */
+.status-online { color: var(--green); }
+.status-offline { color: var(--slate-gray); }
+
+/* Untuk ikon titik status di Forum Chat, dibuat lebih spesifik */
+.sidebar-menu li a .status-online { color: var(--green); }
+.sidebar-menu li a .status-offline { color: var(--slate-gray); }
 
 .badge, .role-badge {
   font-size: 1.5rem;
