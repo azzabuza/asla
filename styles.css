@@ -1482,6 +1482,9 @@ body.light-mode .modal-content {
   font-weight: 600;
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .message-wrapper.sent .message-header {
   color: rgba(255, 255, 255, 0.8);
@@ -1611,4 +1614,31 @@ body.light-mode .replied-message {
   color: var(--dark-blue-gray);
   padding: 0.2rem 0.6rem;
   border-radius: 0.5rem;
+}
+
+.verified-super-admin, .verified-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  font-size: 1em;
+  margin-left: 0.5rem;
+}
+
+.verified-super-admin {
+  background-color: #FFD700; /* Gold */
+  color: #4a2c00;
+}
+
+.verified-admin {
+  background-color: #1DA1F2; /* Twitter Blue */
+  color: white;
+}
+
+.verified-super-admin i, .verified-admin i {
+  font-size: 0.8em;
+}
+
 }
