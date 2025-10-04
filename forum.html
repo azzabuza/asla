@@ -13,7 +13,7 @@
     <nav class="sidebar">
       <div class="sidebar-wrapper">
         <div class="sidebar-header">
-          <h2 id="userRoleTitle">Forum</h2>
+          <h2>Forum</h2>
         </div>
         <div class="sidebar-account">
           <p id="userName">Memuat...</p>
@@ -141,7 +141,6 @@
     const elements = {
         userName: document.getElementById('userName'),
         userEmail: document.getElementById('userEmail'),
-        userRoleTitle: document.getElementById('userRoleTitle'),
         userList: document.getElementById('user-list'),
         groupList: document.getElementById('group-list'),
         chatTitle: document.getElementById('chatTitle'),
@@ -182,7 +181,6 @@
             currentUserData = userSnap.val();
             elements.userName.textContent = currentUserData.name || 'Pengguna';
             elements.userEmail.textContent = currentUser.email;
-            elements.userRoleTitle.textContent = currentUserData.role.charAt(0).toUpperCase() + currentUserData.role.slice(1);
             
             if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
                 elements.createGroupBtn.style.display = 'block';
