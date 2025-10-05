@@ -1458,6 +1458,7 @@ body {
   transition: opacity 0.2s ease;
   display: flex;
   align-items: center;
+  gap: 1rem;
 }
 .message-wrapper:hover .message-actions {
   opacity: 1;
