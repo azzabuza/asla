@@ -59,6 +59,22 @@
           </div>
         </header>
         <div class="content-container" id="chat-area">
+          <div id="formatting-guide-container" style="display: none;">
+              <div class="card" style="margin: 0 1rem 1rem 1rem; text-align: left; background-color: var(--dark-blue-gray);">
+                  <h3 class="card-header">Panduan Format Teks</h3>
+                  <div class="card-body" style="font-size: 1.5rem; color: var(--slate-gray);">
+                      <ul style="list-style: none; padding: 0;">
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">*Teks tebal*</code> → <strong>Teks tebal</strong></li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">_Teks miring_</code> → <i>Teks miring</i></li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">~~Teks coret~~</code> → <del>Teks coret</del></li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">`kode inline`</code> → <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);"># Judul 1</code> (<code>##</code> untuk Judul 2, <code>###</code> untuk Judul 3)</li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-- List nomor</code> (di baris baru)</li>
+                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-* List poin</code> (di baris baru)</li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
           <div class="chat-messages" id="message-list">
              </div>
         </div>
@@ -257,22 +273,6 @@
         userPermissionsList: document.getElementById('userPermissionsList'),
     };
 
-    const formattingGuideHTML = `
-        <div class="card" style="margin: 2rem; text-align: left; background-color: var(--dark-blue-gray);">
-            <h3 class="card-header">Panduan Format Teks</h3>
-            <div class="card-body" style="font-size: 1.5rem; color: var(--slate-gray);"">
-                <ul style="list-style: none; padding: 0;">
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">*Teks tebal*</code> &rarr; <strong>Teks tebal</strong></li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">_Teks miring_</code> &rarr; <i>Teks miring</i></li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">~~Teks coret~~</code> &rarr; <del>Teks coret</del></li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">\`kode inline\`</code> &rarr; <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);"># Judul 1</code> (<code>##</code> untuk Judul 2, <code>###</code> untuk Judul 3)</li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">-- List nomor</code> (di baris baru)</li>
-                    <li style="margin-bottom: 0.5rem;"><code style"color: var(--cyan);">-* List poin</code> (di baris baru)</li>
-                </ul>
-            </div>
-        </div>`;
-
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'index.html'; return; }
         currentUser = user;
@@ -317,41 +317,29 @@
     function linkify(text) {
         let html = text;
 
-        // Escape HTML to prevent XSS attacks
         const tempElement = document.createElement('div');
         tempElement.textContent = html;
         html = tempElement.innerHTML;
 
-        // BLOCK ELEMENTS (HEADERS, LISTS, BLOCKQUOTES)
-        // Headers: # H1, ## H2, etc.
         html = html.replace(/^#+\s+(.*)/gm, (match, content) => {
             const level = Math.min(match.match(/^#+/)[0].length, 6);
             return `<h${level} style="margin: 0.5em 0;">${content.trim()}</h${level}>`;
         });
-        // Blockquote: > quote
         html = html.replace(/^>\s+(.*)/gm, '<blockquote style="margin: 0.5em 0; padding-left: 1em; border-left: 3px solid var(--gunmetal); color: var(--slate-gray);">$1</blockquote>');
-        // Numbered lists: -- item
         html = html.replace(/((?:^\s*--\s+.*\n?)+)/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*--\s+/, '').trim()}</li>`).join('');
             return `<ol style="margin: 0.5em 0; padding-left: 20px;">${items}</ol>`;
         });
-        // Bulleted lists: -* item
         html = html.replace(/((?:^\s*-\*\s+.*\n?)+)/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*-\*\s+/, '').trim()}</li>`).join('');
             return `<ul style="margin: 0.5em 0; padding-left: 20px;">${items}</ul>`;
         });
 
-        // INLINE ELEMENTS
-        // Bold: *bold text*
         html = html.replace(/\*([^\*]+)\*/g, '<strong>$1</strong>');
-        // Italic: _italic text_
         html = html.replace(/_([^_]+)_/g, '<i>$1</i>');
-        // Strikethrough: ~~text~~
         html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-        // Inline Code: `code`
         html = html.replace(/`([^`]+)`/g, '<code style="background: var(--dark-blue-gray); padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">$1</code>');
         
-        // URLs (must be last to avoid interfering with other markdown)
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         html = html.replace(urlRegex, function(url) {
             let href = url;
@@ -479,7 +467,8 @@
         activeChatId = chatId;
         updateActiveLinkInSidebar();
         
-        // Reset button visibility
+        const formattingGuide = document.getElementById('formatting-guide-container');
+        
         elements.manageMembersBtn.style.display = 'none';
         elements.manageGroupBtn.style.display = 'none';
         elements.chatPermissionsBtn.style.display = 'none';
@@ -522,23 +511,25 @@
             elements.chatPermissionsBtn.style.display = 'block';
         }
 
-        // Handle permissions and message loading
         if (chatId === 'general') {
             const permissionsRef = ref(db, 'chat_settings/general/permissions');
             onValue(permissionsRef, (permSnap) => {
                 checkChatPermissions(permSnap.val());
             });
         } else {
-            checkChatPermissions({ mode: 'all' }); // Default allow all for other chats
+            checkChatPermissions({ mode: 'all' });
         }
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
-            elements.messageList.innerHTML = formattingGuideHTML; // Always show guide at the top
+            elements.messageList.innerHTML = '';
             if (snapshot.exists()) {
+                formattingGuide.style.display = 'none';
                 snapshot.forEach(child => {
                     displayMessage(child.key, child.val());
                 });
+            } else {
+                formattingGuide.style.display = 'block';
             }
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
@@ -553,7 +544,7 @@
             const timeRemaining = 5000 - timeSinceDeleted;
 
             if (timeRemaining <= 0) {
-                return; // Do not show if more than 5 seconds have passed
+                return;
             }
 
             const msgBubble = el('div', '', { class: 'message-bubble' });
