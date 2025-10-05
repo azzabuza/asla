@@ -939,7 +939,7 @@
         elements.chatPermissionsBtn.onclick = openChatPermissionsModal;
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
-        elements.permissionsForm.permissionMode.forEach(radio => {
+        elements.permissionsForm.querySelectorAll('[name="permissionMode"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 elements.userPermissionsContainer.style.display = (e.target.value === 'selected_users') ? 'block' : 'none';
             });
