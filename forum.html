@@ -437,9 +437,9 @@
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
-            elements.messageList.innerHTML = '';
+            elements.messageList.innerHTML = formattingGuideHTML; // Selalu tampilkan panduan di awal
             if (!snapshot.exists()) {
-                elements.messageList.innerHTML = formattingGuideHTML;
+                // Jika tidak ada pesan, hanya panduan yang akan terlihat
                 return;
             }
             snapshot.forEach(child => {
