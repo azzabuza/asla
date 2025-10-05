@@ -156,21 +156,38 @@
   <div id="chatPermissionsModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" id="closeChatPermissionsModal"><i class="fa-solid fa-xmark"></i></span>
-        <h2>Izin Mengirim Pesan di Diskusi Umum</h2>
+        <h2>Izin Mengirim Pesan</h2>
         <form id="permissionsForm">
             <div class="form-group">
-                <label>Siapa yang bisa mengirim pesan?</label>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="all" checked> Semua Pengguna</label>
-                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="admins_only"> Hanya Admin & Super Admin</label>
-                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="selected_users"> Pengguna Tertentu</label>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; font-size: 1.5rem; color: var(--light-lavender);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Semua Pengguna</span>
+                        <label class="switch">
+                            <input type="radio" name="permissionMode" value="all" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Hanya Admin & Super Admin</span>
+                        <label class="switch">
+                            <input type="radio" name="permissionMode" value="admins_only">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Pengguna Tertentu</span>
+                        <label class="switch">
+                            <input type="radio" name="permissionMode" value="selected_users">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div id="userPermissionsContainer" class="form-group" style="display: none; border-top: 1px solid var(--gunmetal); margin-top: 1rem; padding-top: 1rem;">
                 <label>Pilih pengguna yang diizinkan</label>
                 <ul id="userPermissionsList" class="modal-user-list" style="max-height: 200px;"></ul>
             </div>
-            <button type="submit" style="width: 100%;">Simpan Pengaturan</button>
+            <button type="submit" style="width: 100%; margin-top: 1rem;">Simpan Pengaturan</button>
         </form>
     </div>
   </div>
@@ -852,7 +869,7 @@
         const permissionsSnap = await get(ref(db, 'chat_settings/general/permissions'));
         const permissions = permissionsSnap.val() || { mode: 'all' };
         
-        elements.permissionsForm.permissionMode.value = permissions.mode;
+        elements.permissionsForm.querySelector(`[name="permissionMode"][value="${permissions.mode}"]`).checked = true;
         
         elements.userPermissionsList.innerHTML = '';
         Object.entries(allUsers).forEach(([uid, user]) => {
@@ -875,7 +892,7 @@
 
     async function handleSavePermissions(e) {
         e.preventDefault();
-        const mode = elements.permissionsForm.permissionMode.value;
+        const mode = elements.permissionsForm.querySelector('[name="permissionMode"]:checked').value;
         const updates = { mode };
 
         if (mode === 'selected_users') {
