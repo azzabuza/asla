@@ -253,17 +253,45 @@
     });
     
     function linkify(text) {
-        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        let html = text;
+
+        // Escape HTML to prevent XSS attacks
         const tempElement = document.createElement('div');
-        tempElement.textContent = text;
+        tempElement.textContent = html;
+        html = tempElement.innerHTML;
         
-        return tempElement.innerHTML.replace(urlRegex, function(url) {
+        // Headers (e.g., *Title*, **Subtitle**)
+        html = html.replace(/^\s*(\*{1,6})(.*?)(\1)\s*$/gm, (match, stars, content) => {
+            const level = stars.length;
+            return `<h${level} style="margin: 0.5em 0;">${content.trim()}</h${level}>`;
+        });
+        
+        // Numbered lists (e.g., -- item)
+        html = html.replace(/((?:^\s*--\s+.*\n?)+)/gm, (match) => {
+            const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*--\s+/, '').trim()}</li>`).join('');
+            return `<ol style="margin: 0.5em 0;">${items}</ol>`;
+        });
+
+        // Bulleted lists (e.g., -* item)
+        html = html.replace(/((?:^\s*-\*\s+.*\n?)+)/gm, (match) => {
+            const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*-\*\s+/, '').trim()}</li>`).join('');
+            return `<ul style="margin: 0.5em 0;">${items}</ul>`;
+        });
+        
+        // Italic (e.g., _italic text_)
+        html = html.replace(/_([^_]+)_/g, '<i>$1</i>');
+        
+        // URLs
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        html = html.replace(urlRegex, function(url) {
             let href = url;
             if (!href.match(/^(https?|ftp|file):\/\//)) {
                 href = 'https://' + href;
             }
             return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
+
+        return html;
     }
 
     function updateActiveLinkInSidebar() {
