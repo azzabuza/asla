@@ -185,7 +185,7 @@
             </div>
             <div id="userPermissionsContainer" class="form-group" style="display: none; border-top: 1px solid var(--gunmetal); margin-top: 1rem; padding-top: 1rem;">
                 <label>Pilih pengguna yang diizinkan</label>
-                <ul id="userPermissionsList" class="modal-user-list" style="max-height: 200px;"></ul>
+                <ul id="userPermissionsList" class="modal-user-list" style="max-height: 200px; display: flex; flex-direction: column; gap: 1rem;"></ul>
             </div>
             <button type="submit" style="width: 100%; margin-top: 1rem;">Simpan Pengaturan</button>
         </form>
@@ -873,16 +873,18 @@
         
         elements.userPermissionsList.innerHTML = '';
         Object.entries(allUsers).forEach(([uid, user]) => {
-            if (user.role === 'super admin' || user.role === 'admin') return; // Don't list admins
-            const li = el('li', '', { class: 'modal-user-item' });
-            const label = el('label', '', { style: 'display: flex; align-items: center; width: 100%;' });
+            if (user.role === 'super admin' || user.role === 'admin') return;
+            const li = el('li', '', { class: 'modal-user-item', style: 'display: flex; justify-content: space-between; align-items: center; font-size: 1.5rem;' });
+            const nameSpan = el('span', user.name);
+            const switchLabel = el('label', '', { class: 'switch' });
             const checkbox = el('input', '', { type: 'checkbox', value: uid });
+            
             if (permissions.mode === 'selected_users' && permissions.allowed_users && permissions.allowed_users[uid]) {
                 checkbox.checked = true;
             }
-            label.appendChild(checkbox);
-            label.append(` ${user.name}`);
-            li.appendChild(label);
+            
+            switchLabel.append(checkbox, el('span', '', {class: 'slider'}));
+            li.append(nameSpan, switchLabel);
             elements.userPermissionsList.appendChild(li);
         });
 
@@ -901,7 +903,7 @@
                 updates.allowed_users[input.value] = true;
             });
         } else {
-            updates.allowed_users = null; // Clear allowed users if not in selected mode
+            updates.allowed_users = null;
         }
         
         await set(ref(db, 'chat_settings/general/permissions'), updates);
@@ -952,7 +954,6 @@
         elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
         elements.deleteGroupBtn.onclick = handleDeleteGroup;
         
-        // Chat Permissions Modal
         elements.chatPermissionsBtn.onclick = openChatPermissionsModal;
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
