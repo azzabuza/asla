@@ -438,13 +438,13 @@
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = formattingGuideHTML; // Selalu tampilkan panduan di awal
-            if (!snapshot.exists()) {
-                // Jika tidak ada pesan, hanya panduan yang akan terlihat
-                return;
+            
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    displayMessage(child.key, child.val());
+                });
             }
-            snapshot.forEach(child => {
-                displayMessage(child.key, child.val());
-            });
+            
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
     }
