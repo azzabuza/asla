@@ -59,28 +59,7 @@
         </header>
         <div class="content-container" id="chat-area">
           <div class="chat-messages" id="message-list">
-            <div style="padding: 2rem; text-align: center; color: var(--slate-gray); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <i class="fas fa-comments fa-3x" style="margin-bottom: 1rem;"></i>
-                <h2 style="color: var(--light-lavender);">Selamat Datang di Forum Diskusi</h2>
-                <p>Pilih obrolan dari panel kiri untuk memulai.</p>
-                <div class="card" style="margin-top: 2rem; text-align: left; background-color: var(--dark-blue-gray); width: 100%; max-width: 450px;">
-                    <h3 class="card-header">Panduan Format Teks</h3>
-                    <div class="card-body" style="font-size: 1.4rem;">
-                        <ul style="list-style: none; padding: 0;">
-                            <li style="margin-bottom: 0.5rem;"><code>*Teks tebal*</code> &rarr; <strong>Teks tebal</strong></li>
-                            <li style="margin-bottom: 0.5rem;"><code>_Teks miring_</code> &rarr; <i>Teks miring</i></li>
-                            <li style="margin-bottom: 0.5rem;"><code>~~Teks coret~~</code> &rarr; <del>Teks coret</del></li>
-                            <li style="margin-bottom: 0.5rem;"><code>`kode inline`</code> &rarr; <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
-                            <li style="margin-bottom: 0.5rem;"><code># Judul 1</code></li>
-                            <li style="margin-bottom: 0.5rem;"><code>## Judul 2</code></li>
-                            <li style="margin-bottom: 0.5rem;"><code>> Kutipan</code></li>
-                            <li style="margin-bottom: 0.5rem;"><code>-- List nomor</code></li>
-                            <li style="margin-bottom: 0.5rem;"><code>-* List poin</code></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-          </div>
+             </div>
         </div>
         <div class="chat-input-area">
            <div id="replying-to-banner" class="reply-banner" style="display: none;">
@@ -231,6 +210,23 @@
         groupDescriptionEditInput: document.getElementById('groupDescriptionEditInput'),
         deleteGroupBtn: document.getElementById('deleteGroupBtn'),
     };
+
+    const formattingGuideHTML = `
+        <div class="card" style="margin: 2rem; text-align: left; background-color: var(--dark-blue-gray);">
+            <h3 class="card-header">Panduan Format Teks</h3>
+            <div class="card-body" style="font-size: 1.4rem;">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 0.5rem;"><code>*Teks tebal*</code> &rarr; <strong>Teks tebal</strong></li>
+                    <li style="margin-bottom: 0.5rem;"><code>_Teks miring_</code> &rarr; <i>Teks miring</i></li>
+                    <li style="margin-bottom: 0.5rem;"><code>~~Teks coret~~</code> &rarr; <del>Teks coret</del></li>
+                    <li style="margin-bottom: 0.5rem;"><code>\`kode inline\`</code> &rarr; <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
+                    <li style="margin-bottom: 0.5rem;"><code># Judul 1</code> (dan <code>##</code> untuk Judul 2)</li>
+                    <li style="margin-bottom: 0.5rem;"><code>> Kutipan</code></li>
+                    <li style="margin-bottom: 0.5rem;"><code>-- List nomor</code> (di baris baru)</li>
+                    <li style="margin-bottom: 0.5rem;"><code>-* List poin</code> (di baris baru)</li>
+                </ul>
+            </div>
+        </div>`;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'index.html'; return; }
@@ -443,7 +439,7 @@
         onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = '';
             if (!snapshot.exists()) {
-                elements.messageList.innerHTML = '<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>';
+                elements.messageList.innerHTML = formattingGuideHTML;
                 return;
             }
             snapshot.forEach(child => {
