@@ -13,7 +13,7 @@
     <nav class="sidebar">
       <div class="sidebar-wrapper">
         <div class="sidebar-header">
-          <h2>Forum Diskusi</h2>
+          <h2>Deep Chat</h2>
         </div>
         <div class="sidebar-account">
           <p id="userName">Memuat...</p>
@@ -70,7 +70,7 @@
               <button id="cancel-reply-btn"><i class="fa-solid fa-xmark"></i></button>
            </div>
           <form id="messageForm" class="chat-form">
-            <textarea id="messageInput" style="background-color: var(--light-gunmetal); resize: none; max-height: 120px; overflow-y: auto;" placeholder="Ketik pesan Anda (Shift+Enter untuk baris baru)" autocomplete="off" disabled rows="1"></textarea>
+            <textarea id="messageInput" style="background-color: var(--light-gunmetal); resize: none; height: 80px; overflow-y: auto;" placeholder="Ketik pesan Anda (Shift+Enter untuk baris baru)" autocomplete="off" disabled></textarea>
             <button type="submit" id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
           </form>
         </div>
@@ -766,7 +766,6 @@
         set(newMessageRef, messageData);
         
         elements.messageInput.value = '';
-        elements.messageInput.style.height = 'auto'; // Reset height
         cancelReply();
     }
 
@@ -786,12 +785,6 @@
             }
         });
         
-        elements.messageInput.addEventListener('input', () => {
-            const el = elements.messageInput;
-            el.style.height = 'auto';
-            el.style.height = (el.scrollHeight) + 'px';
-        });
-
         elements.logoutBtn.addEventListener('click', () => {
           if (currentUser) {
             const presenceRef = ref(db, `users/${currentUser.uid}/online`);
