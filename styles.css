@@ -400,6 +400,10 @@ button, .button {
   background-color: var(--green);
   color: var(--text-inverse-dark-blue-gray);
 }
+.btn-sm.warm {
+  background: var(--orange);
+  color: var(--text-inverse-dark-blue-gray);
+}
 .btn-sm.danger {
   background: var(--red);
   color: var(--text-inverse-dark-blue-gray);
