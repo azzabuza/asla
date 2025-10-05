@@ -52,6 +52,7 @@
           </div>
           <div class="main-header-menu">
             <ul>
+              <li><button id="chatPermissionsBtn" class="btn-sm" style="display: none;"><i class="fas fa-shield-alt"></i> Izin Chat</button></li>
               <li><button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button></li>
               <li><button id="manageGroupBtn" class="btn-sm" style="display: none;"><i class="fas fa-edit"></i> Kelola Grup</button></li>
             </ul>
@@ -70,7 +71,7 @@
               <button id="cancel-reply-btn"><i class="fa-solid fa-xmark"></i></button>
            </div>
           <form id="messageForm" class="chat-form">
-            <textarea id="messageInput" style="background-color: var(--light-gunmetal); resize: none; height: 4.2rem; overflow-y: auto;" placeholder="Ketik pesan Anda (Shift+Enter untuk baris baru)" autocomplete="off" disabled></textarea>
+            <textarea id="messageInput" style="background-color: var(--light-gunmetal); resize: none; overflow-y: auto;" placeholder="Ketik pesan Anda (Shift+Enter untuk baris baru)" autocomplete="off" disabled></textarea>
             <button type="submit" id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
           </form>
         </div>
@@ -152,6 +153,28 @@
     </div>
   </div>
 
+  <div id="chatPermissionsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeChatPermissionsModal"><i class="fa-solid fa-xmark"></i></span>
+        <h2>Izin Mengirim Pesan di Diskusi Umum</h2>
+        <form id="permissionsForm">
+            <div class="form-group">
+                <label>Siapa yang bisa mengirim pesan?</label>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="all" checked> Semua Pengguna</label>
+                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="admins_only"> Hanya Admin & Super Admin</label>
+                    <label style="display: flex; align-items: center; gap: 1rem;"><input type="radio" name="permissionMode" value="selected_users"> Pengguna Tertentu</label>
+                </div>
+            </div>
+            <div id="userPermissionsContainer" class="form-group" style="display: none; border-top: 1px solid var(--gunmetal); margin-top: 1rem; padding-top: 1rem;">
+                <label>Pilih pengguna yang diizinkan</label>
+                <ul id="userPermissionsList" class="modal-user-list" style="max-height: 200px;"></ul>
+            </div>
+            <button type="submit" style="width: 100%;">Simpan Pengaturan</button>
+        </form>
+    </div>
+  </div>
+
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
@@ -209,6 +232,12 @@
         groupNameEditInput: document.getElementById('groupNameEditInput'),
         groupDescriptionEditInput: document.getElementById('groupDescriptionEditInput'),
         deleteGroupBtn: document.getElementById('deleteGroupBtn'),
+        chatPermissionsBtn: document.getElementById('chatPermissionsBtn'),
+        chatPermissionsModal: document.getElementById('chatPermissionsModal'),
+        closeChatPermissionsModal: document.getElementById('closeChatPermissionsModal'),
+        permissionsForm: document.getElementById('permissionsForm'),
+        userPermissionsContainer: document.getElementById('userPermissionsContainer'),
+        userPermissionsList: document.getElementById('userPermissionsList'),
     };
 
     const formattingGuideHTML = `
@@ -398,14 +427,50 @@
         updateActiveLinkInSidebar();
     }
 
+    function checkChatPermissions(permissions) {
+        let canChat = false;
+        let reason = "Anda tidak diizinkan mengirim pesan di grup ini.";
+
+        const mode = permissions?.mode || 'all';
+
+        if (mode === 'all') {
+            canChat = true;
+        } else if (mode === 'admins_only') {
+            if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
+                canChat = true;
+            } else {
+                reason = "Hanya admin yang dapat mengirim pesan di grup ini.";
+            }
+        } else if (mode === 'selected_users') {
+            if (permissions.allowed_users && permissions.allowed_users[currentUser.uid]) {
+                canChat = true;
+            } else {
+                 reason = "Hanya pengguna tertentu yang dapat mengirim pesan.";
+            }
+        }
+        
+        elements.messageInput.disabled = !canChat;
+        elements.sendMessageBtn.disabled = !canChat;
+        if (!canChat) {
+            elements.messageInput.placeholder = reason;
+        } else {
+            elements.messageInput.placeholder = "Ketik pesan Anda (Shift+Enter untuk baris baru)";
+        }
+    }
+
+
     function openChat(chatId, chatName, type, metaData = null) {
         activeChatId = chatId;
         updateActiveLinkInSidebar();
+        
+        // Reset button visibility
+        elements.manageMembersBtn.style.display = 'none';
+        elements.manageGroupBtn.style.display = 'none';
+        elements.chatPermissionsBtn.style.display = 'none';
 
         if (type === 'group' && metaData && metaData.id !== 'general') {
-            const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
             const isMember = metaData.members && metaData.members[currentUser.uid];
-            if (!isAdmin && !isMember) {
+            if (!(currentUserData.role === 'admin' || currentUserData.role === 'super admin') && !isMember) {
                 alert(`Maaf, sistem mendeteksi bahwa Anda bukan bagian dari grup ${chatName}`);
                 return;
             }
@@ -429,22 +494,36 @@
         elements.sendMessageBtn.disabled = false;
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
-        const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+        const isSuperAdminOrAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
         const isCreator = metaData && metaData.createdBy === currentUser.uid;
         
-        elements.manageMembersBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && isAdmin) ? 'block' : 'none';
-        elements.manageGroupBtn.style.display = (type === 'group' && metaData && metaData.id !== 'general' && (isAdmin || isCreator)) ? 'block' : 'none';
+        if (type === 'group' && metaData.id !== 'general') {
+            elements.manageMembersBtn.style.display = isSuperAdminOrAdmin ? 'block' : 'none';
+            elements.manageGroupBtn.style.display = (isSuperAdminOrAdmin || isCreator) ? 'block' : 'none';
+        }
+        
+        if (chatId === 'general' && isSuperAdminOrAdmin) {
+            elements.chatPermissionsBtn.style.display = 'block';
+        }
+
+        // Handle permissions and message loading
+        if (chatId === 'general') {
+            const permissionsRef = ref(db, 'chat_settings/general/permissions');
+            onValue(permissionsRef, (permSnap) => {
+                checkChatPermissions(permSnap.val());
+            });
+        } else {
+            checkChatPermissions({ mode: 'all' }); // Default allow all for other chats
+        }
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
-            elements.messageList.innerHTML = formattingGuideHTML; // Selalu tampilkan panduan di awal
-            
+            elements.messageList.innerHTML = formattingGuideHTML; // Always show guide at the top
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     displayMessage(child.key, child.val());
                 });
             }
-            
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
     }
@@ -458,7 +537,7 @@
             const timeRemaining = 5000 - timeSinceDeleted;
 
             if (timeRemaining <= 0) {
-                return; // Jangan tampilkan sama sekali jika sudah lebih dari 5 detik
+                return; // Do not show if more than 5 seconds have passed
             }
 
             const msgBubble = el('div', '', { class: 'message-bubble' });
@@ -769,6 +848,50 @@
         cancelReply();
     }
 
+    async function openChatPermissionsModal() {
+        const permissionsSnap = await get(ref(db, 'chat_settings/general/permissions'));
+        const permissions = permissionsSnap.val() || { mode: 'all' };
+        
+        elements.permissionsForm.permissionMode.value = permissions.mode;
+        
+        elements.userPermissionsList.innerHTML = '';
+        Object.entries(allUsers).forEach(([uid, user]) => {
+            if (user.role === 'super admin' || user.role === 'admin') return; // Don't list admins
+            const li = el('li', '', { class: 'modal-user-item' });
+            const label = el('label', '', { style: 'display: flex; align-items: center; width: 100%;' });
+            const checkbox = el('input', '', { type: 'checkbox', value: uid });
+            if (permissions.mode === 'selected_users' && permissions.allowed_users && permissions.allowed_users[uid]) {
+                checkbox.checked = true;
+            }
+            label.appendChild(checkbox);
+            label.append(` ${user.name}`);
+            li.appendChild(label);
+            elements.userPermissionsList.appendChild(li);
+        });
+
+        elements.userPermissionsContainer.style.display = (permissions.mode === 'selected_users') ? 'block' : 'none';
+        elements.chatPermissionsModal.style.display = 'block';
+    }
+
+    async function handleSavePermissions(e) {
+        e.preventDefault();
+        const mode = elements.permissionsForm.permissionMode.value;
+        const updates = { mode };
+
+        if (mode === 'selected_users') {
+            updates.allowed_users = {};
+            elements.userPermissionsList.querySelectorAll('input:checked').forEach(input => {
+                updates.allowed_users[input.value] = true;
+            });
+        } else {
+            updates.allowed_users = null; // Clear allowed users if not in selected mode
+        }
+        
+        await set(ref(db, 'chat_settings/general/permissions'), updates);
+        alert('Pengaturan izin berhasil disimpan.');
+        elements.chatPermissionsModal.style.display = 'none';
+    }
+
     function setupEventListeners() {
         elements.searchGroup.addEventListener('input', loadChatLists);
         elements.searchUser.addEventListener('input', loadChatLists);
@@ -811,12 +934,23 @@
         elements.closeManageGroupModal.onclick = () => elements.manageGroupModal.style.display = 'none';
         elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
         elements.deleteGroupBtn.onclick = handleDeleteGroup;
+        
+        // Chat Permissions Modal
+        elements.chatPermissionsBtn.onclick = openChatPermissionsModal;
+        elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
+        elements.permissionsForm.addEventListener('submit', handleSavePermissions);
+        elements.permissionsForm.permissionMode.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                elements.userPermissionsContainer.style.display = (e.target.value === 'selected_users') ? 'block' : 'none';
+            });
+        });
 
         window.onclick = (event) => {
             if (event.target == elements.reportModal) closeReportModal();
             if (event.target == elements.createGroupModal) elements.createGroupModal.style.display = 'none';
             if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
             if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
+            if (event.target == elements.chatPermissionsModal) elements.chatPermissionsModal.style.display = 'none';
         };
     }
   </script>
