@@ -59,7 +59,28 @@
         </header>
         <div class="content-container" id="chat-area">
           <div class="chat-messages" id="message-list">
-             </div>
+            <div style="padding: 2rem; text-align: center; color: var(--slate-gray); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <i class="fas fa-comments fa-3x" style="margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--light-lavender);">Selamat Datang di Forum Diskusi</h2>
+                <p>Pilih obrolan dari panel kiri untuk memulai.</p>
+                <div class="card" style="margin-top: 2rem; text-align: left; background-color: var(--dark-blue-gray); width: 100%; max-width: 450px;">
+                    <h3 class="card-header">Panduan Format Teks</h3>
+                    <div class="card-body" style="font-size: 1.4rem;">
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem;"><code>*Teks tebal*</code> &rarr; <strong>Teks tebal</strong></li>
+                            <li style="margin-bottom: 0.5rem;"><code>_Teks miring_</code> &rarr; <i>Teks miring</i></li>
+                            <li style="margin-bottom: 0.5rem;"><code>~~Teks coret~~</code> &rarr; <del>Teks coret</del></li>
+                            <li style="margin-bottom: 0.5rem;"><code>`kode inline`</code> &rarr; <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
+                            <li style="margin-bottom: 0.5rem;"><code># Judul 1</code></li>
+                            <li style="margin-bottom: 0.5rem;"><code>## Judul 2</code></li>
+                            <li style="margin-bottom: 0.5rem;"><code>> Kutipan</code></li>
+                            <li style="margin-bottom: 0.5rem;"><code>-- List nomor</code></li>
+                            <li style="margin-bottom: 0.5rem;"><code>-* List poin</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
         <div class="chat-input-area">
            <div id="replying-to-banner" class="reply-banner" style="display: none;">
@@ -259,29 +280,37 @@
         const tempElement = document.createElement('div');
         tempElement.textContent = html;
         html = tempElement.innerHTML;
-        
-        // Headers (e.g., *Title*, **Subtitle**)
-        html = html.replace(/^\s*(\*{1,6})(.*?)(\1)\s*$/gm, (match, stars, content) => {
-            const level = stars.length;
+
+        // BLOCK ELEMENTS (HEADERS, LISTS, BLOCKQUOTES)
+        // Headers: # H1, ## H2, etc.
+        html = html.replace(/^#+\s+(.*)/gm, (match, content) => {
+            const level = Math.min(match.match(/^#+/)[0].length, 6);
             return `<h${level} style="margin: 0.5em 0;">${content.trim()}</h${level}>`;
         });
-        
-        // Numbered lists (e.g., -- item)
+        // Blockquote: > quote
+        html = html.replace(/^>\s+(.*)/gm, '<blockquote style="margin: 0.5em 0; padding-left: 1em; border-left: 3px solid var(--gunmetal); color: var(--slate-gray);">$1</blockquote>');
+        // Numbered lists: -- item
         html = html.replace(/((?:^\s*--\s+.*\n?)+)/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*--\s+/, '').trim()}</li>`).join('');
-            return `<ol style="margin: 0.5em 0;">${items}</ol>`;
+            return `<ol style="margin: 0.5em 0; padding-left: 20px;">${items}</ol>`;
         });
-
-        // Bulleted lists (e.g., -* item)
+        // Bulleted lists: -* item
         html = html.replace(/((?:^\s*-\*\s+.*\n?)+)/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*-\*\s+/, '').trim()}</li>`).join('');
-            return `<ul style="margin: 0.5em 0;">${items}</ul>`;
+            return `<ul style="margin: 0.5em 0; padding-left: 20px;">${items}</ul>`;
         });
-        
-        // Italic (e.g., _italic text_)
+
+        // INLINE ELEMENTS
+        // Bold: *bold text*
+        html = html.replace(/\*([^\*]+)\*/g, '<strong>$1</strong>');
+        // Italic: _italic text_
         html = html.replace(/_([^_]+)_/g, '<i>$1</i>');
+        // Strikethrough: ~~text~~
+        html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+        // Inline Code: `code`
+        html = html.replace(/`([^`]+)`/g, '<code style="background: var(--dark-blue-gray); padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">$1</code>');
         
-        // URLs
+        // URLs (must be last to avoid interfering with other markdown)
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         html = html.replace(urlRegex, function(url) {
             let href = url;
@@ -478,7 +507,7 @@
                 }
             }
 
-            const text = el('p', '', { class: 'message-text' });
+            const text = el('div', '', { class: 'message-text' });
             text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const footer = el('p', time, { class: 'message-footer' });
