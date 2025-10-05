@@ -52,6 +52,7 @@
           </div>
           <div class="main-header-menu">
             <ul>
+              <li><button id="guideBtn" class="btn-sm" style="display: none;"><i class="fas fa-info-circle"></i> Panduan Chat</button></li>
               <li><button id="chatPermissionsBtn" class="btn-sm" style="display: none;"><i class="fas fa-shield-alt"></i> Izin Chat</button></li>
               <li><button id="manageMembersBtn" class="btn-sm info" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button></li>
               <li><button id="manageGroupBtn" class="btn-sm" style="display: none;"><i class="fas fa-edit"></i> Kelola Grup</button></li>
@@ -59,24 +60,8 @@
           </div>
         </header>
         <div class="content-container" id="chat-area">
-          <div id="formatting-guide-container" style="display: none;">
-              <div class="card" style="margin: 0 1rem 1rem 1rem; text-align: left; background-color: var(--dark-blue-gray);">
-                  <h3 class="card-header">Panduan Format Teks</h3>
-                  <div class="card-body" style="font-size: 1.5rem; color: var(--slate-gray);">
-                      <ul style="list-style: none; padding: 0;">
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">*Teks tebal*</code> → <strong>Teks tebal</strong></li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">_Teks miring_</code> → <i>Teks miring</i></li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">~~Teks coret~~</code> → <del>Teks coret</del></li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">`kode inline`</code> → <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);"># Judul 1</code> (<code>##</code> untuk Judul 2, <code>###</code> untuk Judul 3)</li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-- List nomor</code> (di baris baru)</li>
-                          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-* List poin</code> (di baris baru)</li>
-                      </ul>
-                  </div>
-              </div>
-          </div>
           <div class="chat-messages" id="message-list">
-             </div>
+          </div>
         </div>
         <div class="chat-input-area">
            <div id="replying-to-banner" class="reply-banner" style="display: none;">
@@ -93,6 +78,24 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <div id="guideModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeGuideModal"><i class="fa-solid fa-xmark"></i></span>
+      <h2>Panduan Format Chat</h2>
+      <div class="card-body" style="font-size: 1.5rem; color: var(--slate-gray);">
+        <ul style="list-style: none; padding: 0;">
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">*Teks tebal*</code> → <strong>Teks tebal</strong></li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">_Teks miring_</code> → <i>Teks miring</i></li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">~~Teks coret~~</code> → <del>Teks coret</del></li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">`kode inline`</code> → <code style="background: var(--gunmetal); padding: 2px 5px; border-radius: 4px;">kode inline</code></li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);"># Judul 1</code> (<code>##</code> untuk Judul 2, <code>###</code> untuk Judul 3)</li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-- List nomor</code> (di baris baru)</li>
+          <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);">-* List poin</code> (di baris baru)</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <div id="reportModal" class="modal">
@@ -240,6 +243,9 @@
         replyingToUser: document.getElementById('replying-to-user'),
         replyingToText: document.getElementById('replying-to-text'),
         cancelReplyBtn: document.getElementById('cancel-reply-btn'),
+        guideBtn: document.getElementById('guideBtn'),
+        guideModal: document.getElementById('guideModal'),
+        closeGuideModal: document.getElementById('closeGuideModal'),
         reportModal: document.getElementById('reportModal'),
         closeReportModal: document.getElementById('closeReportModal'),
         reportedMessageText: document.getElementById('reportedMessageText'),
@@ -467,8 +473,7 @@
         activeChatId = chatId;
         updateActiveLinkInSidebar();
         
-        const formattingGuide = document.getElementById('formatting-guide-container');
-        
+        elements.guideBtn.style.display = 'block';
         elements.manageMembersBtn.style.display = 'none';
         elements.manageGroupBtn.style.display = 'none';
         elements.chatPermissionsBtn.style.display = 'none';
@@ -523,13 +528,12 @@
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = '';
-            if (snapshot.exists()) {
-                formattingGuide.style.display = 'none';
+            if (!snapshot.hasChildren()) {
+                elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
+            } else {
                 snapshot.forEach(child => {
                     displayMessage(child.key, child.val());
                 });
-            } else {
-                formattingGuide.style.display = 'block';
             }
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
@@ -929,6 +933,10 @@
         });
 
         elements.cancelReplyBtn.onclick = cancelReply;
+
+        elements.guideBtn.onclick = () => elements.guideModal.style.display = 'block';
+        elements.closeGuideModal.onclick = () => elements.guideModal.style.display = 'none';
+        
         elements.closeReportModal.onclick = closeReportModal;
         elements.submitReportBtn.onclick = submitReport;
 
@@ -956,6 +964,7 @@
         });
 
         window.onclick = (event) => {
+            if (event.target == elements.guideModal) elements.guideModal.style.display = 'none';
             if (event.target == elements.reportModal) closeReportModal();
             if (event.target == elements.createGroupModal) elements.createGroupModal.style.display = 'none';
             if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
