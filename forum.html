@@ -604,7 +604,7 @@
             const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
             replyBtn.onclick = () => setReplyingTo(msgId, msgData);
             
-            const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm danger' });
+            const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm warm' });
             reportBtn.onclick = () => openReportModal(msgId, msgData);
             
             actions.append(replyBtn, reportBtn);
