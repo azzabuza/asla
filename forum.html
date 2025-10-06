@@ -242,7 +242,7 @@
     let messageToReport = null;
     let messageToEdit = null;
     let isInitialChatLoad = true;
-    let chatListeners = {}; // [BARU] Untuk menyimpan listener notifikasi
+    let chatListeners = {};
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -419,13 +419,11 @@
         });
     }
 
-    // [BARU] Fungsi untuk mengelola notifikasi pesan belum dibaca
     function listenForUnread(chatId, badgeElement) {
         const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
         
-        // Hapus listener lama jika ada untuk menghindari duplikasi
         if (chatListeners[chatId]) {
-            chatListeners[chatId](); // Ini akan memanggil fungsi 'unsubscribe' dari onValue
+            chatListeners[chatId]();
         }
 
         const unsubscribe = onValue(messagesRef, (snapshot) => {
@@ -448,7 +446,6 @@
             }
         });
         
-        // Simpan fungsi unsubscribe yang baru
         chatListeners[chatId] = unsubscribe;
     }
 
@@ -558,12 +555,10 @@
     function openChat(chatId, chatName, type, metaData = null) {
         activeChatId = chatId;
 
-        // [BARU] Reset unread count saat chat dibuka
         const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
         lastRead[chatId] = Date.now();
         localStorage.setItem('lastRead', JSON.stringify(lastRead));
         
-        // [BARU] Update UI badge secara manual setelah dibuka
         const badgeElement = document.querySelector(`a[data-chat-id="${chatId}"] .unread-badge`);
         if(badgeElement) {
             badgeElement.style.display = 'none';
