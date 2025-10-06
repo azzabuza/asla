@@ -20,6 +20,7 @@ import {
   equalTo,
   serverTimestamp,
   onDisconnect,
+  limitToLast, // [FIX] Ditambahkan di sini
 } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-database.js";
 
 // DIUBAH: Sekarang menjadi variabel yang diekspor
@@ -61,4 +62,5 @@ export {
   initializeApp,
   deleteApp,
   getAuth,
+  limitToLast, // [FIX] Ditambahkan di sini
 };
