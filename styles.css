@@ -1385,7 +1385,7 @@ body {
 
 /* === FORUM & CHAT STYLES === */
 .sidebar-menu .chat-list-header {
-  padding: 1rem 0;
+  padding: 1rem;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--slate-gray);
