@@ -221,7 +221,7 @@
       <h2 style="margin: 0 0 2rem 0;">Edit Pesan</h2>
       <form id="editMessageForm">
         <div class="form-group">
-          <textarea id="editMessageInput" style="resize: none;" rows="3" required></textarea>
+          <textarea id="editMessageInput" rows="5" required style="resize: vertical;"></textarea>
         </div>
         <button type="submit" style="width: 100%;">Simpan Perubahan</button>
       </form>
@@ -240,7 +240,7 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
-    let messageToEdit = null; // [BARU]
+    let messageToEdit = null;
     let isInitialChatLoad = true;
     
     const elements = {
@@ -295,7 +295,6 @@
         permissionsForm: document.getElementById('permissionsForm'),
         userPermissionsContainer: document.getElementById('userPermissionsContainer'),
         userPermissionsList: document.getElementById('userPermissionsList'),
-        // [BARU] Elemen untuk modal edit
         editMessageModal: document.getElementById('editMessageModal'),
         closeEditModal: document.getElementById('closeEditModal'),
         editMessageForm: document.getElementById('editMessageForm'),
@@ -608,8 +607,11 @@
                 if (repliedMsgSnap.exists()) {
                     const repliedMsg = repliedMsgSnap.val();
                     if (!repliedMsg.deleted) {
+                        // [FIX] Cek apakah membalas pesan sendiri
+                        const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
+                        const repliedHeaderName = isReplyingToSelf ? 'Anda' : repliedMsg.senderName;
                         repliedMsgHtml = `<div class="replied-message">
-                            <p class="replied-header">${repliedMsg.senderName}</p>
+                            <p class="replied-header">${repliedHeaderName}</p>
                             <p class="replied-text">${repliedMsg.text}</p>
                         </div>`;
                     }
@@ -634,7 +636,7 @@
 
             const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
 
-            if (isMe) { // [BARU] Tombol edit hanya untuk pengirim pesan
+            if (isMe) {
                 const editBtn = el('button', '<i class="fas fa-edit"></i>', { class: 'btn-sm info' });
                 editBtn.onclick = () => openEditModal(msgId, msgData);
                 actions.append(editBtn);
@@ -685,8 +687,12 @@
     }
 
     function setReplyingTo(msgId, msgData) {
+        // [FIX] Cek apakah membalas pesan sendiri untuk banner
+        const isReplyingToSelf = msgData.senderId === currentUser.uid;
+        const replyToName = isReplyingToSelf ? 'Anda' : msgData.senderName;
+
         replyingTo = { id: msgId, senderName: msgData.senderName, text: msgData.text };
-        elements.replyingToUser.textContent = msgData.senderName;
+        elements.replyingToUser.textContent = replyToName;
         elements.replyingToText.textContent = msgData.text;
         elements.replyingToBanner.style.display = 'flex';
         elements.messageInput.focus();
@@ -708,7 +714,6 @@
         messageToReport = null;
     }
 
-    // [BARU] Fungsi untuk membuka modal edit
     function openEditModal(msgId, msgData) {
         messageToEdit = { id: msgId, ...msgData };
         elements.editMessageInput.value = msgData.text;
@@ -716,13 +721,11 @@
         elements.editMessageInput.focus();
     }
 
-    // [BARU] Fungsi untuk menutup modal edit
     function closeEditModal() {
         elements.editMessageModal.style.display = 'none';
         messageToEdit = null;
     }
 
-    // [BARU] Fungsi untuk menangani update pesan
     async function handleUpdateMessage(e) {
         e.preventDefault();
         if (!messageToEdit) return;
@@ -1028,7 +1031,6 @@
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
         
-        // [BARU] Event listener untuk modal edit
         elements.closeEditModal.onclick = closeEditModal;
         elements.editMessageForm.addEventListener('submit', handleUpdateMessage);
 
@@ -1046,7 +1048,7 @@
             if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
             if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
             if (event.target == elements.chatPermissionsModal) elements.chatPermissionsModal.style.display = 'none';
-            if (event.target == elements.editMessageModal) closeEditModal(); // [BARU]
+            if (event.target == elements.editMessageModal) closeEditModal();
         };
     }
   </script>
