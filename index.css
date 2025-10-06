@@ -390,6 +390,108 @@ img {
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
+/* TESTIMONIALS SECTION */
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+    margin-top: 6rem;
+}
+
+.testimonial-card {
+    background: var(--color-bg-variant);
+    padding: 4rem;
+    border-radius: 20px;
+    border-left: 5px solid var(--color-secondary);
+    position: relative;
+}
+
+.testimonial-card::before {
+    content: '\f10d'; /* FontAwesome quote-left icon */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 3rem;
+    left: 3rem;
+    font-size: 3rem;
+    color: var(--color-border);
+}
+
+.testimonial-card p {
+    font-size: 1.6rem;
+    font-style: italic;
+    margin-bottom: 3rem;
+    padding-left: 4rem;
+    color: var(--color-text-muted);
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-left: 4rem;
+}
+
+.author-info h4 {
+    font-size: 1.8rem;
+    color: var(--color-text);
+}
+
+.author-info small {
+    font-size: 1.4rem;
+    color: var(--color-text-muted);
+}
+
+/* FAQ SECTION */
+.faq-container {
+    max-width: 800px;
+    margin: 6rem auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.faq-item {
+    background: var(--color-bg-variant);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.faq-question {
+    font-size: 1.8rem;
+    font-weight: 500;
+    padding: 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none; /* remove default marker */
+}
+
+.faq-question::-webkit-details-marker {
+  display: none; /* for chrome */
+}
+
+.faq-question::after {
+    content: '\f067'; /* FontAwesome plus icon */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    transition: transform 0.3s ease;
+}
+
+.faq-item[open] .faq-question::after {
+    content: '\f068'; /* FontAwesome minus icon */
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    font-size: 1.6rem;
+    color: var(--color-text-muted);
+    padding: 0 2rem 2rem 2rem;
+    line-height: 1.8;
+}
+
 /* CTA SECTION */
 .cta-section {
     text-align: center;
@@ -433,6 +535,7 @@ img {
     .solution-text { order: 2; text-align: center; }
     .solution-image { order: 1; }
     .section-title.left { text-align: center; }
+    .testimonials-grid { grid-template-columns: 1fr; }
 }
 
 @media screen and (max-width: 768px) {
