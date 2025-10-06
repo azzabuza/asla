@@ -65,8 +65,12 @@
       <div class="main-wrapper">
       <header class="main-header">
         <div class="main-header-content">
-        <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-        <p id="pageSubtitle">Ringkasan aktivitas dan perjalanan Anda.</p>
+            <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div> <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <p id="pageSubtitle">Ringkasan aktivitas dan perjalanan Anda.</p>
+            </div>
         </div>
         <div class="main-header-menu">
         <ul>
@@ -355,6 +359,24 @@
       query, orderByChild, equalTo, update, onDisconnect
     } from './firebase.js';
     import { badge, fmtDate, el, idr } from './utils.js';
+    
+    // --- Hamburger Menu Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Optional: Close sidebar when clicking outside of it on mobile
+        document.querySelector('.main-content').addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+    });
+    // --- End Hamburger Menu Logic ---
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan aktivitas dan perjalanan Anda.' },
@@ -459,6 +481,12 @@
 
                 if(targetId === 'notifications') {
                   markNotificationsAsRead();
+                }
+
+                // Close sidebar after navigation on mobile
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
                 }
             });
         });
