@@ -19,6 +19,9 @@
         <a href="#advantages">Keunggulan</a>
         <a href="#testimonials">Testimonial</a>
       </nav>
+      <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+      </button>
     </div>
   </header>
 
@@ -141,27 +144,46 @@
   </footer>
 
   <script>
-    // Script untuk background navbar saat scroll
-    const navbar = document.querySelector('.navbar');
-    window.onscroll = () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    };
-    
-    // Script untuk animasi reveal saat scroll
-    const revealElements = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+    document.addEventListener('DOMContentLoaded', () => {
+        const navbar = document.querySelector('.navbar');
+        const hamburger = document.getElementById('hamburger-menu');
+        const navLinks = document.querySelector('.nav-links');
+
+        // Script untuk background navbar saat scroll
+        window.onscroll = () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        };
+
+        // Script untuk animasi reveal saat scroll
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        revealElements.forEach(el => {
+            observer.observe(el);
+        });
+
+        // Script untuk hamburger menu
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            // Ganti ikon bars menjadi 'x' saat menu aktif
+            const icon = hamburger.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
             }
         });
-    }, { threshold: 0.1 });
-    revealElements.forEach(el => {
-        observer.observe(el);
     });
   </script>
 
