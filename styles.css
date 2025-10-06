@@ -155,7 +155,15 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 1rem;
   overflow-y: auto;
 }
-.sidebar-menu h4 {
+.sidebar-menu-header-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+.sidebar-menu-header-wrapper h4 {
   padding: 0;
   margin: 0 0 1rem 0;
   font-size: 1.5rem;
@@ -1399,7 +1407,7 @@ body {
 /* === FORUM & CHAT STYLES === */
 .sidebar-menu .chat-list-header {
   padding: 0;
-  margin: 0 0 1rem 0;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--light-lavender);
@@ -1538,7 +1546,8 @@ body.light-mode .replied-message {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-right: 1rem;
+  padding: 0;
+  margin: 0 0 1rem 0;
 }
 
 .modal-quote {
