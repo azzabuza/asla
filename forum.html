@@ -301,6 +301,19 @@
         editMessageInput: document.getElementById('editMessageInput'),
     };
 
+    // [BARU] Fungsi untuk menerapkan tema dari localStorage
+    function applyThemeFromStorage() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+        } else {
+            document.body.classList.remove('light-mode');
+        }
+    }
+
+    // [BARU] Panggil fungsi tema saat DOM siap
+    document.addEventListener('DOMContentLoaded', applyThemeFromStorage);
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'index.html'; return; }
         currentUser = user;
@@ -607,7 +620,6 @@
                 if (repliedMsgSnap.exists()) {
                     const repliedMsg = repliedMsgSnap.val();
                     if (!repliedMsg.deleted) {
-                        // [FIX] Cek apakah membalas pesan sendiri
                         const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
                         const repliedHeaderName = isReplyingToSelf ? 'Anda' : repliedMsg.senderName;
                         repliedMsgHtml = `<div class="replied-message">
@@ -687,7 +699,6 @@
     }
 
     function setReplyingTo(msgId, msgData) {
-        // [FIX] Cek apakah membalas pesan sendiri untuk banner
         const isReplyingToSelf = msgData.senderId === currentUser.uid;
         const replyToName = isReplyingToSelf ? 'Anda' : msgData.senderName;
 
