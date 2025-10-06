@@ -82,9 +82,13 @@
       <div class="main-wrapper">
       <header class="main-header">
         <div class="main-header-content">
-        <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-        <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
-          </div>
+            <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div> <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
+            </div>
+        </div>
         <div class="main-header-menu">
         <ul>
           <li><a href="forum.html"><i class="fa-solid fa-comments"></i> Forum Diskusi</a></li>
@@ -609,6 +613,24 @@
     } from './firebase.js';
     import { badge, fmtDate, el, idr } from './utils.js';
 
+    // --- Hamburger Menu Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Optional: Close sidebar when clicking outside of it on mobile
+        document.querySelector('.main-content').addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+    });
+    // --- End Hamburger Menu Logic ---
+
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: '<i class="fas fa-truck"></i> Informasi Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
@@ -739,6 +761,12 @@
                 link.classList.add('active');
                 elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
+                
+                // Close sidebar after navigation on mobile
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
             });
         });
 
