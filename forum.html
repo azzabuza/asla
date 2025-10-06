@@ -49,8 +49,8 @@
       <div class="main-wrapper">
         <header class="main-header">
           <div class="main-header-content">
-            <h1 id="chatTitle"><i class="fas fa-comments"></i> Memuat...</h1>
-            <p id="chatSubtitle">Memuat...</p>
+            <h1 id="chatTitle"><i class="fas fa-comments"></i> Pilih Obrolan</h1>
+            <p id="chatSubtitle">Pilih grup atau pengguna dari daftar di samping untuk memulai.</p>
           </div>
           <div class="main-header-menu">
             <ul>
@@ -63,6 +63,7 @@
         </header>
         <div class="content-container" id="chat-area">
           <div class="chat-messages" id="message-list">
+             <p class="empty-state">Selamat datang di forum diskusi!</p>
           </div>
         </div>
         <div class="chat-input-area">
@@ -74,7 +75,7 @@
               <button id="cancel-reply-btn"><i class="fa-solid fa-xmark"></i></button>
            </div>
           <form id="messageForm" class="chat-form">
-            <textarea id="messageInput" style="background-color: var(--light-gunmetal); height: 4.2rem; resize: none; overflow-y: auto;" placeholder="Ketik pesan Anda (Shift+Enter untuk baris baru)" autocomplete="off" disabled></textarea>
+            <textarea id="messageInput" style="background-color: var(--light-gunmetal); height: 4.2rem; resize: none; overflow-y: auto;" placeholder="Pilih obrolan untuk mengirim pesan..." autocomplete="off" disabled></textarea>
             <button type="submit" id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
           </form>
         </div>
@@ -221,7 +222,7 @@
       <h2 style="margin: 0 0 2rem 0;">Edit Pesan</h2>
       <form id="editMessageForm">
         <div class="form-group">
-          <textarea id="editMessageInput" rows="5" required style="resize: none;"></textarea>
+          <textarea id="editMessageInput" rows="5" required style="resize: vertical;"></textarea>
         </div>
         <button type="submit" style="width: 100%;">Simpan Perubahan</button>
       </form>
@@ -241,7 +242,6 @@
     let replyingTo = null;
     let messageToReport = null;
     let messageToEdit = null;
-    let isInitialChatLoad = true;
     let chatListeners = {};
     
     const elements = {
@@ -489,12 +489,7 @@
                 });
             }
             
-            if (isInitialChatLoad) {
-                elements.groupList.firstChild.querySelector('a').click();
-                isInitialChatLoad = false;
-            } else {
-                updateActiveLinkInSidebar();
-            }
+            updateActiveLinkInSidebar();
         });
 
         const userSearchTerm = elements.searchUser.value.toLowerCase();
