@@ -1398,10 +1398,11 @@ body {
 
 /* === FORUM & CHAT STYLES === */
 .sidebar-menu .chat-list-header {
-  padding: 1rem;
+  padding: 0;
+  margin: 0 0 1rem 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--slate-gray);
+  color: var(--light-lavender);
   text-transform: uppercase;
 }
 .chat-messages {
