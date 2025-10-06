@@ -1596,8 +1596,8 @@ body.light-mode .replied-message {
   border-radius: 0.5rem;
 }
 
-/* [BARU] Styling untuk badge chat yang belum dibaca */
-.sidebar-menu li a {
+/* [FIX] Styling untuk badge chat yang belum dibaca, dibuat lebih spesifik */
+#group-list li a, #user-list li a {
   position: relative;
   display: flex;
   justify-content: space-between;
