@@ -152,7 +152,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 .sidebar-menu {
   box-sizing: border-box;
   flex-grow: 1;
-  padding: 0;
+  padding: 1rem;
   overflow-y: auto;
 }
 .sidebar-menu h4 {
@@ -164,8 +164,10 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 }
 .sidebar-menu ul {
   box-sizing: border-box;
+  background-color: var(--dark-slate-blue);
   padding: 1rem;
   margin: 0;
+  border-radius: 1rem;
 }
 .sidebar-menu li a {
   display: block;
