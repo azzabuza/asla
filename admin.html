@@ -28,10 +28,10 @@
       <ul>
         <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
         <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Pantau Perjalanan</a></li>
+        <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Manajemen Keuangan</a></li>
         <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
         <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
         <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
-        <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Manajemen Keuangan</a></li>
         <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
         <li><a href="#addrutes" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</a></li>
         <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Kendaraan</a></li>
@@ -177,6 +177,45 @@
           </div>
         </section>
       </div>
+
+      <div id="page-finance" class="page">
+        <section class="card">
+          <h2 class="card-header">Data Keuangan Perjalanan</h2>
+          <div class="card-body">
+            <div class="table-controls" style="grid-template-columns: 1fr;">
+              <div class="form-group">
+                <label>Cari Supir / Rute / Trip ID</label>
+                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
+              </div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
+                <h3>Total Pengeluaran</h3>
+                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trip ID</th>
+                    <th>Rute</th>
+                    <th>Supir</th>
+                    <th>Tanggal</th>
+                    <th>Uang Jalan</th>
+                  </tr>
+                </thead>
+                <tbody id="financeList">
+                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
+              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+            </div>
+          </div>
+        </section>
+      </div>
       
       <div id="page-users" class="page">
         <section class="card">
@@ -288,45 +327,6 @@
               <button id="prevVehicleBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
               <span id="vehiclePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
               <button id="nextVehicleBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div id="page-finance" class="page">
-        <section class="card">
-          <h2 class="card-header">Data Keuangan Perjalanan</h2>
-          <div class="card-body">
-            <div class="table-controls" style="grid-template-columns: 1fr;">
-              <div class="form-group">
-                <label>Cari Supir / Rute / Trip ID</label>
-                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
-              </div>
-            </div>
-            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
-                <h3>Total Pengeluaran (Uang Jalan)</h3>
-                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Trip ID</th>
-                    <th>Rute</th>
-                    <th>Supir</th>
-                    <th>Tanggal</th>
-                    <th>Uang Jalan</th>
-                  </tr>
-                </thead>
-                <tbody id="financeList">
-                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
-              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
             </div>
           </div>
         </section>
