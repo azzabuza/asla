@@ -110,8 +110,6 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   flex-shrink: 0;
   height: 100%;
   padding: 1rem;
-  top: 0;
-  left: 0;
 }
 .sidebar-wrapper {
   box-sizing: border-box;
