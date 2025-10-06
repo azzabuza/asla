@@ -1596,6 +1596,26 @@ body.light-mode .replied-message {
   border-radius: 0.5rem;
 }
 
+/* [BARU] Styling untuk badge chat yang belum dibaca */
+.sidebar-menu li a {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unread-badge {
+  background-color: var(--red);
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  min-width: 2rem;
+  text-align: center;
+  line-height: 1.4rem;
+}
+
 
 
 
