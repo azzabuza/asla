@@ -1541,7 +1541,7 @@ body.light-mode .replied-message {
   font-style: italic;
   opacity: 0.9;
 }
-.chat-list-header {
+.sidebar-chat-header {
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
