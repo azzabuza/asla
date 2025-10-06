@@ -301,18 +301,26 @@
         editMessageInput: document.getElementById('editMessageInput'),
     };
 
-    // [BARU] Fungsi untuk menerapkan tema dari localStorage
-    function applyThemeFromStorage() {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-mode');
-        } else {
-            document.body.classList.remove('light-mode');
-        }
+    // [BARU] Fungsi-fungsi untuk tema dan font
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+      } else {
+        document.body.classList.remove('light-mode');
+      }
     }
 
-    // [BARU] Panggil fungsi tema saat DOM siap
-    document.addEventListener('DOMContentLoaded', applyThemeFromStorage);
+    function applyFont(font) {
+      document.body.style.fontFamily = font;
+    }
+
+    // [BARU] Panggil fungsi tema dan font saat DOM siap
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        const savedFont = localStorage.getItem('font') || "'Poppins', sans-serif";
+        applyTheme(savedTheme);
+        applyFont(savedFont);
+    });
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'index.html'; return; }
