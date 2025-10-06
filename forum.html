@@ -221,7 +221,7 @@
       <h2 style="margin: 0 0 2rem 0;">Edit Pesan</h2>
       <form id="editMessageForm">
         <div class="form-group">
-          <textarea id="editMessageInput" rows="3" required style="resize: none;"></textarea>
+          <textarea id="editMessageInput" rows="5" required style="resize: vertical;"></textarea>
         </div>
         <button type="submit" style="width: 100%;">Simpan Perubahan</button>
       </form>
@@ -230,7 +230,7 @@
 
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
+    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect, limitToLast } from './firebase.js';
     import { el } from './utils.js';
 
     let currentUser = null;
@@ -242,6 +242,7 @@
     let messageToReport = null;
     let messageToEdit = null;
     let isInitialChatLoad = true;
+    let chatListeners = {}; // [BARU] Untuk menyimpan listener notifikasi
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -301,7 +302,6 @@
         editMessageInput: document.getElementById('editMessageInput'),
     };
 
-    // [BARU] Fungsi-fungsi untuk tema dan font
     function applyTheme(theme) {
       if (theme === 'light') {
         document.body.classList.add('light-mode');
@@ -314,7 +314,6 @@
       document.body.style.fontFamily = font;
     }
 
-    // [BARU] Panggil fungsi tema dan font saat DOM siap
     document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         const savedFont = localStorage.getItem('font') || "'Poppins', sans-serif";
@@ -420,6 +419,39 @@
         });
     }
 
+    // [BARU] Fungsi untuk mengelola notifikasi pesan belum dibaca
+    function listenForUnread(chatId, badgeElement) {
+        const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
+        
+        // Hapus listener lama jika ada untuk menghindari duplikasi
+        if (chatListeners[chatId]) {
+            chatListeners[chatId](); // Ini akan memanggil fungsi 'unsubscribe' dari onValue
+        }
+
+        const unsubscribe = onValue(messagesRef, (snapshot) => {
+            const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
+            const lastReadTime = lastRead[chatId] || 0;
+            let unreadCount = 0;
+            
+            snapshot.forEach(child => {
+                const msg = child.val();
+                if (msg.timestamp > lastReadTime && msg.senderId !== currentUser.uid) {
+                    unreadCount++;
+                }
+            });
+
+            if (unreadCount > 0) {
+                badgeElement.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                badgeElement.style.display = 'inline-block';
+            } else {
+                badgeElement.style.display = 'none';
+            }
+        });
+        
+        // Simpan fungsi unsubscribe yang baru
+        chatListeners[chatId] = unsubscribe;
+    }
+
     function loadChatLists() {
         const groupsRef = ref(db, 'groups');
         onValue(groupsRef, (snapshot) => {
@@ -429,10 +461,13 @@
             const generalGroup = { id: 'general', name: 'Diskusi Umum' };
             if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
                 const liGeneral = el('li');
-                const aGeneral = el('a', `<i class="fa-solid fa-user-group"></i> ${generalGroup.name}`, { href: '#', 'data-chat-id': 'general' });
+                const aGeneral = el('a', `<span><i class="fa-solid fa-user-group"></i> ${generalGroup.name}</span>`, { href: '#', 'data-chat-id': 'general' });
+                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+                aGeneral.appendChild(badge);
                 aGeneral.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
                 liGeneral.appendChild(aGeneral);
                 elements.groupList.appendChild(liGeneral);
+                listenForUnread(generalGroup.id, badge);
             }
 
             if (snapshot.exists()) {
@@ -444,10 +479,15 @@
                         
                         const li = el('li');
                         const icon = isMember || isAdmin ? '<i class="fa-solid fa-user-group"></i>' : '<i class="fas fa-lock"></i>';
-                        const a = el('a', `${icon} ${group.name}`, { href: '#', 'data-chat-id': group.id });
+                        const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': group.id });
+                        const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+                        a.appendChild(badge);
                         a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                         li.appendChild(a);
                         elements.groupList.appendChild(li);
+                        if (isMember || isAdmin) {
+                            listenForUnread(group.id, badge);
+                        }
                     }
                 });
             }
@@ -468,13 +508,16 @@
                 const chatId = [currentUser.uid, uid].sort().join('_');
                 const li = el('li');
                 const onlineIndicator = userData.online ? '<i class="fa-solid fa-user status-online"></i>' : '<i class="fa-solid fa-user status-offline"></i>';
-                const a = el('a', `${onlineIndicator} ${userData.name || 'Tanpa Nama'}`, { href: '#', 'data-chat-id': chatId });
+                const a = el('a', `<span>${onlineIndicator} ${userData.name || 'Tanpa Nama'}</span>`, { href: '#', 'data-chat-id': chatId });
+                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+                a.appendChild(badge);
                 a.onclick = (e) => {
                     e.preventDefault();
                     openChat(chatId, userData.name, 'personal', { otherUserId: uid });
                 };
                 li.appendChild(a);
                 elements.userList.appendChild(li);
+                listenForUnread(chatId, badge);
             }
         });
         updateActiveLinkInSidebar();
@@ -514,6 +557,18 @@
 
     function openChat(chatId, chatName, type, metaData = null) {
         activeChatId = chatId;
+
+        // [BARU] Reset unread count saat chat dibuka
+        const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
+        lastRead[chatId] = Date.now();
+        localStorage.setItem('lastRead', JSON.stringify(lastRead));
+        
+        // [BARU] Update UI badge secara manual setelah dibuka
+        const badgeElement = document.querySelector(`a[data-chat-id="${chatId}"] .unread-badge`);
+        if(badgeElement) {
+            badgeElement.style.display = 'none';
+        }
+
         updateActiveLinkInSidebar();
         
         elements.guideBtn.style.display = 'block';
