@@ -358,11 +358,97 @@
             onDisconnect(presenceRef).set(false);
         }
         
-        await loadInitialChatLists();
-        listenForDynamicUpdates();
+        await loadInitialChatListsAndAttachListeners();
         setupEventListeners();
     });
     
+    // [FIX] Arsitektur baru untuk stabilitas
+    async function loadInitialChatListsAndAttachListeners() {
+        const usersSnap = await get(ref(db, 'users'));
+        if (usersSnap.exists()) {
+            allUsers = usersSnap.val();
+        }
+        const groupsSnap = await get(ref(db, 'groups'));
+        const groupsData = groupsSnap.exists() ? groupsSnap.val() : {};
+
+        renderChatLists(groupsData); 
+
+        Object.keys(allUsers).forEach(uid => {
+            if (uid === currentUser.uid) return;
+            const userStatusRef = ref(db, `users/${uid}/online`);
+            onValue(userStatusRef, (snapshot) => {
+                const isOnline = snapshot.val();
+                const chatId = [currentUser.uid, uid].sort().join('_');
+                const linkElement = document.querySelector(`a[data-chat-id="${chatId}"] i.fa-user`);
+                if (linkElement) {
+                    linkElement.className = isOnline ? 'fa-solid fa-user status-online' : 'fa-solid fa-user status-offline';
+                }
+            });
+        });
+        
+        onValue(ref(db, 'groups'), (snapshot) => {
+             renderChatLists(snapshot.val() || {});
+        });
+
+        if (elements.groupList.firstChild && !activeChatId) {
+            elements.groupList.firstChild.querySelector('a').click();
+        }
+    }
+    
+    function renderChatLists(groupsData) {
+        const groupSearchTerm = elements.searchGroup.value.toLowerCase();
+        elements.groupList.innerHTML = '';
+        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+        if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
+            const li = el('li');
+            const a = el('a', `<span><i class="fa-solid fa-user-group"></i> ${generalGroup.name}</span>`, { href: '#', 'data-chat-id': 'general' });
+            const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+            a.append(badge);
+            a.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+            li.append(a);
+            elements.groupList.append(li);
+            listenForUnread(generalGroup.id, badge);
+        }
+        Object.entries(groupsData).forEach(([groupId, group]) => {
+            if (group.name.toLowerCase().includes(groupSearchTerm)) {
+                const isMember = group.members && group.members[currentUser.uid];
+                const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+                const li = el('li');
+                const icon = isMember || isAdmin ? '<i class="fa-solid fa-user-group"></i>' : '<i class="fas fa-lock"></i>';
+                const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': groupId });
+                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+                a.append(badge);
+                a.onclick = (e) => { e.preventDefault(); openChat(groupId, group.name, 'group', {id: groupId, ...group}); };
+                li.append(a);
+                elements.groupList.append(li);
+                if (isMember || isAdmin) {
+                    listenForUnread(groupId, badge);
+                }
+            }
+        });
+
+        const userSearchTerm = elements.searchUser.value.toLowerCase();
+        elements.userList.innerHTML = '';
+        Object.entries(allUsers).forEach(([uid, userData]) => {
+            if (uid === currentUser.uid) return;
+            if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
+                const chatId = [currentUser.uid, uid].sort().join('_');
+                const li = el('li');
+                const onlineIndicator = userData.online ? '<i class="fa-solid fa-user status-online"></i>' : '<i class="fa-solid fa-user status-offline"></i>';
+                const a = el('a', `<span>${onlineIndicator} ${userData.name || 'Tanpa Nama'}</span>`, { href: '#', 'data-chat-id': chatId });
+                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
+                a.append(badge);
+                a.onclick = (e) => { e.preventDefault(); openChat(chatId, userData.name, 'personal', { otherUserId: uid }); };
+                li.append(a);
+                elements.userList.append(li);
+                listenForUnread(chatId, badge);
+            }
+        });
+
+        updateActiveLinkInSidebar();
+    }
+
+
     function linkify(text) {
         let html = text;
 
@@ -411,104 +497,6 @@
         });
     }
 
-    // [FIX] Pisahkan pemuatan awal dari pembaruan real-time
-    async function loadInitialChatLists() {
-        const usersSnap = await get(ref(db, 'users'));
-        if (usersSnap.exists()) {
-            allUsers = usersSnap.val();
-        }
-
-        const groupsSnap = await get(ref(db, 'groups'));
-        renderChatLists(groupsSnap.val() || {});
-
-        // Otomatis buka chat umum hanya sekali saat awal
-        if (elements.groupList.firstChild) {
-            elements.groupList.firstChild.querySelector('a').click();
-        }
-    }
-
-    // [FIX] Fungsi baru untuk mendengarkan perubahan dinamis (grup baru, status online)
-    function listenForDynamicUpdates() {
-        // Dengarkan grup baru/perubahan
-        onValue(ref(db, 'groups'), (snapshot) => {
-            renderChatLists(snapshot.val() || {});
-        });
-
-        // Dengarkan status online setiap pengguna
-        Object.keys(allUsers).forEach(uid => {
-            if (uid === currentUser.uid) return;
-            const userStatusRef = ref(db, `users/${uid}/online`);
-            onValue(userStatusRef, (snapshot) => {
-                const isOnline = snapshot.val();
-                const chatId = [currentUser.uid, uid].sort().join('_');
-                const linkElement = document.querySelector(`a[data-chat-id="${chatId}"]`);
-                if (linkElement) {
-                    const iconElement = linkElement.querySelector('i.fa-user');
-                    if (iconElement) {
-                        iconElement.className = isOnline ? 'fa-solid fa-user status-online' : 'fa-solid fa-user status-offline';
-                    }
-                }
-            });
-        });
-    }
-    
-    // [FIX] Fungsi render yang terpisah, tidak lagi memuat data, hanya menampilkan
-    function renderChatLists(groupsData) {
-        // Render Group List
-        const groupSearchTerm = elements.searchGroup.value.toLowerCase();
-        elements.groupList.innerHTML = '';
-        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
-        if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
-            const li = el('li');
-            const a = el('a', `<span><i class="fa-solid fa-user-group"></i> ${generalGroup.name}</span>`, { href: '#', 'data-chat-id': 'general' });
-            const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-            a.append(badge);
-            a.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
-            li.append(a);
-            elements.groupList.append(li);
-            listenForUnread(generalGroup.id, badge);
-        }
-        Object.entries(groupsData).forEach(([groupId, group]) => {
-            if (group.name.toLowerCase().includes(groupSearchTerm)) {
-                const isMember = group.members && group.members[currentUser.uid];
-                const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-                const li = el('li');
-                const icon = isMember || isAdmin ? '<i class="fa-solid fa-user-group"></i>' : '<i class="fas fa-lock"></i>';
-                const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': groupId });
-                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-                a.append(badge);
-                a.onclick = (e) => { e.preventDefault(); openChat(groupId, group.name, 'group', {id: groupId, ...group}); };
-                li.append(a);
-                elements.groupList.append(li);
-                if (isMember || isAdmin) {
-                    listenForUnread(groupId, badge);
-                }
-            }
-        });
-
-        // Render User List
-        const userSearchTerm = elements.searchUser.value.toLowerCase();
-        elements.userList.innerHTML = '';
-        Object.entries(allUsers).forEach(([uid, userData]) => {
-            if (uid === currentUser.uid) return;
-            if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
-                const chatId = [currentUser.uid, uid].sort().join('_');
-                const li = el('li');
-                const onlineIndicator = userData.online ? '<i class="fa-solid fa-user status-online"></i>' : '<i class="fa-solid fa-user status-offline"></i>';
-                const a = el('a', `<span>${onlineIndicator} ${userData.name || 'Tanpa Nama'}</span>`, { href: '#', 'data-chat-id': chatId });
-                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-                a.append(badge);
-                a.onclick = (e) => { e.preventDefault(); openChat(chatId, userData.name, 'personal', { otherUserId: uid }); };
-                li.append(a);
-                elements.userList.append(li);
-                listenForUnread(chatId, badge);
-            }
-        });
-
-        updateActiveLinkInSidebar();
-    }
-
-
     function listenForUnread(chatId, badgeElement) {
         const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
         
@@ -538,7 +526,7 @@
         
         chatListeners[chatId] = unsubscribe;
     }
-
+    
     function checkChatPermissions(permissions) {
         let canChat = false;
         let reason = "Anda tidak diizinkan mengirim pesan di grup ini.";
@@ -1069,8 +1057,21 @@
     }
 
     function setupEventListeners() {
-        elements.searchGroup.addEventListener('input', () => renderChatLists(allUsers));
-        elements.searchUser.addEventListener('input', () => renderChatLists(allUsers));
+        // [FIX] Event listener pencarian tidak lagi me-render ulang, hanya memfilter tampilan
+        elements.searchGroup.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('#group-list li').forEach(li => {
+                const name = li.textContent.toLowerCase();
+                li.style.display = name.includes(searchTerm) ? '' : 'list-item';
+            });
+        });
+        elements.searchUser.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('#user-list li').forEach(li => {
+                const name = li.textContent.toLowerCase();
+                li.style.display = name.includes(searchTerm) ? '' : 'list-item';
+            });
+        });
 
         elements.messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
