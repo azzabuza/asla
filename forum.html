@@ -215,6 +215,19 @@
     </div>
   </div>
 
+  <div id="editMessageModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeEditModal"><i class="fa-solid fa-xmark"></i></span>
+      <h2 style="margin: 0 0 2rem 0;">Edit Pesan</h2>
+      <form id="editMessageForm">
+        <div class="form-group">
+          <textarea id="editMessageInput" rows="5" required style="resize: vertical;"></textarea>
+        </div>
+        <button type="submit" style="width: 100%;">Simpan Perubahan</button>
+      </form>
+    </div>
+  </div>
+
 
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
@@ -227,6 +240,7 @@
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
+    let messageToEdit = null; // [BARU]
     let isInitialChatLoad = true;
     
     const elements = {
@@ -281,6 +295,11 @@
         permissionsForm: document.getElementById('permissionsForm'),
         userPermissionsContainer: document.getElementById('userPermissionsContainer'),
         userPermissionsList: document.getElementById('userPermissionsList'),
+        // [BARU] Elemen untuk modal edit
+        editMessageModal: document.getElementById('editMessageModal'),
+        closeEditModal: document.getElementById('closeEditModal'),
+        editMessageForm: document.getElementById('editMessageForm'),
+        editMessageInput: document.getElementById('editMessageInput'),
     };
 
     onAuthStateChanged(auth, async (user) => {
@@ -600,7 +619,9 @@
             const text = el('div', '', { class: 'message-text' });
             text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const footer = el('p', time, { class: 'message-footer' });
+            const editedIndicator = msgData.edited ? '<span style="font-size: 1rem; opacity: 0.7; margin-left: 0.5rem;">(telah diedit)</span>' : '';
+            const footer = el('p', '', { class: 'message-footer' });
+            footer.innerHTML = time + editedIndicator;
             
             const actions = el('div', '', { class: 'message-actions' });
             const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
@@ -612,6 +633,13 @@
             actions.append(replyBtn, reportBtn);
 
             const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+
+            if (isMe) { // [BARU] Tombol edit hanya untuk pengirim pesan
+                const editBtn = el('button', '<i class="fas fa-edit"></i>', { class: 'btn-sm info' });
+                editBtn.onclick = () => openEditModal(msgId, msgData);
+                actions.append(editBtn);
+            }
+
             if (isMe || isAdminOrSuperAdmin) {
                 const deleteBtn = el('button', '<i class="fas fa-trash"></i>', { class: 'btn-sm danger' });
                 deleteBtn.onclick = () => deleteMessage(msgId, msgData);
@@ -678,6 +706,46 @@
     function closeReportModal() {
         elements.reportModal.style.display = 'none';
         messageToReport = null;
+    }
+
+    // [BARU] Fungsi untuk membuka modal edit
+    function openEditModal(msgId, msgData) {
+        messageToEdit = { id: msgId, ...msgData };
+        elements.editMessageInput.value = msgData.text;
+        elements.editMessageModal.style.display = 'block';
+        elements.editMessageInput.focus();
+    }
+
+    // [BARU] Fungsi untuk menutup modal edit
+    function closeEditModal() {
+        elements.editMessageModal.style.display = 'none';
+        messageToEdit = null;
+    }
+
+    // [BARU] Fungsi untuk menangani update pesan
+    async function handleUpdateMessage(e) {
+        e.preventDefault();
+        if (!messageToEdit) return;
+
+        const newText = elements.editMessageInput.value.trim();
+        if (!newText || newText === messageToEdit.text) {
+            closeEditModal();
+            return;
+        }
+
+        const updates = {
+            text: newText,
+            edited: true,
+            lastEditedAt: serverTimestamp()
+        };
+
+        try {
+            await update(ref(db, `chats/${activeChatId}/${messageToEdit.id}`), updates);
+            closeEditModal();
+        } catch (error) {
+            console.error("Gagal mengedit pesan:", error);
+            alert("Gagal menyimpan perubahan.");
+        }
     }
     
     async function submitReport() {
@@ -960,6 +1028,10 @@
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
         
+        // [BARU] Event listener untuk modal edit
+        elements.closeEditModal.onclick = closeEditModal;
+        elements.editMessageForm.addEventListener('submit', handleUpdateMessage);
+
         const permissionRadios = document.querySelectorAll('[name="permissionMode"]');
         permissionRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
@@ -974,6 +1046,7 @@
             if (event.target == elements.manageMembersModal) elements.manageMembersModal.style.display = 'none';
             if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
             if (event.target == elements.chatPermissionsModal) elements.chatPermissionsModal.style.display = 'none';
+            if (event.target == elements.editMessageModal) closeEditModal(); // [BARU]
         };
     }
   </script>
