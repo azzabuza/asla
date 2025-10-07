@@ -1573,6 +1573,15 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     .table-responsive td:last-child {
         border-bottom: 0;
     }
+
+    /* KODE PERBAIKAN: Aturan spesifik untuk light mode di mobile */
+    body.light-mode .table-responsive tr {
+        border: 1px solid var(--border-gunmetal);
+    }
+    body.light-mode .table-responsive td {
+        border-bottom: none; /* Hapus border bawah ganda */
+    }
+     /* AKHIR KODE PERBAIKAN */
     
     /* Penyesuaian kontrol paginasi */
     #pagination-controls, 
