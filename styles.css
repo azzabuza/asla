@@ -252,7 +252,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   padding: 1rem;
   margin: 0;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   border-bottom: 0.1rem solid var(--gunmetal);
 }
 .main-header-content {
@@ -1322,6 +1322,10 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         grid-template-columns: 1fr;
     }
 
+    .main-header {
+    justify-content: flex-start;
+    }
+  
     .main-header-content h1 {
         font-size: 1.8rem;
     }
