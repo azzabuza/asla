@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const repliedMsg = repliedMsgSnap.val();
                     if (!repliedMsg.deleted) {
                         const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
-                        const repliedHeaderName = isReplyingToSelf ? 'Anda' : repliedMsg.senderName;
+                        const repliedHeaderName = isReplyingToSelf ? 'Anda' : allUsers[repliedMsg.senderId]?.name || 'Pengguna Dihapus';
                         
                         const repliedMessageDiv = el('div', '', {class: 'replied-message'});
                         const repliedHeader = el('p', repliedHeaderName, {class: 'replied-header'});
@@ -799,7 +799,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setReplyingTo(msgId, msgData) {
         const isReplyingToSelf = msgData.senderId === currentUser.uid;
-        const replyToName = isReplyingToSelf ? 'Anda' : msgData.senderName;
+        const replyToName = isReplyingToSelf ? 'Anda' : allUsers[msgData.senderId]?.name || 'Pengguna Dihapus';
 
         replyingTo = { id: msgId, senderName: msgData.senderName, text: msgData.text };
         elements.replyingToUser.textContent = replyToName;
@@ -815,7 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openReportModal(msgId, msgData) {
         messageToReport = { id: msgId, ...msgData };
-        elements.reportedMessageText.textContent = `"${msgData.text}" oleh ${msgData.senderName}`;
+        elements.reportedMessageText.textContent = `"${msgData.text}" oleh ${allUsers[msgData.senderId]?.name || 'Pengguna Dihapus'}`;
         elements.reportModal.style.display = 'block';
     }
 
