@@ -1792,6 +1792,7 @@ body.light-mode .replied-text {
   opacity: 1;
 }
 
+
 /*
 ==============================================
     RESPONSIVE DESIGN STYLES (TABLET & MOBILE)
@@ -1806,6 +1807,27 @@ body.light-mode .replied-text {
 
     html {
         font-size: 9.5px;
+    }
+    
+    .navbar .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--dark-slate-blue);
+        flex-direction: column;
+        width: 100%;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-gunmetal);
+    }
+    
+    .navbar .nav-links.active {
+        display: flex;
+    }
+    
+    .navbar .nav-links a {
+        margin: 1rem 2rem;
     }
 
     .dashboard-grid {
@@ -1936,6 +1958,11 @@ body.light-mode .replied-text {
         color: var(--light-lavender);
         content: attr(data-label);
     }
+
+    /* Fix last td border issue */
+    .table-responsive td:last-child {
+        border-bottom: 0;
+    }
     
     /* Pagination controls adjustments */
     #pagination-controls, 
@@ -1943,7 +1970,8 @@ body.light-mode .replied-text {
     #activity-pagination-controls,
     #finance-pagination-controls,
     #route-pagination-controls,
-    #vehicle-pagination-controls {
+    #vehicle-pagination-controls,
+    #coor-activity-pagination-controls {
         flex-direction: column;
         gap: 1rem;
     }
