@@ -5,13 +5,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" />
   <title>Panel Driver</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="driver.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="driver-page">
-  <div class="content-wrapper"style="padding: 0 0 6rem 0">
-    <main id="page-beranda" class="main-content page active" style="padding: 2rem;">
-      <header class="main-header" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start;">
+<body>
+  <div class="content-wrapper">
+    <main id="page-beranda" class="main-content page active">
+      <header class="main-header">
         <div>
             <h1 id="driverName">Halo, ...</h1>
             <p>Senang melihatmu kembali, semangat bekerja ya bro.</p>
@@ -30,13 +30,13 @@
        <div class="card" style="margin-top: 2rem;">
             <h2 class="card-header">Tugas Terbaru</h2>
             <div id="recentJobCard" class="card-body">
-                <p class="empty-state" style="color: var(--slate-gray);">Memuat tugas...</p>
+                <p class="empty-state">Memuat tugas...</p>
             </div>
         </div>
     </main>
 
     <main id="page-tugas" class="main-content page">
-      <header class="main-header" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start;">
+      <header class="main-header">
         <div>
             <h1>Selamat Bertugas</h1>
             <p>Jangan lupa selalu jaga keselamatan dalam perjalanan ya.</p>
@@ -59,13 +59,13 @@
     </main>
 
     <main id="page-tips" class="main-content page">
-        <header class="main-header" style="flex-direction: column; align-items: flex-start;">
+        <header class="main-header">
             <div>
                 <h1>Tips Bermanfaat</h1>
                 <p>Jaga diri di jalan, selalu sehat, dan tetap semangat.</p>
             </div>
         </header>
-        <div class="card tips-card" style="margin-bottom: 2rem;">
+        <div class="card tips-card">
             <h2 class="card-header">Tips Keselamatan</h2>
             <div class="card-body">
                 <ul>
@@ -76,7 +76,7 @@
                 </ul>
             </div>
         </div>
-        <div class="card tips-card" style="margin-bottom: 2rem;">
+        <div class="card tips-card">
             <h2 class="card-header">Tips Kesehatan</h2>
             <div class="card-body">
                  <ul>
@@ -101,7 +101,7 @@
     </main>
 
     <main id="page-profil" class="main-content page">
-        <header class="main-header" style="flex-direction: column; align-items: flex-start;">
+        <header class="main-header">
             <div>
                 <h1>Profil Saya</h1>
                 <p>Informasi akun Anda.</p>
@@ -335,7 +335,7 @@
     function displayRecentJob(job){
         elements.recentJobCard.innerHTML = '';
         if(!job) {
-             elements.recentJobCard.innerHTML = `<p class="empty-state" style="color: var(--slate-gray);">Tidak ada tugas aktif saat ini.</p>`;
+             elements.recentJobCard.innerHTML = `<p class="empty-state">Tidak ada tugas aktif saat ini.</p>`;
              return;
         }
         
