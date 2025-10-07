@@ -106,7 +106,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
     background: none;
     border: none;
     cursor: pointer;
-    z-index: 1300;
+    z-index: 1000;
 }
 
 /* === ADMIN & KOORDINATOR LAYOUT === */
