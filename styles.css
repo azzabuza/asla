@@ -1331,7 +1331,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     }
 
     .main-header-content p {
-        display: none; /* Sembunyikan subjudul di mobile */
+        font-size: 1.3rem;
     }
     
     .main-wrapper {
