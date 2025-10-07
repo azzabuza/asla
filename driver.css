@@ -52,6 +52,7 @@ body {
 }
 h1, h2, h3, h4 {
   font-weight: 600;
+  color: var(--text-primary);
 }
 p {
     color: var(--text-secondary);
@@ -61,18 +62,37 @@ button {
   border: none;
   font-family: inherit;
 }
+hr {
+    border: 0;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 2rem 0;
+}
 
 /* === LAYOUT & CARD === */
 .content-wrapper {
   padding: 0 0 6rem 0;
 }
 .main-content {
+  display: none;
   padding: 2rem;
 }
+.main-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .main-header {
   margin-bottom: 2rem;
   flex-direction: column;
   align-items: flex-start;
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
 }
 .main-header h1 { font-size: 2.2rem; }
 .main-header p { font-size: 1.5rem; }
@@ -151,7 +171,7 @@ button {
   color: var(--text-link);
 }
 .tab-link.active {
-  background-color: var(--bg-tab-active);
+  background-color: var(--bg-main);
   color: var(--text-primary);
   border-color: var(--border-color);
 }
@@ -256,8 +276,6 @@ button {
   background-color: rgba(0,0,0,0.6);
   animation: fadeIn 0.3s;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .modal-content {
   background-color: var(--bg-card);
   margin: 20% auto;
@@ -289,11 +307,11 @@ button {
 .detail-grid .value { color: var(--text-primary); }
 
 .confirmation-modal-body .input-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-.confirmation-modal-body input { flex-grow: 1; }
+.confirmation-modal-body input { flex-grow: 1; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); }
 .confirmation-modal-body #scanBtn { width: auto; background-color: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color); }
 .confirmation-modal-body video { width: 100%; max-width: 400px; border-radius: 1rem; display: none; }
 .form-status { display: none; margin-top: 1rem; font-weight: 500; }
-button, .button {
+button {
   background: var(--blue);
   color: var(--text-inverse);
   padding: 1rem 2rem;
