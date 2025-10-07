@@ -613,23 +613,26 @@
     } from './firebase.js';
     import { badge, fmtDate, el, idr } from './utils.js';
 
-    // --- Hamburger Menu Logic ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const hamburger = document.getElementById('hamburger-menu');
-        const sidebar = document.querySelector('.sidebar');
+    // --- Hamburger Menu & Overlay Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const hamburger = document.getElementById('hamburger-menu');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
 
-        hamburger.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
-        // Optional: Close sidebar when clicking outside of it on mobile
-        document.querySelector('.main-content').addEventListener('click', () => {
-            if (sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-            }
-        });
+    // Toggle sidebar saat hamburger di-klik
+    hamburger.addEventListener('click', (event) => {
+        event.stopPropagation(); // Mencegah event klik menyebar ke elemen lain
+        sidebar.classList.toggle('active');
     });
-    // --- End Hamburger Menu Logic ---
+
+    // Menutup sidebar saat area konten utama di-klik (hanya di mode mobile)
+    mainContent.addEventListener('click', () => {
+        if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+        }
+    });
+});
+// --- End Hamburger Menu Logic ---
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
