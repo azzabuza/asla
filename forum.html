@@ -709,11 +709,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const header = el('p', '', { class: 'message-header' });
             header.innerHTML = headerHTML;
             
-            // PERBAIKAN BUG: Mengubah urutan render elemen balasan
-            // 1. Tambahkan header terlebih dahulu
-            msgBubble.append(header);
+            // --- PERBAIKAN BUG BALASAN ---
+            const text = el('div', '', { class: 'message-text' });
+            let finalMessageHtml = '';
 
-            // 2. Jika ini adalah balasan, tambahkan kutipan pesan yang dibalas
+            // Jika ini adalah balasan, buat kutipan pesan terlebih dahulu
             if (msgData.replyingToId) {
                 const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
                 if (repliedMsgSnap.exists()) {
@@ -721,20 +721,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!repliedMsg.deleted) {
                         const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
                         const repliedHeaderName = isReplyingToSelf ? 'Anda' : repliedMsg.senderName;
-                        
-                        const repliedMessageDiv = el('div', '', {class: 'replied-message'});
-                        const repliedHeader = el('p', repliedHeaderName, {class: 'replied-header'});
-                        const repliedText = el('p', repliedMsg.text, {class: 'replied-text'});
-                        
-                        repliedMessageDiv.append(repliedHeader, repliedText);
-                        msgBubble.append(repliedMessageDiv);
+                        // Bangun HTML untuk kutipan pesan sebagai string
+                        finalMessageHtml += `<div class="replied-message">
+                            <p class="replied-header">${repliedHeaderName}</p>
+                            <p class="replied-text">${repliedMsg.text}</p>
+                        </div>`;
                     }
                 }
             }
+            
+            // Tambahkan teks pesan baru setelah kutipan
+            finalMessageHtml += linkify(msgData.text);
+            text.innerHTML = finalMessageHtml;
+            // --- AKHIR PERBAIKAN ---
 
-            // 3. Siapkan dan tambahkan sisa elemen (pesan, footer, tombol aksi)
-            const text = el('div', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const editedIndicator = msgData.edited ? '<span style="font-size: 1rem; opacity: 0.7; margin-left: 0.5rem;">(telah diedit)</span>' : '';
             const footer = el('p', '', { class: 'message-footer' });
@@ -763,8 +763,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 actions.append(deleteBtn);
             }
 
-            msgBubble.append(text, footer, actions);
-            
+            // Urutan penambahan elemen yang rapi
+            msgBubble.append(header, text, footer, actions);
             msgWrapper.append(msgBubble);
             elements.messageList.appendChild(msgWrapper);
         }
