@@ -709,7 +709,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const header = el('p', '', { class: 'message-header' });
             header.innerHTML = headerHTML;
             
-            let repliedMsgHtml = '';
+            msgBubble.append(header);
+
             if (msgData.replyingToId) {
                 const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
                 if (repliedMsgSnap.exists()) {
@@ -717,14 +718,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!repliedMsg.deleted) {
                         const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
                         const repliedHeaderName = isReplyingToSelf ? 'Anda' : repliedMsg.senderName;
-                        repliedMsgHtml = `<div class="replied-message">
-                            <p class="replied-header">${repliedHeaderName}</p>
-                            <p class="replied-text">${repliedMsg.text}</p>
-                        </div>`;
+                        
+                        const repliedMessageDiv = el('div', '', {class: 'replied-message'});
+                        const repliedHeader = el('p', repliedHeaderName, {class: 'replied-header'});
+                        const repliedText = el('p', repliedMsg.text, {class: 'replied-text'});
+                        
+                        repliedMessageDiv.append(repliedHeader, repliedText);
+                        msgBubble.append(repliedMessageDiv);
                     }
                 }
             }
-
+            
             const text = el('div', '', { class: 'message-text' });
             text.innerHTML = linkify(msgData.text);
             const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -755,9 +759,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 actions.append(deleteBtn);
             }
 
-            msgBubble.innerHTML = repliedMsgHtml;
-            msgBubble.append(header, text, footer);
-            msgWrapper.append(msgBubble, actions);
+            msgBubble.append(text, footer, actions);
+            
+            msgWrapper.append(msgBubble);
             elements.messageList.appendChild(msgWrapper);
         }
     }
