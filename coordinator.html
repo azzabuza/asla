@@ -640,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 printWindow.document.write('<html><head><title>Print QR Code</title>');
                 printWindow.document.write('<style>body { text-align: center; font-family: sans-serif; }</style>');
                 printWindow.document.write('</head><body>');
-                printWindow.document.write('<img src="' + qrCodeImage.src + '" style="width: 250px;">');
+                printWindow.document.write('<img src="' + qrCodeImage.src + '" style="width: 250px; background: var(--white); margin: auto; padding: 1rem; border-radius: 0.5rem;">');
                 printWindow.document.write('<h3>' + tripIdText + '</h3>');
                 printWindow.document.write('</body></html>');
                 printWindow.document.close();
