@@ -1035,7 +1035,7 @@ input:checked + .slider:before {
   box-sizing: border-box;
   display: none;
   position: fixed;
-  z-index: 1001;
+  z-index: 1400;
   left: 0;
   top: 0;
   width: 100%;
