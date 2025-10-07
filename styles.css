@@ -544,7 +544,7 @@ option {
 }
 table {
   width: 100%;
-  min-width: 50rem;
+  min-width: 35rem;
   border-collapse: collapse;
 }
 th, td { padding: 1rem; text-align: left; white-space: nowrap; }
