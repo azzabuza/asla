@@ -1574,7 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sortedActivities.forEach(act => { 
                 const userName = allUsers[act.userId]?.name || 'User Dihapus'; 
                 const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); 
-                tableHtml += `<tr><td>${userName}</td><td>${act.action}</td><td>${actionTime}</td></tr>`; 
+                tableHtml += `<tr><td data-label="Nama">${userName}</td><td data-label="Aksi">${act.action}</td><td data-label="Waktu">${actionTime}</td></tr>`; 
             }); 
             tableHtml += '</tbody></table></div>'; 
             return tableHtml; 
@@ -1590,9 +1590,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const sortedUsers = Object.entries(allUsers).sort(([, a], [, b]) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
       sortedUsers.forEach(([uid, user]) => {
         const tr = el('tr');
-        const nameCell = el('td', user.name || 'N/A');
-        const roleCell = el('td', user.role || 'N/A');
-        const statusCell = el('td');
+        const nameCell = el('td', user.name || 'N/A', {'data-label': 'Nama Pengguna'});
+        const roleCell = el('td', user.role || 'N/A', {'data-label': 'Role'});
+        const statusCell = el('td', '', {'data-label': 'Status Pengguna'});
         if (user.role === 'super admin') {
           statusCell.textContent = 'Tidak dapat dinonaktifkan';
         } else {
