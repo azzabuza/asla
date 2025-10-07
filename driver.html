@@ -451,12 +451,12 @@
 
     function showTripDetails(job) {
         elements.detailModalBody.innerHTML = `
-            <span class="label">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
-            <span class="label">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
-            <span class="label">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
-            <span class="label">Kendaraan:</span><span class="value">${job.vehicleNumber}</span>
-            <span class="label">Muatan:</span><span class="value">${job.muatan || '-'}</span>
-            <span class="label">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
+            <span class="label" data-label="Kode Resi:">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
+            <span class="label" data-label="Rute:">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
+            <span class="label" data-label="Tanggal:">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
+            <span class="label" data-label="Kendaraan:">Kendaraan:</span><span class="value">${job.vehicleNumber}</span>
+            <span class="label" data-label="Muatan:">Muatan:</span><span class="value">${job.muatan || '-'}</span>
+            <span class="label" data-label="Status:">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
         `;
         elements.detailModal.style.display = 'block';
     }
