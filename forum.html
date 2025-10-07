@@ -267,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let messageToReport = null;
     let messageToEdit = null;
     let chatListeners = {};
+    let activeChatMessagesListener = null; // [FIX #1] Global variable for the active message listener
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -386,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
     });
     
-    // [FIX] Arsitektur baru untuk stabilitas
     async function loadInitialChatListsAndAttachListeners() {
         const usersSnap = await get(ref(db, 'users'));
         if (usersSnap.exists()) {
@@ -584,6 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function openChat(chatId, chatName, type, metaData = null) {
+        // [FIX #1] Unsubscribe from the previous chat's message listener before opening a new one
+        if (activeChatMessagesListener) {
+            activeChatMessagesListener();
+        }
+
         activeChatId = chatId;
 
         const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
@@ -650,7 +655,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
-        onValue(messagesRef, (snapshot) => {
+        
+        // [FIX #1] Store the new listener's unsubscribe function
+        activeChatMessagesListener = onValue(messagesRef, (snapshot) => {
             elements.messageList.innerHTML = '';
             if (!snapshot.hasChildren()) {
                 elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
@@ -659,7 +666,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayMessage(child.key, child.val());
                 });
             }
-            elements.messageList.scrollTop = elements.messageList.scrollHeight;
+            // [FIX #2] Use setTimeout to ensure scrolling happens after DOM update
+            setTimeout(() => {
+                elements.messageList.scrollTop = elements.messageList.scrollHeight;
+            }, 0);
         });
 
         // Close sidebar after selecting a chat on mobile
@@ -674,6 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
 
         if (msgData.deleted) {
+             // Logic for deleted messages remains the same
             const timeSinceDeleted = Date.now() - msgData.timestamp;
             const timeRemaining = 5000 - timeSinceDeleted;
 
@@ -697,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     deletedMsgElement.remove();
                 }
             }, timeRemaining);
-
         } else {
             const msgBubble = el('div', '', { class: 'message-bubble' });
             const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
@@ -1091,7 +1101,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // [FIX] Event listener pencarian tidak lagi me-render ulang, hanya memfilter tampilan
         elements.searchGroup.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             document.querySelectorAll('#group-list li').forEach(li => {
