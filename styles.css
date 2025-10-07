@@ -62,7 +62,7 @@ html {
 }
 body {
   box-sizing: border-box;
-  height: 100vh; /* Menggunakan vh untuk viewport height */
+  height: 100dvh;
   margin: 0;
   padding: 0;
   background-color: var(--dark-blue-gray);
@@ -116,9 +116,9 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   flex-direction: row;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
-  position: relative; /* Diperlukan untuk positioning sidebar mobile */
+  position: relative;
 }
 .sidebar {
   box-sizing: border-box;
@@ -618,7 +618,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100dvh;
 }
 .login-container {
   box-sizing: border-box;
@@ -703,7 +703,7 @@ tbody tr:hover { background-color: var(--gunmetal); }
 .hero {
   box-sizing: border-box;
   position: relative;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   text-align: center;
