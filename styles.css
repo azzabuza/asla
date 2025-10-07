@@ -1066,171 +1066,6 @@ input:checked + .slider:before {
 }
 .close-modal:hover { color: var(--light-lavender); }
 
-/* === HALAMAN DRIVER === */
-.driver-dashboard-grid {
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.tabs {
-  box-sizing: border-box;
-  display: flex;
-  border-bottom: 0.1rem solid var(--dark-slate-blue);
-  margin-bottom: 1rem;
-}
-.tab-link {
-  box-sizing: border-box;
-  background: transparent;
-  padding: 1rem 2rem;
-  cursor: pointer;
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--slate-gray);
-  border-radius: 2rem 2rem 0 0;
-  transition: all 0.2s ease-in-out;
-}
-.tab-link:hover {
-  background-color: var(--gunmetal);
-  color: var(--light-lavender);
-  border-radius: 2rem 2rem 0 0;
-}
-.tab-link.active {
-  background-color: var(--dark-slate-blue);
-  color: var(--light-lavender);
-  border-radius: 2rem 2rem 0 0;
-}
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-.trip-card {
-  box-sizing: border-box;
-  background-color: var(--dark-slate-blue);
-  border: 0.1rem solid var(--border-gunmetal);
-  border-radius: 1rem;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.trip-card:last-child {
-  margin: 0;
-}
-.trip-card-header {
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  cursor: pointer;
-}
-.trip-card-header h3 {
-  font-size: 1.8rem;
-  margin: 0;
-  color: var(--light-lavender);
-}
-.trip-card-body {
-  box-sizing: border-box;
-  padding-bottom: 1.5rem;
-  cursor: pointer;
-}
-.trip-card-body p {
-  font-size: 1.4rem;
-  color: var(--slate-gray);
-  margin: 0.5rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-.trip-card-body i {
-  color: var(--cyan);
-}
-.trip-card-actions {
-  border-top: 0.1rem solid var(--border-gunmetal);
-  padding-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
-}
-.trip-card-actions button {
-  width: 100%;
-  font-size: 1.4rem;
-}
-.trip-card-actions button.start { background-color: var(--blue); color: var(--light-lavender); }
-.trip-card-actions button.arriving { background-color: var(--dark-orange); color: var(--text-inverse-dark-blue-gray); }
-.trip-card-actions button.confirm { background-color: var(--green); color: var(--light-lavender); }
-.modal-content .detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1rem;
-  font-size: 1.5rem;
-}
-.modal-content .detail-grid .label { font-weight: 600; color: var(--slate-gray); }
-.modal-content .detail-grid .value { color: var(--light-lavender); }
-.confirmation-modal-body .input-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-.confirmation-modal-body input { flex-grow: 1; }
-.confirmation-modal-body #scanBtn { width: auto; background-color: var(--gunmetal); color: var(--light-lavender); }
-.confirmation-modal-body video { width: 100%; max-width: 400px; border-radius: 1rem; display: none; }
-
-/* DRIVER MOBILE NAV & PROFILE */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: none; /* Sembunyikan di desktop */
-  justify-content: space-around;
-  background-color: var(--dark-slate-blue);
-  border-top: 0.1rem solid var(--border-gunmetal);
-  padding: 0.5rem 0;
-  z-index: 1000;
-}
-.bottom-nav .nav-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--slate-gray);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  transition: color 0.2s ease-in-out;
-  flex-grow: 1;
-}
-.bottom-nav .nav-link i { font-size: 2rem; margin-bottom: 0.5rem; }
-.bottom-nav .nav-link span { font-size: 1.2rem; }
-.bottom-nav .nav-link:hover { color: var(--light-lavender); }
-.bottom-nav .nav-link.active { color: var(--cyan); }
-
-.profile-card {
-  box-sizing: border-box;
-  background-color: var(--dark-slate-blue);
-  border-radius: 1rem;
-  padding: 2rem;
-  border: 0.1rem solid var(--border-gunmetal);
-}
-.profile-info {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-.profile-info span { color: var(--light-lavender); }
-.profile-info h3 { font-size: 1.8rem; color: var(--light-lavender); margin: 0 0 0.5rem 0; }
-.profile-info p { font-size: 1.4rem; color: var(--slate-gray); margin: 0; }
-
-/* TIPS CARD STYLES */
-.tips-card .card-body ul { list-style: none; padding: 0; margin: 0; }
-.tips-card .card-body li {
-    color: var(--slate-gray);
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    padding-left: 0;
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-.tips-card .card-body li:last-child { margin-bottom: 0; }
-.tips-card .card-body li i { color: var(--green); font-size: 1.6rem; margin-top: 0.2rem; }
 
 /* === FORUM & CHAT STYLES === */
 .sidebar-menu .chat-list-header {
@@ -1338,9 +1173,7 @@ body.light-mode {
 
 body.light-mode .stat-card,
 body.light-mode .card,
-body.light-mode .trip-card,
-body.light-mode .resource-card,
-body.light-mode .profile-card {
+body.light-mode .resource-card {
   background-color: var(--dark-slate-blue);
   border: 1px solid var(--border-gunmetal);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -1371,9 +1204,6 @@ body.light-mode tbody tr:hover { background-color: #f8fafc; }
 body.light-mode tbody tr:last-child td { border-bottom: none; }
 body.light-mode .modal-content { background-color: var(--dark-slate-blue); border: 1px solid var(--border-gunmetal); }
 body.light-mode .modal-quote { background-color: var(--light-gunmetal); }
-body.light-mode .tab-link:hover { background-color: var(--light-gunmetal); color: var(--cyan); }
-body.light-mode .tab-link.active { background-color: var(--dark-blue-gray); color: var(--light-lavender); border: 1px solid var(--border-gunmetal); border-bottom: none; }
-body.light-mode .bottom-nav { background-color: var(--dark-slate-blue); border-top: 1px solid var(--border-gunmetal); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
 
 body.light-mode .message-wrapper.sent .message-bubble { background-color: #e0f2fe; color: #0c4a6e; }
 body.light-mode .message-wrapper.sent .message-header { color: #0ea5e9; }
@@ -1599,11 +1429,6 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         width: 95%;
         margin: 20% auto;
     }
-
-    /* Penyesuaian halaman driver */
-    .trip-card { padding: 1.5rem; }
-    .trip-card-header h3 { font-size: 1.6rem; }
-    .trip-card-actions { flex-direction: column; }
 
     /* Penyesuaian halaman forum */
     .message-wrapper { max-width: 90%; }
