@@ -5,13 +5,53 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" />
   <title>Panel Driver</title>
-  <link rel="stylesheet" href="driver.css" />
+  <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Paksa Tema Terang Khusus untuk Halaman Driver */
+    body {
+      --dark-blue-gray: #f4f7fa;
+      --dark-slate-blue: #ffffff;
+      --gunmetal: #e2e8f0;
+      --light-gunmetal: #eef2f7;
+      --light-lavender: #1e293b;
+      --slate-gray: #475569;
+      --cyan: #0ea5e9;
+      --border-gunmetal: #e2e8f0;
+    }
+    .stat-card, .card, .trip-card, .profile-card, .modal-content {
+      background-color: var(--dark-slate-blue);
+      border: 1px solid var(--border-gunmetal);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .bottom-nav {
+      background-color: var(--dark-slate-blue);
+      border-top: 1px solid var(--border-gunmetal);
+    }
+    .tab-link:hover {
+        background-color: #eef2f7;
+        color: var(--cyan);
+    }
+    .tab-link.active {
+        background-color: var(--dark-blue-gray);
+        color: var(--light-lavender);
+        border: 1px solid var(--border-gunmetal);
+        border-bottom: none;
+    }
+    input, select, textarea {
+        background-color: #f8fafc;
+        border: 1px solid var(--border-gunmetal);
+        color: var(--light-lavender);
+    }
+    .logout-button:hover {
+        color: var(--white);
+    }
+  </style>
 </head>
-<body>
-  <div class="content-wrapper">
-    <main id="page-beranda" class="main-content page active">
-      <header class="main-header">
+<body class="driver-page">
+  <div class="content-wrapper"style="padding: 0 0 6rem 0">
+    <main id="page-beranda" class="main-content page active" style="padding: 2rem;">
+      <header class="main-header" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start;">
         <div>
             <h1 id="driverName">Halo, ...</h1>
             <p>Senang melihatmu kembali, semangat bekerja ya bro.</p>
@@ -30,13 +70,13 @@
        <div class="card" style="margin-top: 2rem;">
             <h2 class="card-header">Tugas Terbaru</h2>
             <div id="recentJobCard" class="card-body">
-                <p class="empty-state">Memuat tugas...</p>
+                <p class="empty-state" style="color: var(--slate-gray);">Memuat tugas...</p>
             </div>
         </div>
     </main>
 
     <main id="page-tugas" class="main-content page">
-      <header class="main-header">
+      <header class="main-header" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start;">
         <div>
             <h1>Selamat Bertugas</h1>
             <p>Jangan lupa selalu jaga keselamatan dalam perjalanan ya.</p>
@@ -59,13 +99,13 @@
     </main>
 
     <main id="page-tips" class="main-content page">
-        <header class="main-header">
+        <header class="main-header" style="flex-direction: column; align-items: flex-start;">
             <div>
                 <h1>Tips Bermanfaat</h1>
                 <p>Jaga diri di jalan, selalu sehat, dan tetap semangat.</p>
             </div>
         </header>
-        <div class="card tips-card">
+        <div class="card tips-card" style="margin-bottom: 2rem;">
             <h2 class="card-header">Tips Keselamatan</h2>
             <div class="card-body">
                 <ul>
@@ -76,7 +116,7 @@
                 </ul>
             </div>
         </div>
-        <div class="card tips-card">
+        <div class="card tips-card" style="margin-bottom: 2rem;">
             <h2 class="card-header">Tips Kesehatan</h2>
             <div class="card-body">
                  <ul>
@@ -101,7 +141,7 @@
     </main>
 
     <main id="page-profil" class="main-content page">
-        <header class="main-header">
+        <header class="main-header" style="flex-direction: column; align-items: flex-start;">
             <div>
                 <h1>Profil Saya</h1>
                 <p>Informasi akun Anda.</p>
@@ -153,7 +193,7 @@
     <div class="modal-content">
       <span class="close-confirm-modal">&times;</span>
       <h2>Konfirmasi Tiba di Tujuan</h2>
-      <p style="font-size: 1.5rem; color: var(--text-secondary); margin: 1rem 0 2rem 0;">
+      <p style="font-size: 1.5rem; color: var(--slate-gray); margin: 1rem 0 2rem 0;">
         Masukkan kode resi perjalanan untuk menyelesaikan tugas ini.
       </p>
       <div id="confirmationModalBody" class="confirmation-modal-body">
