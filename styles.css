@@ -1433,7 +1433,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
 
     /* Penyesuaian halaman forum */
     .message-wrapper { max-width: 90%; }
-    
+    .message-actions { opacity: 1; flex-wrap: wrap; }
 
     /* Penyesuaian halaman index */
     .hero h1 { font-size: 3.5rem; }
