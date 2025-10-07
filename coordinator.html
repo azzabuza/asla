@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
                 
                 const description = `Perjalanan untuk <span style="color: var(--cyan);">${trip.driverName || 'N/A'}</span> ke <span style="color: var(--green);">${ruteDisplay}</span>`;
-                const statusCell = el('td');
+                const statusCell = el('td', '', {'data-label': 'Status'});
                 statusCell.appendChild(badge(trip.status));
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Uang Jalan">${idr(trip.uangJalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
                 tr.appendChild(statusCell);
@@ -917,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja ditemukan.</td></tr>';
         } else {
             filteredPerformance.forEach(d => {
-                tableHTML += `<tr><td>${d.name}</td><td>${d.total}</td><td style="color: var(--green);">${d.arrived || 0}</td><td style="color: var(--blue);">${d.approved || 0}</td><td style="color: var(--light-orange);">${d.submitted || 0}</td><td style="color: var(--red);">${d.rejected || 0}</td></tr>`;
+                tableHTML += `<tr><td data-label="Nama Supir">${d.name}</td><td data-label="Total">${d.total}</td><td data-label="Selesai" style="color: var(--green);">${d.arrived || 0}</td><td data-label="Jalan" style="color: var(--blue);">${d.approved || 0}</td><td data-label="Menunggu" style="color: var(--light-orange);">${d.submitted || 0}</td><td data-label="Ditolak" style="color: var(--red);">${d.rejected || 0}</td></tr>`;
             });
         }
         elements.driverPerformanceStats.innerHTML = tableHTML + '</tbody></table></div>';
@@ -984,7 +984,7 @@ document.addEventListener('DOMContentLoaded', () => {
           tr.innerHTML = `
             <td data-label="Trip ID">${tripId}</td>
             <td data-label="Rute">${ruteDisplay}</td>
-            <td data-label="Driver">${tripData.driverName||'-'}</td>
+            <td data-label="Supir">${tripData.driverName||'-'}</td>
             <td data-label="No. Kendaraan">${tripData.vehicleNumber}</td>
             <td data-label="Muatan">${tripData.muatan || '-'}</td>
             <td data-label="Uang Jalan">${idr(tripData.uangJalan)}</td>
@@ -1130,9 +1130,9 @@ document.addEventListener('DOMContentLoaded', () => {
             notifications.slice(0, 50).forEach(n => { 
                 const tr = el('tr', '', { style: n.isRead ? '' : 'font-weight: bold;' });
                 const time = n.timestamp ? new Date(n.timestamp).toLocaleString('id-ID') : '-';
-                const statusCell = el('td');
+                const statusCell = el('td', '', {'data-label': 'Status'});
                 statusCell.appendChild(badge(n.status));
-                tr.innerHTML = `<td>${time}</td><td>${n.message}</td>`;
+                tr.innerHTML = `<td data-label="Waktu">${time}</td><td data-label="Pesan">${n.message}</td>`;
                 tr.appendChild(statusCell);
                 elements.notificationList.appendChild(tr);
             });
