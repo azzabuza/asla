@@ -259,9 +259,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  display: flex;
   align-items: center;
-  gap: 1.5rem;
 }
 .main-header-content h1 {
   color: var(--light-lavender);
