@@ -1176,7 +1176,6 @@ body.light-mode .card,
 body.light-mode .resource-card {
   background-color: var(--dark-slate-blue);
   border: 1px solid var(--border-gunmetal);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 body.light-mode .main-header-menu li a { color: var(--text-inverse-dark-blue-gray); }
 body.light-mode .sidebar-menu li a:hover { background-color: var(--light-gunmetal); color: var(--cyan); }
@@ -1195,7 +1194,6 @@ body.light-mode input:focus,
 body.light-mode select:focus, 
 body.light-mode textarea:focus {
   border-color: var(--cyan);
-  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
 }
 body.light-mode input::file-selector-button { color: var(--text-inverse-dark-blue-gray); }
 body.light-mode table th { background-color: #f1f5f9; color: var(--slate-gray); border-bottom: 1px solid var(--border-gunmetal); }
