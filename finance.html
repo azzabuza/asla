@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Panel</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+  <div class="content-wrapper">
+    <nav class="sidebar">
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header"><h2>Finance Panel</h2></div>
+        <div class="sidebar-account">
+          <p id="userName">Memuat...</p>
+          <small id="userEmail">Memuat...</small>
+        </div>
+        <div class="sidebar-menu">
+          <ul>
+            <li><a href="#dashboard" class="nav-link active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="#transactions" class="nav-link"><i class="fas fa-money-bill-wave"></i> Transaksi</a></li>
+            <li><a href="#add-transaction" class="nav-link"><i class="fas fa-plus-circle"></i> Tambah Transaksi</a></li>
+            <li><a href="#cashflow" class="nav-link"><i class="fas fa-wallet"></i> Arus Kas</a></li>
+            <li><a href="#reports" class="nav-link"><i class="fas fa-file-invoice"></i> Laporan</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-footer">
+          <button id="logoutBtn" class="logout-button"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="main-wrapper">
+        <header class="main-header">
+          <div class="main-header-content">
+            <button id="hamburger-menu" class="hamburger-menu"><i class="fa-solid fa-bars"></i></button>
+            <div>
+              <h1 id="pageTitle"><i class="fas fa-chart-line"></i> Dashboard</h1>
+              <p id="pageSubtitle">Ringkasan data keuangan operasional perusahaan.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="content-container">
+
+          <!-- DASHBOARD -->
+          <div id="page-dashboard" class="page active">
+            <section class="card">
+              <h2 class="card-header">Ringkasan Keuangan</h2>
+              <div class="dashboard-grid">
+                <div class="stat-card"><h3>Total Pemasukan</h3><p id="totalIncome">Rp 0</p></div>
+                <div class="stat-card"><h3>Total Pengeluaran</h3><p id="totalExpense">Rp 0</p></div>
+                <div class="stat-card"><h3>Saldo Akhir</h3><p id="netBalance">Rp 0</p></div>
+                <div class="stat-card"><h3>Transaksi Belum Diverifikasi</h3><p id="unverifiedCount">0</p></div>
+              </div>
+            </section>
+          </div>
+
+          <!-- DATA TRANSAKSI -->
+          <div id="page-transactions" class="page">
+            <section class="card">
+              <h2 class="card-header">Data Transaksi Keuangan</h2>
+              <div class="card-body">
+                <div class="table-controls">
+                  <div class="form-group"><label>Cari</label><input type="text" id="searchTransaction" placeholder="Nama supir / Trip ID / keterangan"></div>
+                  <div class="form-group">
+                    <label>Filter Jenis</label>
+                    <select id="filterType">
+                      <option value="all">Semua</option>
+                      <option value="income">Pemasukan</option>
+                      <option value="expense">Pengeluaran</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr><th>Tanggal</th><th>Deskripsi</th><th>Jumlah</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody id="transactionList"><tr><td colspan="6">Memuat data...</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAMBAH TRANSAKSI -->
+          <div id="page-add-transaction" class="page">
+            <section class="card">
+              <h2 class="card-header">Tambah Transaksi Baru</h2>
+              <div class="card-body">
+                <form id="addTransactionForm">
+                  <div class="form-group"><label>Deskripsi</label><input type="text" id="descInput" required></div>
+                  <div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="amountInput" required></div>
+                  <div class="form-group"><label>Jenis Transaksi</label>
+                    <select id="typeInput" required>
+                      <option value="">-- Pilih Jenis --</option>
+                      <option value="income">Pemasukan</option>
+                      <option value="expense">Pengeluaran</option>
+                    </select>
+                  </div>
+                  <div class="form-group"><label>Tanggal</label><input type="date" id="dateInput" required></div>
+                  <button type="submit"><i class="fa-solid fa-save"></i> Simpan Transaksi</button>
+                </form>
+                <p id="addStatus" class="form-status"></p>
+              </div>
+            </section>
+          </div>
+
+          <!-- CASHFLOW -->
+          <div id="page-cashflow" class="page">
+            <section class="card">
+              <h2 class="card-header">Arus Kas Per Bulan</h2>
+              <div class="card-body">
+                <canvas id="cashflowChart"></canvas>
+              </div>
+            </section>
+          </div>
+
+          <!-- REPORTS -->
+          <div id="page-reports" class="page">
+            <section class="card">
+              <h2 class="card-header">Laporan Keuangan</h2>
+              <div class="card-body">
+                <div style="display:flex;gap:1rem;">
+                  <button id="exportPdfBtn"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</button>
+                  <button id="exportExcelBtn"><i class="fa-solid fa-file-excel"></i> Unduh Excel</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { auth, onAuthStateChanged, signOut, db, ref, push, onValue, set } from "./firebase.js";
+    import { idr, fmtDate } from "./utils.js";
+
+    const els = {
+      navLinks: document.querySelectorAll(".nav-link"),
+      pages: document.querySelectorAll(".page"),
+      userName: document.getElementById("userName"),
+      userEmail: document.getElementById("userEmail"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      transactionList: document.getElementById("transactionList"),
+      searchTransaction: document.getElementById("searchTransaction"),
+      filterType: document.getElementById("filterType"),
+      totalIncome: document.getElementById("totalIncome"),
+      totalExpense: document.getElementById("totalExpense"),
+      netBalance: document.getElementById("netBalance"),
+      unverifiedCount: document.getElementById("unverifiedCount"),
+      addTransactionForm: document.getElementById("addTransactionForm"),
+      descInput: document.getElementById("descInput"),
+      amountInput: document.getElementById("amountInput"),
+      typeInput: document.getElementById("typeInput"),
+      dateInput: document.getElementById("dateInput"),
+      addStatus: document.getElementById("addStatus"),
+      exportPdfBtn: document.getElementById("exportPdfBtn"),
+      exportExcelBtn: document.getElementById("exportExcelBtn"),
+    };
+
+    let allTransactions = [];
+
+    // 🔒 Auth
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return (window.location.href = "index.html");
+      const userRef = ref(db, "users/" + user.uid);
+      onValue(userRef, (snap) => {
+        if (!snap.exists()) return signOut(auth);
+        const data = snap.val();
+        if (data.role !== "finance") {
+          alert("Anda tidak memiliki akses ke halaman ini.");
+          return signOut(auth);
+        }
+        els.userName.textContent = data.name;
+        els.userEmail.textContent = user.email;
+        loadTransactions();
+      });
+    });
+    els.logoutBtn.onclick = () => signOut(auth);
+
+    // 🔄 Navigasi
+    els.navLinks.forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const id = link.getAttribute("href").substring(1);
+        els.pages.forEach(p => p.classList.remove("active"));
+        els.navLinks.forEach(n => n.classList.remove("active"));
+        document.getElementById("page-" + id).classList.add("active");
+        link.classList.add("active");
+      });
+    });
+
+    // 📊 Load data keuangan
+    function loadTransactions() {
+      onValue(ref(db, "finance"), (snap) => {
+        allTransactions = [];
+        if (!snap.exists()) {
+          els.transactionList.innerHTML = "<tr><td colspan='6'>Belum ada data.</td></tr>";
+          return;
+        }
+        snap.forEach(child => allTransactions.push({ id: child.key, data: child.val() }));
+        displayTransactions();
+        updateSummary();
+      });
+    }
+
+    // 📋 Tampilkan data tabel
+    function displayTransactions() {
+      const search = els.searchTransaction.value.toLowerCase();
+      const filter = els.filterType.value;
+      let filtered = allTransactions.filter(t => {
+        const d = t.data;
+        const matchesSearch =
+          d.desc.toLowerCase().includes(search) ||
+          (d.type || "").toLowerCase().includes(search);
+        const matchesType = filter === "all" || d.type === filter;
+        return matchesSearch && matchesType;
+      });
+
+      els.transactionList.innerHTML = "";
+      if (filtered.length === 0) {
+        els.transactionList.innerHTML = "<tr><td colspan='6'>Tidak ditemukan.</td></tr>";
+        return;
+      }
+
+      filtered.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
+
+      filtered.forEach(t => {
+        const d = t.data;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${fmtDate(d.date)}</td>
+          <td>${d.desc}</td>
+          <td>${idr(d.amount)}</td>
+          <td>${d.type === "income" ? "Pemasukan" : "Pengeluaran"}</td>
+          <td>${d.verified ? "<span style='color:lime'>Terverifikasi</span>" : "<span style='color:orange'>Menunggu</span>"}</td>
+          <td>
+            <button class="btn-sm success" data-id="${t.id}" data-action="verify"><i class="fas fa-check"></i></button>
+            <button class="btn-sm danger" data-id="${t.id}" data-action="delete"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        els.transactionList.appendChild(row);
+      });
+    }
+
+    els.searchTransaction.oninput = displayTransactions;
+    els.filterType.onchange = displayTransactions;
+
+    // ✅ Tambah transaksi baru
+    els.addTransactionForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const newData = {
+        desc: els.descInput.value.trim(),
+        amount: Number(els.amountInput.value),
+        type: els.typeInput.value,
+        date: els.dateInput.value,
+        verified: false,
+        createdAt: Date.now(),
+      };
+      try {
+        await push(ref(db, "finance"), newData);
+        els.addStatus.textContent = "✅ Transaksi berhasil disimpan.";
+        els.addTransactionForm.reset();
+      } catch (err) {
+        els.addStatus.textContent = "❌ Gagal: " + err.message;
+      }
+    };
+
+    // ⚙️ Aksi tombol (hapus / verifikasi)
+    els.transactionList.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if (action === "delete" && confirm("Yakin hapus transaksi ini?")) {
+        await set(ref(db, "finance/" + id), null);
+      } else if (action === "verify") {
+        await set(ref(db, "finance/" + id + "/verified"), true);
+      }
+    });
+
+    // 📈 Update ringkasan dashboard
+    function updateSummary() {
+      let income = 0, expense = 0, unverified = 0;
+      allTransactions.forEach(t => {
+        const d = t.data;
+        if (d.type === "income") income += Number(d.amount);
+        else expense += Number(d.amount);
+        if (!d.verified) unverified++;
+      });
+      els.totalIncome.textContent = idr(income);
+      els.totalExpense.textContent = idr(expense);
+      els.netBalance.textContent = idr(income - expense);
+      els.unverifiedCount.textContent = unverified;
+    }
+
+    // 🧾 Export PDF & Excel
+    els.exportPdfBtn.onclick = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Laporan Keuangan", 14, 16);
+      const body = allTransactions.map(t => [
+        fmtDate(t.data.date),
+        t.data.desc,
+        t.data.type === "income" ? "Pemasukan" : "Pengeluaran",
+        idr(t.data.amount),
+        t.data.verified ? "Terverifikasi" : "Menunggu"
+      ]);
+      doc.autoTable({ head: [["Tanggal", "Deskripsi", "Jenis", "Jumlah", "Status"]], body });
+      doc.save("Laporan_Keuangan.pdf");
+    };
+
+    els.exportExcelBtn.onclick = () => {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(allTransactions.map(t => ({
+        Tanggal: fmtDate(t.data.date),
+        Deskripsi: t.data.desc,
+        Jenis: t.data.type,
+        Jumlah: t.data.amount,
+        Status: t.data.verified ? "Terverifikasi" : "Menunggu"
+      })));
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+      XLSX.writeFile(wb, "Laporan_Keuangan.xlsx");
+    };
+  </script>
+</body>
+</html>
