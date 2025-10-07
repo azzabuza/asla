@@ -100,13 +100,13 @@ hr { border: 0; height: 0; margin: 2rem 0; }
 
 /* Hamburger Menu Icon */
 .hamburger-menu {
-    display: none; /* Hidden by default on desktop */
+    display: none;
     font-size: 2.5rem;
     color: var(--light-lavender);
     background: none;
     border: none;
     cursor: pointer;
-    z-index: 1300; /* Pastikan di atas overlay */
+    z-index: 1300;
 }
 
 /* === ADMIN & KOORDINATOR LAYOUT === */
@@ -236,7 +236,7 @@ hr { border: 0; height: 0; margin: 2rem 0; }
   height: 100%;
   padding: 1rem 1rem 1rem 0;
   min-width: 0;
-  transition: margin-left 0.3s ease-in-out; /* Tambahkan transisi */
+  transition: margin-left 0.3s ease-in-out;
 }
 .main-wrapper {
   box-sizing: border-box;
@@ -1255,9 +1255,13 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     .problem-solution-grid, .workflow-grid, .advantages-grid, .testimonials-grid {
       grid-template-columns: 1fr;
     }
+  
+    .main-header {
+    justify-content: flex-start;
+    }
 
     .main-header-menu {
-        display: none; /* Hide top menu on smaller screens */
+        display: none;
     }
 
     .sidebar {
@@ -1266,13 +1270,13 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         top: 0;
         height: 100%;
         z-index: 1200;
-        transform: translateX(-100%); /* Sembunyikan sidebar di luar layar */
+        transform: translateX(-100%);
         padding: 0;
         box-shadow: 0 0 15px rgba(0,0,0,0.2);
     }
 
     .sidebar.active {
-        transform: translateX(0); /* Munculkan sidebar */
+        transform: translateX(0);
     }
     
     .sidebar-wrapper {
@@ -1289,7 +1293,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     }
     
     .hamburger-menu {
-        display: block; /* Tampilkan ikon hamburger */
+        display: block;
     }
 }
 
@@ -1297,7 +1301,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
 /* --- Mobile (max-width: 768px) --- */
 @media (max-width: 768px) {
     :root {
-        --sidebar-width: 80%; /* Sidebar memakan lebih banyak ruang di mobile */
+        --sidebar-width: 80%;
     }
     
     html {
@@ -1305,7 +1309,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     }
     
     body {
-        padding-bottom: 0; /* Hapus padding bawah jika tidak ada bottom-nav */
+        padding-bottom: 0;
     }
 
     /* Tampilkan bottom-nav khusus untuk halaman driver */
@@ -1313,17 +1317,13 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         display: flex;
     }
     body.driver-page {
-        padding-bottom: 7rem; /* Beri ruang untuk bottom-nav di halaman driver */
+        padding-bottom: 7rem;
     }
     
     .dashboard-grid,
     .table-controls,
     .members-management-container {
         grid-template-columns: 1fr;
-    }
-
-    .main-header {
-    justify-content: flex-start;
     }
   
     .main-header-content h1 {
