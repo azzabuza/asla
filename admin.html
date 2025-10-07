@@ -978,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
                 
                 const description = `<span style="color: var(--cyan); font-weight: 500;">${trip.driverName || 'N/A'}</span> ${actionText} <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span>`;
-                const statusCell = el('td');
+                const statusCell = el('td', '', {'data-label': 'Status'});
                 statusCell.appendChild(badge(trip.status));
                 
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Uang Jalan">${idr(trip.uangJalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
@@ -1333,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const routeId = routeEntry.id;
           const route = routeEntry.data;
           const tr = el('tr');
-          tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td><td></td>`;
+          tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
