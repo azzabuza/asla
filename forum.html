@@ -49,8 +49,12 @@
       <div class="main-wrapper">
         <header class="main-header">
           <div class="main-header-content">
-            <h1 id="chatTitle"><i class="fas fa-comments"></i> Pilih Obrolan</h1>
-            <p id="chatSubtitle">Pilih grup atau pengguna dari daftar di samping untuk memulai.</p>
+            <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div> <h1 id="chatTitle"><i class="fas fa-comments"></i> Pilih Obrolan</h1>
+                <p id="chatSubtitle">Pilih grup atau pengguna dari daftar di samping untuk memulai.</p>
+            </div>
           </div>
           <div class="main-header-menu">
             <ul>
@@ -233,6 +237,24 @@
   <script type="module">
     import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect, limitToLast } from './firebase.js';
     import { el } from './utils.js';
+
+    // --- Hamburger Menu Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Optional: Close sidebar when clicking outside of it on mobile
+        document.querySelector('.main-content').addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+    });
+    // --- End Hamburger Menu Logic ---
 
     let currentUser = null;
     let currentUserData = null;
@@ -637,6 +659,12 @@
             }
             elements.messageList.scrollTop = elements.messageList.scrollHeight;
         });
+
+        // Close sidebar after selecting a chat on mobile
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+        }
     }
 
     async function displayMessage(msgId, msgData) {
