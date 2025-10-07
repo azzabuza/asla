@@ -756,8 +756,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             msgBubble.innerHTML = repliedMsgHtml;
-            msgBubble.append(header, text, footer);
-            msgWrapper.append(msgBubble, actions);
+            msgBubble.append(header, text, footer, actions);
+            msgWrapper.append(msgBubble);
             elements.messageList.appendChild(msgWrapper);
         }
     }
