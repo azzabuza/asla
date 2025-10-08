@@ -1079,14 +1079,17 @@ input:checked + .slider:before {
 }
 
 .modal-menu-list {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .modal-menu-button {
+  box-sizing: border-box;
   width: 100%;
-  padding: 1.5rem;
+  padding: 1rem;
+  margin: 0 0 1rem 0;
   font-size: 1.5rem;
   text-align: left;
   background-color: var(--gunmetal);
@@ -1095,6 +1098,9 @@ input:checked + .slider:before {
   border: none;
   display: flex;
   align-items: center;
+}
+.modal-menu-button::last-child {
+  margin: 0;
 }
 
 /* Show the mobile menu button only on smaller screens */
