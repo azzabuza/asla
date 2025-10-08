@@ -78,6 +78,7 @@
               <button id="cancel-reply-btn"><i class="fa-solid fa-xmark"></i></button>
            </div>
           <form id="messageForm" class="chat-form">
+            <button type="button" id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-gear"></i></button>
             <textarea id="messageInput" style="background-color: var(--light-gunmetal); height: 4.2rem; resize: none; overflow-y: auto;" placeholder="Pilih obrolan untuk mengirim pesan..." autocomplete="off" disabled></textarea>
             <button type="submit" id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
           </form>
@@ -85,6 +86,20 @@
       </div>
     </main>
   </div>
+
+  <div id="mobileMenuModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeMobileMenuModal"><i class="fa-solid fa-xmark"></i></span>
+      <h2 style="margin-bottom: 2rem;">Menu Opsi</h2>
+      <div class="modal-menu-list">
+        <button id="modalChatPermissionsBtn" class="modal-menu-button" style="display: none;"><i class="fas fa-shield-alt"></i> Izin Chat</button>
+        <button id="modalManageMembersBtn" class="modal-menu-button" style="display: none;"><i class="fas fa-users-cog"></i> Kelola Anggota</button>
+        <button id="modalManageGroupBtn" class="modal-menu-button" style="display: none;"><i class="fas fa-edit"></i> Kelola Grup</button>
+        <button id="modalGuideBtn" class="modal-menu-button" style="display: none;"><i class="fas fa-info-circle"></i> Panduan Chat</button>
+      </div>
+    </div>
+  </div>
+
 
   <div id="guideModal" class="modal">
     <div class="modal-content">
@@ -325,6 +340,15 @@ document.addEventListener('DOMContentLoaded', () => {
         closeEditModal: document.getElementById('closeEditModal'),
         editMessageForm: document.getElementById('editMessageForm'),
         editMessageInput: document.getElementById('editMessageInput'),
+
+        // New elements for the mobile menu
+        mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+        mobileMenuModal: document.getElementById('mobileMenuModal'),
+        closeMobileMenuModal: document.getElementById('closeMobileMenuModal'),
+        modalChatPermissionsBtn: document.getElementById('modalChatPermissionsBtn'),
+        modalManageMembersBtn: document.getElementById('modalManageMembersBtn'),
+        modalManageGroupBtn: document.getElementById('modalManageGroupBtn'),
+        modalGuideBtn: document.getElementById('modalGuideBtn'),
     };
 
     function applyTheme(theme) {
@@ -604,9 +628,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActiveLinkInSidebar();
         
         elements.guideBtn.style.display = 'block';
+        elements.modalGuideBtn.style.display = 'block'; // Show in modal
         elements.manageMembersBtn.style.display = 'none';
+        elements.modalManageMembersBtn.style.display = 'none';
         elements.manageGroupBtn.style.display = 'none';
+        elements.modalManageGroupBtn.style.display = 'none';
         elements.chatPermissionsBtn.style.display = 'none';
+        elements.modalChatPermissionsBtn.style.display = 'none';
 
         if (type === 'group' && metaData && metaData.id !== 'general') {
             const isMember = metaData.members && metaData.members[currentUser.uid];
@@ -639,11 +667,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (type === 'group' && metaData.id !== 'general') {
             elements.manageMembersBtn.style.display = isSuperAdminOrAdmin ? 'block' : 'none';
+            elements.modalManageMembersBtn.style.display = isSuperAdminOrAdmin ? 'block' : 'none';
             elements.manageGroupBtn.style.display = (isSuperAdminOrAdmin || isCreator) ? 'block' : 'none';
+            elements.modalManageGroupBtn.style.display = (isSuperAdminOrAdmin || isCreator) ? 'block' : 'none';
         }
         
         if (chatId === 'general' && isSuperAdminOrAdmin) {
             elements.chatPermissionsBtn.style.display = 'block';
+            elements.modalChatPermissionsBtn.style.display = 'block';
         }
 
         if (chatId === 'general') {
@@ -700,27 +731,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // It does NOT add it to the DOM. This is key to fixing the race condition.
     async function createMessageElement(msgId, msgData) {
         if (msgData.deleted) {
-             // We can return null for deleted messages that have expired
-             const timeSinceDeleted = Date.now() - msgData.timestamp;
-             if (timeSinceDeleted >= 5000) return null;
+             return null;
         }
 
         const isMe = msgData.senderId === currentUser.uid;
         const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
         const msgBubble = el('div', '', { class: 'message-bubble' });
         
-        // Handle deleted message display
-        if (msgData.deleted) {
-            const text = el('p', `Pesan ini telah dihapus.`, { class: 'message-text' });
-            text.style.fontStyle = 'italic';
-            text.style.opacity = '0.7';
-            msgBubble.append(text);
-            msgWrapper.append(msgBubble);
-            // Set a timeout to remove the "deleted" placeholder after a while
-            setTimeout(() => { document.getElementById(`msg-${msgId}`)?.remove(); }, 5000 - (Date.now() - msgData.timestamp));
-            return msgWrapper;
-        }
-
         // Handle normal message display
         const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
         const senderName = isMe ? 'Anda' : senderInfo.name;
@@ -1145,7 +1162,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.cancelReplyBtn.onclick = cancelReply;
 
-        elements.guideBtn.onclick = () => elements.guideModal.style.display = 'block';
+        // Mobile menu events
+        elements.mobileMenuBtn.onclick = () => elements.mobileMenuModal.style.display = 'block';
+        elements.closeMobileMenuModal.onclick = () => elements.mobileMenuModal.style.display = 'none';
+        
+        // Connect header buttons to their actions
+        [elements.guideBtn, elements.modalGuideBtn].forEach(btn => btn.onclick = () => {
+            elements.guideModal.style.display = 'block';
+            elements.mobileMenuModal.style.display = 'none';
+        });
+        [elements.manageMembersBtn, elements.modalManageMembersBtn].forEach(btn => btn.onclick = () => {
+            openManageMembersModal();
+            elements.mobileMenuModal.style.display = 'none';
+        });
+        [elements.manageGroupBtn, elements.modalManageGroupBtn].forEach(btn => btn.onclick = () => {
+            openManageGroupModal();
+            elements.mobileMenuModal.style.display = 'none';
+        });
+        [elements.chatPermissionsBtn, elements.modalChatPermissionsBtn].forEach(btn => btn.onclick = () => {
+            openChatPermissionsModal();
+            elements.mobileMenuModal.style.display = 'none';
+        });
+
         elements.closeGuideModal.onclick = () => elements.guideModal.style.display = 'none';
         
         elements.closeReportModal.onclick = closeReportModal;
@@ -1155,15 +1193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.closeCreateGroupModal.onclick = () => elements.createGroupModal.style.display = 'none';
         elements.createGroupForm.addEventListener('submit', handleCreateGroup);
         
-        elements.manageMembersBtn.onclick = openManageMembersModal;
         elements.closeManageMembersModal.onclick = () => elements.manageMembersModal.style.display = 'none';
-
-        elements.manageGroupBtn.onclick = openManageGroupModal;
+        
         elements.closeManageGroupModal.onclick = () => elements.manageGroupModal.style.display = 'none';
         elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
         elements.deleteGroupBtn.onclick = handleDeleteGroup;
         
-        elements.chatPermissionsBtn.onclick = openChatPermissionsModal;
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
         
@@ -1185,6 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
             if (event.target == elements.chatPermissionsModal) elements.chatPermissionsModal.style.display = 'none';
             if (event.target == elements.editMessageModal) closeEditModal();
+            if (event.target == elements.mobileMenuModal) elements.mobileMenuModal.style.display = 'none'; // Close mobile menu on outside click
         };
     }
   </script>
