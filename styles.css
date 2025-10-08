@@ -1430,9 +1430,8 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         padding-left: 50%;
         white-space: normal;
         text-align: right;
-        min-height: 44px; /* Tinggi minimum agar mudah disentuh */
+        min-height: 44px;
         display: flex;
-        align-items: center;
         justify-content: flex-end;
     }
     
