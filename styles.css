@@ -1065,16 +1065,15 @@ input:checked + .slider:before {
 }
 .close-modal:hover { color: var(--light-lavender); }
 
-/* --- Styles for Mobile Chat Menu --- */
 .mobile-menu-btn {
   display: none;
   width: auto;
   flex-shrink: 0;
   background: transparent;
   color: var(--slate-gray);
-  padding: 0 1.5rem;
+  padding: 1rem;
   font-size: 1.8rem;
-  border-right: 1px solid var(--gunmetal);
+  border: none
   margin-right: 1rem;
 }
 
@@ -1089,7 +1088,7 @@ input:checked + .slider:before {
   box-sizing: border-box;
   width: 100%;
   padding: 1rem;
-  margin: 0 0 1rem 0;
+  margin: 0;
   font-size: 1.5rem;
   text-align: left;
   background-color: var(--gunmetal);
@@ -1098,9 +1097,6 @@ input:checked + .slider:before {
   border: none;
   display: flex;
   align-items: center;
-}
-.modal-menu-button::last-child {
-  margin: 0;
 }
 
 /* Show the mobile menu button only on smaller screens */
