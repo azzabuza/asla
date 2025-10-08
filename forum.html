@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let messageToReport = null;
     let messageToEdit = null;
     let chatListeners = {};
-    let activeChatMessagesListener = null; // [FIX #1] Global variable for the active message listener
+    let activeChatMessagesListener = null; // This will hold the unsubscribe function for the active chat
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -582,19 +582,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
+    // =================================================================
+    // BUG FIX AREA: The logic below has been completely rewritten.
+    // =================================================================
     function openChat(chatId, chatName, type, metaData = null) {
-        // [FIX #1] Unsubscribe from the previous chat's message listener before opening a new one
+        // ### FIX 1: Detach the old listener ###
+        // This ensures that when you switch chats, the listener for the previous chat is turned off.
         if (activeChatMessagesListener) {
             activeChatMessagesListener();
         }
 
         activeChatId = chatId;
-
         const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
         lastRead[chatId] = Date.now();
         localStorage.setItem('lastRead', JSON.stringify(lastRead));
-        
         const badgeElement = document.querySelector(`a[data-chat-id="${chatId}"] .unread-badge`);
         if(badgeElement) {
             badgeElement.style.display = 'none';
@@ -656,125 +657,135 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         
-        // [FIX #1] Store the new listener's unsubscribe function
-        activeChatMessagesListener = onValue(messagesRef, (snapshot) => {
-            elements.messageList.innerHTML = '';
-            if (!snapshot.hasChildren()) {
-                elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
-            } else {
+        // ### FIX 2: Attach the new listener and handle updates correctly ###
+        activeChatMessagesListener = onValue(messagesRef, async (snapshot) => {
+            // Check if the user is already scrolled to the bottom. If so, we'll auto-scroll later.
+            const shouldScroll = elements.messageList.scrollTop + elements.messageList.clientHeight >= elements.messageList.scrollHeight - 30;
+
+            const messagePromises = [];
+            if (snapshot.exists()) {
                 snapshot.forEach(child => {
-                    displayMessage(child.key, child.val());
+                    // Instead of rendering directly, we create a promise for each message element
+                    messagePromises.push(createMessageElement(child.key, child.val()));
                 });
             }
-            // [FIX #2] Use setTimeout to ensure scrolling happens after DOM update
-            setTimeout(() => {
+            
+            // Wait for all message elements to be created (including fetching reply data)
+            const messageElements = await Promise.all(messagePromises);
+            
+            // Now, clear the list and append all elements at once, in the correct order.
+            elements.messageList.innerHTML = '';
+            if (messageElements.length > 0) {
+                 messageElements.forEach(el => {
+                    if(el) elements.messageList.appendChild(el);
+                });
+            } else {
+                elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
+            }
+           
+            // ### FIX 3: Scroll to bottom reliably ###
+            // Only scroll if the user was already at the bottom, or if it's the initial load.
+            if (shouldScroll) {
                 elements.messageList.scrollTop = elements.messageList.scrollHeight;
-            }, 0);
+            }
         });
 
-        // Close sidebar after selecting a chat on mobile
         const sidebar = document.querySelector('.sidebar');
         if (sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
         }
     }
 
-    async function displayMessage(msgId, msgData) {
+    // This new function's only job is to ASYNCHRONOUSLY create and RETURN a message element.
+    // It does NOT add it to the DOM. This is key to fixing the race condition.
+    async function createMessageElement(msgId, msgData) {
+        if (msgData.deleted) {
+             // We can return null for deleted messages that have expired
+             const timeSinceDeleted = Date.now() - msgData.timestamp;
+             if (timeSinceDeleted >= 5000) return null;
+        }
+
         const isMe = msgData.senderId === currentUser.uid;
         const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
-
+        const msgBubble = el('div', '', { class: 'message-bubble' });
+        
+        // Handle deleted message display
         if (msgData.deleted) {
-             // Logic for deleted messages remains the same
-            const timeSinceDeleted = Date.now() - msgData.timestamp;
-            const timeRemaining = 5000 - timeSinceDeleted;
-
-            if (timeRemaining <= 0) {
-                return;
-            }
-
-            const msgBubble = el('div', '', { class: 'message-bubble' });
-            const text = el('p', msgData.text, { class: 'message-text' });
+            const text = el('p', `Pesan ini telah dihapus.`, { class: 'message-text' });
             text.style.fontStyle = 'italic';
             text.style.opacity = '0.7';
-            const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const footer = el('p', time, { class: 'message-footer' });
-            msgBubble.append(text, footer);
+            msgBubble.append(text);
             msgWrapper.append(msgBubble);
-            elements.messageList.appendChild(msgWrapper);
-
-            setTimeout(() => {
-                const deletedMsgElement = document.getElementById(`msg-${msgId}`);
-                if (deletedMsgElement) {
-                    deletedMsgElement.remove();
-                }
-            }, timeRemaining);
-        } else {
-            const msgBubble = el('div', '', { class: 'message-bubble' });
-            const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
-            const senderName = isMe ? 'Anda' : senderInfo.name;
-            const senderRole = msgData.senderRole || senderInfo.role;
-            const roleClass = (senderRole || '').replace(' ', '-');
-            
-            const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${senderRole}</span>`;
-            const header = el('p', '', { class: 'message-header' });
-            header.innerHTML = headerHTML;
-            
-            msgBubble.append(header);
-
-            if (msgData.replyingToId) {
-                const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
-                if (repliedMsgSnap.exists()) {
-                    const repliedMsg = repliedMsgSnap.val();
-                    if (!repliedMsg.deleted) {
-                        const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
-                        const repliedHeaderName = isReplyingToSelf ? 'Anda' : allUsers[repliedMsg.senderId]?.name || 'Pengguna Dihapus';
-                        
-                        const repliedMessageDiv = el('div', '', {class: 'replied-message'});
-                        const repliedHeader = el('p', repliedHeaderName, {class: 'replied-header'});
-                        const repliedText = el('p', repliedMsg.text, {class: 'replied-text'});
-                        
-                        repliedMessageDiv.append(repliedHeader, repliedText);
-                        msgBubble.append(repliedMessageDiv);
-                    }
-                }
-            }
-            
-            const text = el('div', '', { class: 'message-text' });
-            text.innerHTML = linkify(msgData.text);
-            const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const editedIndicator = msgData.edited ? '<span style="font-size: 1rem; opacity: 0.7; margin-left: 0.5rem;">(telah diedit)</span>' : '';
-            const footer = el('p', '', { class: 'message-footer' });
-            footer.innerHTML = time + editedIndicator;
-            
-            const actions = el('div', '', { class: 'message-actions' });
-            const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
-            replyBtn.onclick = () => setReplyingTo(msgId, msgData);
-            
-            const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm warm' });
-            reportBtn.onclick = () => openReportModal(msgId, msgData);
-            
-            actions.append(replyBtn, reportBtn);
-
-            const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-
-            if (isMe) {
-                const editBtn = el('button', '<i class="fas fa-edit"></i>', { class: 'btn-sm info' });
-                editBtn.onclick = () => openEditModal(msgId, msgData);
-                actions.append(editBtn);
-            }
-
-            if (isMe || isAdminOrSuperAdmin) {
-                const deleteBtn = el('button', '<i class="fas fa-trash"></i>', { class: 'btn-sm danger' });
-                deleteBtn.onclick = () => deleteMessage(msgId, msgData);
-                actions.append(deleteBtn);
-            }
-
-            msgBubble.append(text, footer, actions);
-            
-            msgWrapper.append(msgBubble);
-            elements.messageList.appendChild(msgWrapper);
+            // Set a timeout to remove the "deleted" placeholder after a while
+            setTimeout(() => { document.getElementById(`msg-${msgId}`)?.remove(); }, 5000 - (Date.now() - msgData.timestamp));
+            return msgWrapper;
         }
+
+        // Handle normal message display
+        const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
+        const senderName = isMe ? 'Anda' : senderInfo.name;
+        const senderRole = msgData.senderRole || senderInfo.role;
+        const roleClass = (senderRole || '').replace(' ', '-');
+        
+        const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${senderRole}</span>`;
+        const header = el('p', '', { class: 'message-header' });
+        header.innerHTML = headerHTML;
+        msgBubble.append(header);
+
+        // AWAIT reply data before continuing
+        if (msgData.replyingToId) {
+            const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
+            if (repliedMsgSnap.exists()) {
+                const repliedMsg = repliedMsgSnap.val();
+                if (!repliedMsg.deleted) {
+                    const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
+                    const repliedHeaderName = isReplyingToSelf ? 'Anda' : (allUsers[repliedMsg.senderId]?.name || 'Pengguna Dihapus');
+                    
+                    const repliedMessageDiv = el('div', '', {class: 'replied-message'});
+                    repliedMessageDiv.innerHTML = `<p class="replied-header">${repliedHeaderName}</p><p class="replied-text">${repliedMsg.text}</p>`;
+                    msgBubble.append(repliedMessageDiv);
+                }
+            }
+        }
+        
+        const text = el('div', '', { class: 'message-text' });
+        text.innerHTML = linkify(msgData.text);
+        const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const editedIndicator = msgData.edited ? '<span style="font-size: 1rem; opacity: 0.7; margin-left: 0.5rem;">(telah diedit)</span>' : '';
+        const footer = el('p', '', { class: 'message-footer' });
+        footer.innerHTML = time + editedIndicator;
+        
+        const actions = el('div', '', { class: 'message-actions' });
+        const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
+        replyBtn.onclick = () => setReplyingTo(msgId, msgData);
+        
+        const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm warm' });
+        reportBtn.onclick = () => openReportModal(msgId, msgData);
+        
+        actions.append(replyBtn, reportBtn);
+
+        const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+
+        if (isMe) {
+            const editBtn = el('button', '<i class="fas fa-edit"></i>', { class: 'btn-sm info' });
+            editBtn.onclick = () => openEditModal(msgId, msgData);
+            actions.append(editBtn);
+        }
+
+        if (isMe || isAdminOrSuperAdmin) {
+            const deleteBtn = el('button', '<i class="fas fa-trash"></i>', { class: 'btn-sm danger' });
+            deleteBtn.onclick = () => deleteMessage(msgId, msgData);
+            actions.append(deleteBtn);
+        }
+
+        msgBubble.append(text, footer, actions);
+        msgWrapper.append(msgBubble);
+
+        return msgWrapper; // Return the finished element
     }
+    // =================================================================
+    // END OF BUG FIX AREA
+    // =================================================================
     
     async function deleteMessage(msgId, msgData) {
         const isMe = msgData.senderId === currentUser.uid;
@@ -789,18 +800,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let deletedText = isMe ? `Pesan telah dihapus pengirim (${currentUserData.name})` : `Pesan telah dihapus oleh ${currentUserData.role}.`;
-
-        const updates = {
-            text: deletedText,
-            deleted: true,
-            deletedBy: currentUser.uid,
-            timestamp: serverTimestamp(),
-            replyingToId: null, 
-        };
-
         try {
-            await update(ref(db, `chats/${activeChatId}/${msgId}`), updates);
+            await update(ref(db, `chats/${activeChatId}/${msgId}`), {
+                text: 'Pesan ini telah dihapus.',
+                deleted: true,
+                deletedBy: currentUser.uid,
+                timestamp: serverTimestamp(),
+                replyingToId: null,
+            });
         } catch (error) {
             console.error("Error deleting message:", error);
             alert("Gagal menghapus pesan.");
