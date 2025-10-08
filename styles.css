@@ -1431,8 +1431,6 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         white-space: normal;
         text-align: right;
         min-height: 44px;
-        display: flex;
-        justify-content: flex-end;
     }
     
     .table-responsive td:before {
@@ -1458,7 +1456,7 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         border: 1px solid var(--border-gunmetal);
     }
     body.light-mode .table-responsive td {
-        border-bottom: none; /* Hapus border bawah ganda */
+        border-bottom: none;
     }
      /* AKHIR KODE PERBAIKAN */
     
