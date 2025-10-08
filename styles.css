@@ -1095,7 +1095,6 @@ input:checked + .slider:before {
   border: none;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
 }
 
 /* Show the mobile menu button only on smaller screens */
