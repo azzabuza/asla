@@ -951,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const { id: tripId, data: tripData } = trip;
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'display:flex; gap: justify-content: flex-end; 1rem;' });
+          const actionsContainer = el('div', '', { class: 'trip-actions', style: 'display:flex; justify-content: flex-end; gap: 1rem;' });
           
           const barcodeButton = el('button', '<i class="fas fa-qrcode"></i> Kode', { class: 'btn-sm' });
           barcodeButton.onclick = () => {
