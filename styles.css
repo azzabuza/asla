@@ -1074,7 +1074,7 @@ input:checked + .slider:before {
   padding: 1rem;
   font-size: 1.8rem;
   border: none
-  margin-right: 1rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .modal-menu-list {
