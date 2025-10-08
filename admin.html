@@ -1182,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions' });
-            actionsContainer.style.justifyContent = 'flex-start';
+            actionsContainer.style.justifyContent = 'flex-end';
             
             if (trip.status === 'submitted') {
                 const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
