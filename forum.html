@@ -89,7 +89,7 @@
   <div id="guideModal" class="modal">
     <div class="modal-content">
       <span class="close-modal" id="closeGuideModal"><i class="fa-solid fa-xmark"></i></span>
-      <h2  style="margin: 0 0 2rem 0">Panduan Format Chat</h2>
+      <h2>Panduan Format Chat</h2>
       <div class="card-body" style="font-size: 1.5rem; color: var(--slate-gray);">
         <ul style="list-style: none; padding: 0;">
           <li style="margin-bottom: 0.5rem;"><code style="color: var(--cyan);"># Header1</code> Judul 1</li>
@@ -109,7 +109,7 @@
   <div id="reportModal" class="modal">
     <div class="modal-content">
       <span class="close-modal" id="closeReportModal"><i class="fa-solid fa-xmark"></i></span>
-      <h2  style="margin: 0 0 2rem 0">Laporkan Pesan</h2>
+      <h2>Laporkan Pesan</h2>
       <p style="font-size: 1.5rem; color: var(--slate-gray); margin: 1rem 0;">Anda akan melaporkan pesan berikut:</p>
       <p id="reportedMessageText" class="modal-quote"></p>
       <div class="form-group">
@@ -787,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // END OF BUG FIX AREA
     // =================================================================
     
+    // ### NEW FEATURE: HARD DELETE ###
     async function deleteMessage(msgId, msgData) {
         const isMe = msgData.senderId === currentUser.uid;
         const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
@@ -796,23 +797,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) {
+        if (!confirm('Apakah Anda yakin ingin menghapus pesan ini secara permanen? Aksi ini tidak dapat dibatalkan.')) {
             return;
         }
 
         try {
-            await update(ref(db, `chats/${activeChatId}/${msgId}`), {
-                text: 'Pesan ini telah dihapus.',
-                deleted: true,
-                deletedBy: currentUser.uid,
-                timestamp: serverTimestamp(),
-                replyingToId: null,
-            });
+            // This sets the message data to null, effectively deleting it from the database.
+            await set(ref(db, `chats/${activeChatId}/${msgId}`), null);
         } catch (error) {
             console.error("Error deleting message:", error);
             alert("Gagal menghapus pesan.");
         }
     }
+
 
     function setReplyingTo(msgId, msgData) {
         const isReplyingToSelf = msgData.senderId === currentUser.uid;
