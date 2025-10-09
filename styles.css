@@ -1385,12 +1385,17 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     }
     
     .main-wrapper {
-        border-radius: 1rem;
+        border-radius: 0;
     }
 
     .card-header {
         font-size: 1.6rem;
     }
+
+      .main-content {
+        padding: 0;
+    }
+    
     
     /* Tabel responsif untuk mobile */
     .table-responsive table, 
