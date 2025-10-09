@@ -7,6 +7,7 @@
   <title>Panel Driver</title>
   <link rel="stylesheet" href="driver.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="driver-page">
   <div class="content-wrapper">
@@ -175,36 +176,26 @@
   <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, get, onValue, update, query, orderByChild, equalTo, onDisconnect } from './firebase.js';
+    import { supabase } from './supabase-client.js';
     import { badge, fmtDate, el } from './utils.js';
 
     const elements = {
-      // Elemen halaman utama
       driverName: document.getElementById('driverName'),
       activeTripsCount: document.getElementById('activeTripsCount'),
       completedTripsCount: document.getElementById('completedTripsCount'),
       recentJobCard: document.getElementById('recentJobCard'),
-      
-      // Elemen halaman tugas
       activeJobsList: document.getElementById('activeJobsList'),
       historyJobsList: document.getElementById('historyJobsList'),
       tabs: document.querySelectorAll('.tab-link'),
       tabContents: document.querySelectorAll('.tab-content'),
-      
-      // Elemen halaman profil
       profileName: document.getElementById('profileName'),
       profileEmail: document.getElementById('profileEmail'),
       logoutBtn: document.getElementById('logoutBtn'),
-      
-      // Navigasi
       bottomNavLinks: document.querySelectorAll('.bottom-nav .nav-link'),
       pages: document.querySelectorAll('.page'),
-
-      // Modal
       detailModal: document.getElementById('tripDetailModal'),
       detailModalBody: document.getElementById('modalBody'),
       closeDetailModal: document.querySelector('#tripDetailModal .close-modal'),
-
       confirmModal: document.getElementById('confirmationModal'),
       confirmModalBody: document.getElementById('confirmationModalBody'),
       closeConfirmModal: document.querySelector('#confirmationModal .close-confirm-modal'),
@@ -216,57 +207,64 @@
     };
 
     let currentUser = null;
+    let currentUserData = null;
     let currentScanner = null;
     let activeTripIdForConfirmation = null;
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = 'index.html';
-      currentUser = user;
-      const userRef = ref(db, 'users/' + currentUser.uid);
-      
-      onValue(userRef, (snap) => {
-        if (snap.exists()) {
-            const userData = snap.val();
-            if (userData.locked || userData.role !== 'driver') {
-                alert('Akses Anda telah dinonaktifkan sementara. Anda akan dikeluarkan.');
-                signOut(auth);
-            }
-            // Update nama di semua halaman yang relevan
-            elements.driverName.textContent = `Halo, ${userData.name || 'Driver'}!`;
-            elements.profileName.textContent = userData.name || 'Driver';
-            elements.profileEmail.textContent = currentUser.email;
-        } else {
-            alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
-            signOut(auth);
+    async function checkUserSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return;
         }
-      });
-      
-      const snap = await get(userRef);
-      if (!snap.exists()) return;
-      
-      await update(userRef, { lastLogin: Date.now(), online: true });
-      onDisconnect(ref(db, `users/${user.uid}/online`)).set(false);
-      
-      loadTrips();
-      setupEventListeners();
-    });
+        currentUser = session.user;
+
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (error || !data) {
+            alert('Gagal memuat data pengguna.');
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        currentUserData = data;
+        if (currentUserData.locked || currentUserData.role !== 'driver') {
+            alert('Akses Anda dinonaktifkan atau role Anda bukan driver.');
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Update UI
+        elements.driverName.textContent = `Halo, ${currentUserData.name || 'Driver'}!`;
+        elements.profileName.textContent = currentUserData.name || 'Driver';
+        elements.profileEmail.textContent = currentUser.email;
+        
+        // Set user online
+        await supabase.from('users').update({ online: true, last_login: new Date().toISOString() }).eq('id', currentUser.id);
+        
+        loadTrips();
+        setupEventListeners();
+        setupRealtimeSubscriptions();
+    }
 
     function setupEventListeners() {
-        // Event listener untuk navigasi bawah
         elements.bottomNavLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const targetPageId = `page-${link.dataset.page}`;
-                
                 elements.pages.forEach(p => p.classList.remove('active'));
                 document.getElementById(targetPageId).classList.add('active');
-
                 elements.bottomNavLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });
         });
         
-        // Event listener untuk tab di halaman tugas
         elements.tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const target = tab.dataset.tab;
@@ -289,47 +287,51 @@
         elements.arriveForm.addEventListener('submit', handleArriveConfirmation);
         elements.logoutBtn.addEventListener('click', async () => {
             if (currentUser) {
-                await update(ref(db, 'users/' + currentUser.uid), { online: false });
+                await supabase.from('users').update({ online: false }).eq('id', currentUser.id);
             }
-            signOut(auth).catch(err => console.error("Logout Gagal:", err));
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
         });
     }
 
-    function loadTrips() {
-      const tripsRef = ref(db, 'trips');
-      const q = query(tripsRef, orderByChild('driverId'), equalTo(currentUser.uid));
-      onValue(q, (snapshot) => {
+    async function loadTrips() {
+        if (!currentUser) return;
+
+        const { data: trips, error } = await supabase
+            .from('trips')
+            .select('*')
+            .eq('driver_id', currentUser.id)
+            .order('created_at', { ascending: false });
+            
+        if (error) {
+            console.error("Gagal memuat perjalanan:", error);
+            elements.activeJobsList.innerHTML = `<p class="empty-state">Gagal memuat tugas.</p>`;
+            elements.historyJobsList.innerHTML = `<p class="empty-state">Gagal memuat riwayat.</p>`;
+            return;
+        }
+        
         let activeJobs = [];
         let historyJobs = [];
         let completedJobs = 0;
 
-        snapshot.forEach(child => {
-          const job = { id: child.key, ...child.val() };
+        trips.forEach(job => {
           if (['approved', 'delivering', 'arriving_soon'].includes(job.status)) {
             activeJobs.push(job);
           } else if (['arrived', 'rejected'].includes(job.status)) {
             historyJobs.push(job);
-            if(job.status === 'arrived'){
+            if (job.status === 'arrived') {
               completedJobs++;
             }
           }
         });
         
-        // Urutkan pekerjaan berdasarkan waktu dibuat (terbaru dulu)
-        activeJobs.sort((a,b) => b.createdAt - a.createdAt);
-        historyJobs.sort((a,b) => b.createdAt - a.createdAt);
-
-        // Update stat di Beranda
         elements.activeTripsCount.textContent = activeJobs.length;
         elements.completedTripsCount.textContent = completedJobs;
 
-        // Tampilkan daftar pekerjaan di Halaman Tugas
         displayJobs(elements.activeJobsList, activeJobs, 'Tidak ada tugas perjalanan aktif.');
         displayJobs(elements.historyJobsList, historyJobs, 'Belum ada riwayat perjalanan.');
         
-        // Tampilkan tugas aktif terbaru di Beranda
         displayRecentJob(activeJobs.length > 0 ? activeJobs[0] : null);
-      });
     }
     
     function displayRecentJob(job){
@@ -339,6 +341,24 @@
              return;
         }
         
+        const card = createTripCard(job);
+        elements.recentJobCard.appendChild(card);
+    }
+    
+    function displayJobs(container, jobs, emptyMessage) {
+        container.innerHTML = '';
+        if (jobs.length === 0) {
+            container.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
+            return;
+        }
+
+        jobs.forEach(job => {
+            const card = createTripCard(job);
+            container.appendChild(card);
+        });
+    }
+
+    function createTripCard(job) {
         const card = el('div', '', { class: 'trip-card' });
         const statusBadge = badge(job.status);
         
@@ -358,7 +378,7 @@
             </div>
             <div class="trip-card-body">
                 <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
-                <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
+                <p><i class="fas fa-truck"></i> ${job.vehicle_number}</p>
             </div>
             ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
         `;
@@ -381,69 +401,16 @@
                 }
             };
         }
-        elements.recentJobCard.appendChild(card);
-    }
-    
-    function displayJobs(container, jobs, emptyMessage) {
-        container.innerHTML = '';
-        if (jobs.length === 0) {
-            container.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
-            return;
-        }
-
-        jobs.forEach(job => {
-            const card = el('div', '', { class: 'trip-card' });
-            const statusBadge = badge(job.status);
-            
-            let actionButtonsHTML = '';
-            if (job.status === 'approved') {
-                actionButtonsHTML = `<button class="start" data-tripid="${job.id}" data-status="delivering"><i class="fas fa-play"></i> Mulai Perjalanan</button>`;
-            } else if (job.status === 'delivering') {
-                actionButtonsHTML = `<button class="arriving" data-tripid="${job.id}" data-status="arriving_soon"><i class="fas fa-flag-checkered"></i> Hampir Sampai</button>`;
-            } else if (job.status === 'arriving_soon') {
-                actionButtonsHTML = `<button class="confirm" data-tripid="${job.id}" data-action="confirm"><i class="fas fa-check-circle"></i> Konfirmasi Tiba</button>`;
-            }
-            
-            card.innerHTML = `
-                <div class="trip-card-header">
-                    <h3>${job.asal} <i class="fas fa-arrow-right"></i> ${job.tujuan}</h3>
-                    ${statusBadge.outerHTML}
-                </div>
-                <div class="trip-card-body">
-                    <p><i class="fas fa-calendar-alt"></i> ${fmtDate(job.tanggal)}</p>
-                    <p><i class="fas fa-truck"></i> ${job.vehicleNumber}</p>
-                </div>
-                ${actionButtonsHTML ? `<div class="trip-card-actions">${actionButtonsHTML}</div>` : ''}
-            `;
-
-            card.querySelector('.trip-card-header').onclick = () => showTripDetails(job);
-            card.querySelector('.trip-card-body').onclick = () => showTripDetails(job);
-            
-            const actionButton = card.querySelector('.trip-card-actions button');
-            if (actionButton) {
-                actionButton.onclick = (e) => {
-                    e.stopPropagation();
-                    const button = e.target.closest('button');
-                    const tripId = button.dataset.tripid;
-                    const action = button.dataset.action;
-                    const newStatus = button.dataset.status;
-                    if(action === 'confirm'){
-                        openConfirmationModal(tripId);
-                    } else {
-                        handleTripAction(tripId, newStatus);
-                    }
-                };
-            }
-            
-            container.appendChild(card);
-        });
+        return card;
     }
 
     async function handleTripAction(tripId, newStatus) {
-        const tripRef = ref(db, `trips/${tripId}`);
-        try {
-            await update(tripRef, { status: newStatus, isRead_coor: false });
-        } catch (error) {
+        const { error } = await supabase
+            .from('trips')
+            .update({ status: newStatus, is_read_coor: false })
+            .eq('id', tripId);
+
+        if (error) {
             console.error("Gagal memperbarui status:", error);
             alert("Gagal memperbarui status perjalanan. Silakan coba lagi.");
         }
@@ -452,9 +419,9 @@
     function showTripDetails(job) {
         elements.detailModalBody.innerHTML = `
             <span class="label" data-label="Kode Resi">Kode Resi:</span><span class="value"><code>${job.id}</code></span>
-            <span class="label" data-label="Rute">Rute:</span><span class="value">${job.asal} → ${job.tujuan}</span>
+            <span class="label" data-label="Rute">Rute:</span><span class="value">${job.asal} → ${Array.isArray(job.tujuan) ? job.tujuan.join(', ') : job.tujuan}</span>
             <span class="label" data-label="Tanggal">Tanggal:</span><span class="value">${fmtDate(job.tanggal)}</span>
-            <span class="label" data-label="Kendaraan">Kendaraan:</span><span class="value">${job.vehicleNumber}</span>
+            <span class="label" data-label="Kendaraan">Kendaraan:</span><span class="value">${job.vehicle_number}</span>
             <span class="label" data-label="Muatan">Muatan:</span><span class="value">${job.muatan || '-'}</span>
             <span class="label" data-label="Status">Status:</span><span class="value">${badge(job.status).outerHTML}</span>
         `;
@@ -499,20 +466,21 @@
       elements.statusMsg.textContent = 'Memproses...';
       elements.statusMsg.style.color = 'var(--text-secondary)';
 
-      try {
-        const tripRef = ref(db, 'trips/' + activeTripIdForConfirmation);
-        await update(tripRef, { status: 'arrived', arrivedAt: Date.now(), isRead_coor: false });
+      const { error } = await supabase
+        .from('trips')
+        .update({ status: 'arrived', arrived_at: new Date().toISOString(), is_read_coor: false })
+        .eq('id', activeTripIdForConfirmation);
+      
+      if (error) {
+        elements.statusMsg.style.color = 'var(--color-danger)';
+        elements.statusMsg.textContent = '❌ Gagal: ' + error.message;
+      } else {
         elements.statusMsg.style.color = 'var(--color-success)';
         elements.statusMsg.textContent = "✔️ Konfirmasi berhasil!";
-        
         setTimeout(() => {
             closeConfirmationModal();
-            // Pindahkan ke tab riwayat
             document.querySelector('.tab-link[data-tab="history"]').click();
         }, 1500);
-      } catch (err) {
-        elements.statusMsg.style.color = 'var(--color-danger)';
-        elements.statusMsg.textContent = '❌ Gagal: ' + err.message;
       }
     }
 
@@ -548,6 +516,30 @@
             elements.previewVideo.style.display = 'none';
         });
     }
+
+    function setupRealtimeSubscriptions() {
+        if (!currentUser) return;
+
+        const tripChannel = supabase.channel(`public:trips:driver_id=eq.${currentUser.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'trips', filter: `driver_id=eq.${currentUser.id}` }, payload => {
+                console.log('Perubahan data perjalanan terdeteksi:', payload);
+                loadTrips();
+            })
+            .subscribe();
+        
+        const userChannel = supabase.channel(`public:users:id=eq.${currentUser.id}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${currentUser.id}`}, payload => {
+                const updatedUser = payload.new;
+                if(updatedUser.locked || updatedUser.role !== 'driver') {
+                    alert('Akses Anda telah diubah atau dinonaktifkan.');
+                    elements.logoutBtn.click();
+                }
+            })
+            .subscribe();
+    }
+    
+    // Inisialisasi halaman
+    checkUserSession();
   </script>
 </body>
 </html>
