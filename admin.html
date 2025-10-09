@@ -965,7 +965,7 @@
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
         elements.activityPaginationControls.style.display = allTrips.length > 20 ? 'flex' : 'none';
         if (allTrips.length === 0) {
-            elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+            elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state" style="padding: 1rem; text-align: center;">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
             paginatedActivities.forEach(trip => {
                 const tr = el('tr');
@@ -1173,7 +1173,7 @@
       }
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
             const tripId = trip.id;
@@ -1482,7 +1482,7 @@
 
       elements.financePaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data keuangan ditemukan.</td></tr>';
+        elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data keuangan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
           const tr = el('tr');
@@ -1620,7 +1620,7 @@
         
         const createActivityTable = (role, title) => { 
             let tableHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`; 
-            if (activities[role].length === 0) { return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p>`; } 
+            if (activities[role].length === 0) { return tableHtml + `<p class="empty-state" style="padding: 1rem; text-align: center;">Belum ada aktivitas.</p>`; } 
             const sortedActivities = activities[role].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 15); 
             tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`; 
             sortedActivities.forEach(act => { 
