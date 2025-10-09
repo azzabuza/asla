@@ -1419,6 +1419,10 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
         margin-bottom: 1rem;
         padding: 0.5rem;
     }
+
+    .table-responsive tr:last-child {
+        margin-bottom: 0;
+    }
     
     .table-responsive td {
         border: none;
