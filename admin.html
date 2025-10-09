@@ -908,6 +908,44 @@
         elements.searchVehicle.oninput = () => displayVehicles(1);
         elements.searchFinance.oninput = () => displayFinance(1);
     }
+
+    // === Supabase Realtime Auto Update ===
+let __realtimeSubscribed = false;
+
+function setupRealtimeListeners() {
+  if (__realtimeSubscribed) return;
+  __realtimeSubscribed = true;
+
+  const subscribeTable = (tableName, loaderFn) => {
+    try {
+      const channel = supabase
+        .channel(`realtime-${tableName}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: tableName },
+          (payload) => {
+            console.log(`[Realtime][${tableName}]`, payload);
+            try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
+          }
+        )
+        .subscribe();
+    } catch (err) {
+      console.error(`Gagal subscribe realtime ${tableName}:`, err);
+    }
+  };
+
+  // Aktifkan realtime untuk semua tabel penting
+  subscribeTable('trips', loadTrips);
+  subscribeTable('users', loadUsers);
+  subscribeTable('routes', loadRoutes);
+  subscribeTable('vehicles', loadVehicles);
+
+  console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles)');
+}
+
+
+
+    
     
     // Fungsi untuk memuat data rute
     async function loadRoutes() {
@@ -1908,6 +1946,7 @@
     (async () => {
         await checkUserSession();
         await loadInitialData();
+      setupRealtimeListeners();
     })();
   </script>
 </body>
