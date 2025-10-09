@@ -31,7 +31,7 @@
        <div class="card" style="margin-top: 2rem;">
             <h2 class="card-header">Tugas Terbaru</h2>
             <div id="recentJobCard" class="card-body">
-                <p class="empty-state">Memuat tugas...</p>
+                <p class="empty-state" style="text-align: center;">Memuat tugas...</p>
             </div>
         </div>
     </main>
@@ -49,12 +49,12 @@
       </div>
       <div id="tab-active" class="tab-content active">
         <div id="activeJobsList">
-          <p class="empty-state">Memuat tugas aktif...</p>
+          <p class="empty-state" style="text-align: center;">Memuat tugas aktif...</p>
         </div>
       </div>
       <div id="tab-history" class="tab-content">
         <div id="historyJobsList">
-          <p class="empty-state">Memuat riwayat perjalanan...</p>
+          <p class="empty-state" style="text-align: center;">Memuat riwayat perjalanan...</p>
         </div>
       </div>
     </main>
@@ -305,8 +305,8 @@
             
         if (error) {
             console.error("Gagal memuat perjalanan:", error);
-            elements.activeJobsList.innerHTML = `<p class="empty-state">Gagal memuat tugas.</p>`;
-            elements.historyJobsList.innerHTML = `<p class="empty-state">Gagal memuat riwayat.</p>`;
+            elements.activeJobsList.innerHTML = `<p class="empty-state" style="text-align: center;">Gagal memuat tugas.</p>`;
+            elements.historyJobsList.innerHTML = `<p class="empty-state" style="text-align: center;">Gagal memuat riwayat.</p>`;
             return;
         }
         
@@ -337,7 +337,7 @@
     function displayRecentJob(job){
         elements.recentJobCard.innerHTML = '';
         if(!job) {
-             elements.recentJobCard.innerHTML = `<p class="empty-state">Tidak ada tugas aktif saat ini.</p>`;
+             elements.recentJobCard.innerHTML = `<p class="empty-state" style="text-align: center;">Tidak ada tugas aktif saat ini.</p>`;
              return;
         }
         
@@ -348,7 +348,7 @@
     function displayJobs(container, jobs, emptyMessage) {
         container.innerHTML = '';
         if (jobs.length === 0) {
-            container.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
+            container.innerHTML = `<p class="empty-state" style="text-align: center;">${emptyMessage}</p>`;
             return;
         }
 
