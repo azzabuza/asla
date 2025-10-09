@@ -805,7 +805,7 @@
         elements.coorActivityPaginationControls.style.display = allMyTrips.length > 5 ? 'flex' : 'none';
         
         if (paginatedActivities.length === 0) {
-            elements.recentActivityCoordinatorList.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
+            elements.recentActivityCoordinatorList.innerHTML = '<tr><td colspan="4" class="empty-state" style="padding: 1rem; text-align: center;">Belum ada aktivitas perjalanan.</td></tr>';
             return;
         }
 
@@ -872,7 +872,7 @@
         
         let tableHTML = `<div class="table-responsive"><table><thead><tr><th>Nama Supir</th><th>Total</th><th>Selesai</th><th>Jalan</th><th>Menunggu</th><th>Ditolak</th></tr></thead><tbody>`;
         if (filteredPerformance.length === 0) {
-            tableHTML += '<tr><td colspan="6" class="empty-state">Tidak ada data kinerja ditemukan.</td></tr>';
+            tableHTML += '<tr><td colspan="6" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data kinerja ditemukan.</td></tr>';
         } else {
             filteredPerformance.forEach(d => {
                 tableHTML += `<tr><td data-label="Nama Supir">${d.name}</td><td data-label="Total">${d.total}</td><td data-label="Selesai" style="color: var(--green);">${d.arrived || 0}</td><td data-label="Jalan" style="color: var(--blue);">${d.approved || 0}</td><td data-label="Menunggu" style="color: var(--light-orange);">${d.submitted || 0}</td><td data-label="Ditolak" style="color: var(--red);">${d.rejected || 0}</td></tr>`;
@@ -904,7 +904,7 @@
       
       elements.coorPaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'block' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada data perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data perjalanan ditemukan.</td></tr>';
         return;
       }
 
@@ -983,7 +983,7 @@
         const activeTripVehicles = new Set(allMyTrips.filter(t => ['approved', 'delivering', 'arriving_soon'].includes(t.status)).map(t => t.vehicle_number));
 
         if (allDrivers.length === 0) {
-            elements.driverAvailability.innerHTML = '<p class="empty-state">Tidak ada data supir.</p>';
+            elements.driverAvailability.innerHTML = '<p class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data supir.</p>';
         } else {
             allDrivers.forEach(driver => {
                 const isBusy = activeTripDrivers.has(driver.id);
@@ -996,7 +996,7 @@
         }
 
         if (allVehicles.length === 0) {
-            elements.vehicleAvailability.innerHTML = '<p class="empty-state">Tidak ada data kendaraan.</p>';
+            elements.vehicleAvailability.innerHTML = '<p class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data kendaraan.</p>';
         } else {
             allVehicles.forEach(vehicle => {
                 const isBusy = activeTripVehicles.has(vehicle.vehicle_number);
@@ -1041,7 +1041,7 @@
 
         elements.notificationList.innerHTML = '';
         if (notifications.length === 0) {
-            elements.notificationList.innerHTML = '<tr><td colspan="3" class="empty-state">Tidak ada notifikasi baru.</td></tr>';
+            elements.notificationList.innerHTML = '<tr><td colspan="3" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada notifikasi baru.</td></tr>';
             return;
         }
 
