@@ -7,6 +7,7 @@
   <title>Forum Diskusi</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -249,40 +250,35 @@
 
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, ref, onValue, update, get, set, push, serverTimestamp, query, orderByChild, equalTo, onDisconnect, limitToLast } from './firebase.js';
+    import { supabase } from './supabase-client.js';
     import { el } from './utils.js';
 
-    // --- Hamburger Menu & Overlay Logic ---
-document.addEventListener('DOMContentLoaded', () => {
-    const hamburger = document.getElementById('hamburger-menu');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-
-    // Toggle sidebar saat hamburger di-klik
-    hamburger.addEventListener('click', (event) => {
-        event.stopPropagation(); // Mencegah event klik menyebar ke elemen lain
-        sidebar.classList.toggle('active');
+    // --- Hamburger Menu Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        hamburger.addEventListener('click', (event) => {
+            event.stopPropagation();
+            sidebar.classList.toggle('active');
+        });
+        mainContent.addEventListener('click', () => {
+            if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
     });
-
-    // Menutup sidebar saat area konten utama di-klik (hanya di mode mobile)
-    mainContent.addEventListener('click', () => {
-        if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
-            sidebar.classList.remove('active');
-        }
-    });
-});
-// --- End Hamburger Menu Logic ---
 
     let currentUser = null;
     let currentUserData = null;
     let allUsers = {};
+    let allGroups = {};
     let activeChatId = null;
     let activeGroupData = null;
     let replyingTo = null;
     let messageToReport = null;
     let messageToEdit = null;
-    let chatListeners = {};
-    let activeChatMessagesListener = null; // This will hold the unsubscribe function for the active chat
+    let activeChatSubscription = null;
     
     const elements = {
         userName: document.getElementById('userName'),
@@ -340,8 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeEditModal: document.getElementById('closeEditModal'),
         editMessageForm: document.getElementById('editMessageForm'),
         editMessageInput: document.getElementById('editMessageInput'),
-
-        // New elements for the mobile menu
         mobileMenuBtn: document.getElementById('mobileMenuBtn'),
         mobileMenuModal: document.getElementById('mobileMenuModal'),
         closeMobileMenuModal: document.getElementById('closeMobileMenuModal'),
@@ -351,488 +345,298 @@ document.addEventListener('DOMContentLoaded', () => {
         modalGuideBtn: document.getElementById('modalGuideBtn'),
     };
 
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-      } else {
-        document.body.classList.remove('light-mode');
-      }
-    }
-
-    function applyFont(font) {
-      document.body.style.fontFamily = font;
-    }
-
+    // Theme and Font Logic
     document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         const savedFont = localStorage.getItem('font') || "'Poppins', sans-serif";
-        applyTheme(savedTheme);
-        applyFont(savedFont);
+        if (savedTheme === 'light') document.body.classList.add('light-mode');
+        document.body.style.fontFamily = savedFont;
     });
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) { window.location.href = 'index.html'; return; }
-        currentUser = user;
-        const userRef = ref(db, `users/${currentUser.uid}`);
-
-        onValue(userRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const userData = snapshot.val();
-                if (userData.locked) {
-                    alert('Akun Anda telah dinonaktifkan oleh administrator. Anda akan dikeluarkan.');
-                    signOut(auth).then(() => {
-                        window.location.href = 'login.html';
-                    });
-                }
-            } else {
-                alert('Akun Anda tidak lagi terdaftar. Anda akan dikeluarkan.');
-                signOut(auth).then(() => {
-                    window.location.href = 'login.html';
-                });
-            }
-        });
-
-        const userSnap = await get(userRef);
-        if (userSnap.exists()) {
-            currentUserData = userSnap.val();
-            elements.userName.textContent = currentUserData.name || 'Pengguna';
-            elements.userEmail.textContent = currentUser.email;
-            
-            if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
-                elements.createGroupBtn.style.display = 'block';
-            }
-
-            const presenceRef = ref(db, `users/${user.uid}/online`);
-            await set(presenceRef, true);
-            onDisconnect(presenceRef).set(false);
+    async function checkUserSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return false;
         }
+        currentUser = session.user;
+
+        const { data, error } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
+        if (error || !data) {
+            alert('Gagal memuat data pengguna.');
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+            return false;
+        }
+
+        currentUserData = data;
+        if (currentUserData.locked) {
+            alert('Akun Anda telah dinonaktifkan.');
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+            return false;
+        }
+
+        elements.userName.textContent = currentUserData.name || 'Pengguna';
+        elements.userEmail.textContent = currentUser.email;
+
+        if (['admin', 'super admin'].includes(currentUserData.role)) {
+            elements.createGroupBtn.style.display = 'block';
+        }
+
+        await supabase.from('users').update({ online: true }).eq('id', currentUser.id);
+        return true;
+    }
+
+    async function loadInitialData() {
+        const { data: usersData, error: usersError } = await supabase.from('users').select('*');
+        if (usersError) return console.error('Gagal memuat users:', usersError);
+        allUsers = usersData.reduce((acc, user) => {
+            acc[user.id] = user;
+            return acc;
+        }, {});
+
+        const { data: groupsData, error: groupsError } = await supabase.from('groups').select('*');
+        if (groupsError) return console.error('Gagal memuat groups:', groupsError);
+        allGroups = groupsData.reduce((acc, group) => {
+            acc[group.id] = group;
+            return acc;
+        }, {});
         
-        await loadInitialChatListsAndAttachListeners();
+        renderChatLists();
         setupEventListeners();
-    });
-    
-    async function loadInitialChatListsAndAttachListeners() {
-        const usersSnap = await get(ref(db, 'users'));
-        if (usersSnap.exists()) {
-            allUsers = usersSnap.val();
-        }
-        const groupsSnap = await get(ref(db, 'groups'));
-        const groupsData = groupsSnap.exists() ? groupsSnap.val() : {};
+        setupRealtimeSubscriptions();
 
-        renderChatLists(groupsData); 
-
-        Object.keys(allUsers).forEach(uid => {
-            if (uid === currentUser.uid) return;
-            const userStatusRef = ref(db, `users/${uid}/online`);
-            onValue(userStatusRef, (snapshot) => {
-                const isOnline = snapshot.val();
-                const chatId = [currentUser.uid, uid].sort().join('_');
-                const linkElement = document.querySelector(`a[data-chat-id="${chatId}"] i.fa-user`);
-                if (linkElement) {
-                    linkElement.className = isOnline ? 'fa-solid fa-user status-online' : 'fa-solid fa-user status-offline';
-                }
-            });
-        });
-        
-        onValue(ref(db, 'groups'), (snapshot) => {
-             renderChatLists(snapshot.val() || {});
-        });
-
-        if (elements.groupList.firstChild && !activeChatId) {
-            elements.groupList.firstChild.querySelector('a').click();
+        // Auto open general chat
+        const generalChatLink = document.querySelector('#group-list a[data-chat-id="general"]');
+        if (generalChatLink) {
+            generalChatLink.click();
         }
     }
     
-    function renderChatLists(groupsData) {
+    function renderChatLists() {
         const groupSearchTerm = elements.searchGroup.value.toLowerCase();
         elements.groupList.innerHTML = '';
-        const generalGroup = { id: 'general', name: 'Diskusi Umum' };
+        const generalGroup = { id: 'general', name: 'Diskusi Umum', members: {} };
         if (generalGroup.name.toLowerCase().includes(groupSearchTerm)) {
             const li = el('li');
             const a = el('a', `<span><i class="fa-solid fa-user-group"></i> ${generalGroup.name}</span>`, { href: '#', 'data-chat-id': 'general' });
-            const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-            a.append(badge);
-            a.onclick = (e) => { e.preventDefault(); openChat(generalGroup.id, generalGroup.name, 'group', generalGroup); };
+            a.onclick = (e) => { e.preventDefault(); openChat('general', generalGroup.name, 'group', generalGroup); };
             li.append(a);
             elements.groupList.append(li);
-            listenForUnread(generalGroup.id, badge);
         }
-        Object.entries(groupsData).forEach(([groupId, group]) => {
+        Object.values(allGroups).forEach(group => {
             if (group.name.toLowerCase().includes(groupSearchTerm)) {
-                const isMember = group.members && group.members[currentUser.uid];
-                const isAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
+                const isMember = group.members && group.members.includes(currentUser.id);
+                const isAdmin = ['admin', 'super admin'].includes(currentUserData.role);
                 const li = el('li');
                 const icon = isMember || isAdmin ? '<i class="fa-solid fa-user-group"></i>' : '<i class="fas fa-lock"></i>';
-                const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': groupId });
-                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-                a.append(badge);
-                a.onclick = (e) => { e.preventDefault(); openChat(groupId, group.name, 'group', {id: groupId, ...group}); };
+                const a = el('a', `<span>${icon} ${group.name}</span>`, { href: '#', 'data-chat-id': group.id });
+                a.onclick = (e) => { e.preventDefault(); openChat(group.id, group.name, 'group', group); };
                 li.append(a);
                 elements.groupList.append(li);
-                if (isMember || isAdmin) {
-                    listenForUnread(groupId, badge);
-                }
             }
         });
 
         const userSearchTerm = elements.searchUser.value.toLowerCase();
         elements.userList.innerHTML = '';
-        Object.entries(allUsers).forEach(([uid, userData]) => {
-            if (uid === currentUser.uid) return;
+        Object.values(allUsers).forEach(userData => {
+            if (userData.id === currentUser.id) return;
             if ((userData.name || '').toLowerCase().includes(userSearchTerm)) {
-                const chatId = [currentUser.uid, uid].sort().join('_');
+                const chatId = [currentUser.id, userData.id].sort().join('_');
                 const li = el('li');
                 const onlineIndicator = userData.online ? '<i class="fa-solid fa-user status-online"></i>' : '<i class="fa-solid fa-user status-offline"></i>';
                 const a = el('a', `<span>${onlineIndicator} ${userData.name || 'Tanpa Nama'}</span>`, { href: '#', 'data-chat-id': chatId });
-                const badge = el('span', '0', { class: 'unread-badge', style: 'display: none;' });
-                a.append(badge);
-                a.onclick = (e) => { e.preventDefault(); openChat(chatId, userData.name, 'personal', { otherUserId: uid }); };
+                a.onclick = (e) => { e.preventDefault(); openChat(chatId, userData.name, 'personal', { otherUserId: userData.id }); };
                 li.append(a);
                 elements.userList.append(li);
-                listenForUnread(chatId, badge);
             }
         });
 
         updateActiveLinkInSidebar();
     }
 
-
     function linkify(text) {
-        let html = text;
-
-        const tempElement = document.createElement('div');
-        tempElement.textContent = html;
-        html = tempElement.innerHTML;
-
-        html = html.replace(/^#+\s+(.*)/gm, (match, content) => {
-            const level = Math.min(match.match(/^#+/)[0].length, 6);
-            return `<h${level} style="margin: 0.5em 0;">${content.trim()}</h${level}>`;
-        });
-        html = html.replace(/^>\s+(.*)/gm, '<blockquote style="margin: 0.5em 0; padding-left: 1em; border-left: 3px solid var(--gunmetal); color: var(--slate-gray);">$1</blockquote>');
-        html = html.replace(/((?:^\s*--\s+.*\n?)+)/gm, (match) => {
-            const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*--\s+/, '').trim()}</li>`).join('');
-            return `<ol style="margin: 0.5em 0; padding-left: 20px;">${items}</ol>`;
-        });
-        html = html.replace(/((?:^\s*-\*\s+.*\n?)+)/gm, (match) => {
-            const items = match.trim().split('\n').map(line => `<li style="margin-left: 20px;">${line.replace(/^\s*-\*\s+/, '').trim()}</li>`).join('');
-            return `<ul style="margin: 0.5em 0; padding-left: 20px;">${items}</ul>`;
-        });
-
-        html = html.replace(/\*([^\*]+)\*/g, '<strong>$1</strong>');
-        html = html.replace(/_([^_]+)_/g, '<i>$1</i>');
-        html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-        html = html.replace(/`([^`]+)`/g, '<code style="background: var(--dark-blue-gray); padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">$1</code>');
-        
+        let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        html = html.replace(/^#+\s+(.*)/gm, (match, content) => `<h${Math.min(match.match(/^#+/)[0].length, 6)} style="margin: 0.5em 0;">${content.trim()}</h${Math.min(match.match(/^#+/)[0].length, 6)}>`);
+        html = html.replace(/\*([^\*]+)\*/g, '<strong>$1</strong>').replace(/_([^_]+)_/g, '<i>$1</i>').replace(/~~([^~]+)~~/g, '<del>$1</del>').replace(/`([^`]+)`/g, '<code>$1</code>');
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        html = html.replace(urlRegex, function(url) {
-            let href = url;
-            if (!href.match(/^(https?|ftp|file):\/\//)) {
-                href = 'https://' + href;
-            }
-            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-        });
-
-        return html;
+        return html.replace(urlRegex, url => `<a href="${url.startsWith('www') ? 'https://' + url : url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
     }
 
     function updateActiveLinkInSidebar() {
         document.querySelectorAll('#group-list a, #user-list a').forEach(link => {
-            if (link.dataset.chatId === activeChatId) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
+            link.classList.toggle('active', link.dataset.chatId === activeChatId);
         });
-    }
-
-    function listenForUnread(chatId, badgeElement) {
-        const messagesRef = query(ref(db, `chats/${chatId}`), orderByChild('timestamp'));
-        
-        if (chatListeners[chatId]) {
-            chatListeners[chatId]();
-        }
-
-        const unsubscribe = onValue(messagesRef, (snapshot) => {
-            const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
-            const lastReadTime = lastRead[chatId] || 0;
-            let unreadCount = 0;
-            
-            snapshot.forEach(child => {
-                const msg = child.val();
-                if (msg.timestamp > lastReadTime && msg.senderId !== currentUser.uid) {
-                    unreadCount++;
-                }
-            });
-
-            if (unreadCount > 0) {
-                badgeElement.textContent = unreadCount > 9 ? '9+' : unreadCount;
-                badgeElement.style.display = 'inline-block';
-            } else {
-                badgeElement.style.display = 'none';
-            }
-        });
-        
-        chatListeners[chatId] = unsubscribe;
     }
     
-    function checkChatPermissions(permissions) {
-        let canChat = false;
-        let reason = "Anda tidak diizinkan mengirim pesan di grup ini.";
-
+    async function checkChatPermissions(permissions) {
+        let canChat = false, reason = "Anda tidak diizinkan mengirim pesan di grup ini.";
         const mode = permissions?.mode || 'all';
 
-        if (mode === 'all') {
-            canChat = true;
-        } else if (mode === 'admins_only') {
-            if (currentUserData.role === 'admin' || currentUserData.role === 'super admin') {
-                canChat = true;
-            } else {
-                reason = "Hanya admin yang dapat mengirim pesan di grup ini.";
-            }
-        } else if (mode === 'selected_users') {
-            if (permissions.allowed_users && permissions.allowed_users[currentUser.uid]) {
-                canChat = true;
-            } else {
-                 reason = "Hanya pengguna tertentu yang dapat mengirim pesan.";
-            }
-        }
+        if (mode === 'all') canChat = true;
+        else if (mode === 'admins_only' && ['admin', 'super admin'].includes(currentUserData.role)) canChat = true;
+        else if (mode === 'selected_users' && permissions.allowed_users && permissions.allowed_users.includes(currentUser.id)) canChat = true;
         
         elements.messageInput.disabled = !canChat;
         elements.sendMessageBtn.disabled = !canChat;
-        if (!canChat) {
-            elements.messageInput.placeholder = reason;
-        } else {
-            elements.messageInput.placeholder = "Ketik pesan";
-        }
+        elements.messageInput.placeholder = canChat ? "Ketik pesan" : reason;
     }
-
-    // =================================================================
-    // BUG FIX AREA: The logic below has been completely rewritten.
-    // =================================================================
-    function openChat(chatId, chatName, type, metaData = null) {
-        // ### FIX 1: Detach the old listener ###
-        // This ensures that when you switch chats, the listener for the previous chat is turned off.
-        if (activeChatMessagesListener) {
-            activeChatMessagesListener();
+    
+    async function openChat(chatId, chatName, type, metaData = null) {
+        if (activeChatSubscription) {
+            await supabase.removeChannel(activeChatSubscription);
+            activeChatSubscription = null;
         }
 
         activeChatId = chatId;
-        const lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
-        lastRead[chatId] = Date.now();
-        localStorage.setItem('lastRead', JSON.stringify(lastRead));
-        const badgeElement = document.querySelector(`a[data-chat-id="${chatId}"] .unread-badge`);
-        if(badgeElement) {
-            badgeElement.style.display = 'none';
-        }
-
         updateActiveLinkInSidebar();
         
-        elements.guideBtn.style.display = 'block';
-        elements.modalGuideBtn.style.display = 'block'; // Show in modal
         elements.manageMembersBtn.style.display = 'none';
         elements.modalManageMembersBtn.style.display = 'none';
         elements.manageGroupBtn.style.display = 'none';
         elements.modalManageGroupBtn.style.display = 'none';
         elements.chatPermissionsBtn.style.display = 'none';
         elements.modalChatPermissionsBtn.style.display = 'none';
+        elements.guideBtn.style.display = 'block';
+        elements.modalGuideBtn.style.display = 'block';
 
-        if (type === 'group' && metaData && metaData.id !== 'general') {
-            const isMember = metaData.members && metaData.members[currentUser.uid];
-            if (!(currentUserData.role === 'admin' || currentUserData.role === 'super admin') && !isMember) {
-                alert(`Maaf, sistem mendeteksi bahwa Anda bukan bagian dari grup ${chatName}`);
-                return;
-            }
-        }
-        
         activeGroupData = (type === 'group') ? metaData : null;
 
         if (type === 'personal') {
-            const otherUserId = metaData.otherUserId;
-            const otherUser = allUsers[otherUserId];
+            const otherUser = allUsers[metaData.otherUserId];
             const roleClass = (otherUser.role || '').replace(' ', '-');
-            elements.chatTitle.innerHTML = `<i class="fas fa-user"></i> ${chatName} <span class="role-badge role-${roleClass}" style="font-size: 1.2rem; vertical-align: middle; margin-left: 1rem;">${otherUser.role}</span>`;
+            elements.chatTitle.innerHTML = `<i class="fas fa-user"></i> ${chatName} <span class="role-badge role-${roleClass}" style="font-size: 1.2rem;">${otherUser.role}</span>`;
             elements.chatSubtitle.textContent = `Percakapan dengan ${chatName}`;
         } else {
             elements.chatTitle.innerHTML = `<i class="fa-solid fa-user-group"></i> ${chatName}`;
-            const groupDescription = metaData && metaData.description ? metaData.description : `Grup: ${chatName}`;
-            elements.chatSubtitle.textContent = groupDescription;
+            elements.chatSubtitle.textContent = metaData?.description || `Grup: ${chatName}`;
         }
 
-        elements.messageInput.disabled = false;
-        elements.sendMessageBtn.disabled = false;
         elements.messageList.innerHTML = '<p class="empty-state">Memuat pesan...</p>';
         
-        const isSuperAdminOrAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-        const isCreator = metaData && metaData.createdBy === currentUser.uid;
+        const isSuperAdminOrAdmin = ['admin', 'super admin'].includes(currentUserData.role);
+        const isCreator = metaData && metaData.created_by === currentUser.id;
         
-        if (type === 'group' && metaData.id !== 'general') {
+        if (type === 'group' && chatId !== 'general') {
             elements.manageMembersBtn.style.display = isSuperAdminOrAdmin ? 'block' : 'none';
             elements.modalManageMembersBtn.style.display = isSuperAdminOrAdmin ? 'block' : 'none';
             elements.manageGroupBtn.style.display = (isSuperAdminOrAdmin || isCreator) ? 'block' : 'none';
             elements.modalManageGroupBtn.style.display = (isSuperAdminOrAdmin || isCreator) ? 'block' : 'none';
         }
-        
         if (chatId === 'general' && isSuperAdminOrAdmin) {
             elements.chatPermissionsBtn.style.display = 'block';
             elements.modalChatPermissionsBtn.style.display = 'block';
         }
-
+        
         if (chatId === 'general') {
-            const permissionsRef = ref(db, 'chat_settings/general/permissions');
-            onValue(permissionsRef, (permSnap) => {
-                checkChatPermissions(permSnap.val());
-            });
+            const { data } = await supabase.from('chat_settings').select('permissions').eq('group_id', 'general').single();
+            checkChatPermissions(data?.permissions);
         } else {
             checkChatPermissions({ mode: 'all' });
         }
-
-        const messagesRef = query(ref(db, `chats/${activeChatId}`), orderByChild('timestamp'));
         
-        // ### FIX 2: Attach the new listener and handle updates correctly ###
-        activeChatMessagesListener = onValue(messagesRef, async (snapshot) => {
-            // Check if the user is already scrolled to the bottom. If so, we'll auto-scroll later.
-            const shouldScroll = elements.messageList.scrollTop + elements.messageList.clientHeight >= elements.messageList.scrollHeight - 30;
+        // Initial message load
+        loadAndRenderMessages(chatId);
 
-            const messagePromises = [];
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    // Instead of rendering directly, we create a promise for each message element
-                    messagePromises.push(createMessageElement(child.key, child.val()));
-                });
-            }
-            
-            // Wait for all message elements to be created (including fetching reply data)
-            const messageElements = await Promise.all(messagePromises);
-            
-            // Now, clear the list and append all elements at once, in the correct order.
-            elements.messageList.innerHTML = '';
-            if (messageElements.length > 0) {
-                 messageElements.forEach(el => {
-                    if(el) elements.messageList.appendChild(el);
-                });
-            } else {
-                elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
-            }
-           
-            // ### FIX 3: Scroll to bottom reliably ###
-            // Only scroll if the user was already at the bottom, or if it's the initial load.
-            if (shouldScroll) {
-                elements.messageList.scrollTop = elements.messageList.scrollHeight;
-            }
-        });
+        // Subscribe to future messages
+        activeChatSubscription = supabase.channel(`public:messages:chat_id=eq.${chatId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` }, payload => {
+                console.log('Perubahan pesan:', payload);
+                loadAndRenderMessages(chatId); // Reload all messages on any change
+            })
+            .subscribe();
 
         const sidebar = document.querySelector('.sidebar');
-        if (sidebar.classList.contains('active')) {
-            sidebar.classList.remove('active');
-        }
+        if (sidebar.classList.contains('active')) sidebar.classList.remove('active');
     }
 
-    // This new function's only job is to ASYNCHRONOUSLY create and RETURN a message element.
-    // It does NOT add it to the DOM. This is key to fixing the race condition.
-    async function createMessageElement(msgId, msgData) {
-        if (msgData.deleted) {
-             return null;
-        }
+    async function loadAndRenderMessages(chatId) {
+        const { data: messages, error } = await supabase
+            .from('messages')
+            .select('*, sender:sender_id(*)')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true });
 
-        const isMe = msgData.senderId === currentUser.uid;
-        const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgId}` });
+        if(error) return console.error("Gagal memuat pesan:", error);
+        
+        const shouldScroll = elements.messageList.scrollTop + elements.messageList.clientHeight >= elements.messageList.scrollHeight - 30;
+        elements.messageList.innerHTML = '';
+
+        if (messages.length > 0) {
+            for (const msg of messages) {
+                const msgElement = await createMessageElement(msg);
+                if (msgElement) elements.messageList.appendChild(msgElement);
+            }
+        } else {
+            elements.messageList.innerHTML = `<p class="empty-state">Belum ada pesan. Mulai percakapan!</p>`;
+        }
+        if (shouldScroll) elements.messageList.scrollTop = elements.messageList.scrollHeight;
+    }
+
+    async function createMessageElement(msgData) {
+        if (!msgData) return null;
+
+        const isMe = msgData.sender_id === currentUser.id;
+        const msgWrapper = el('div', '', { class: `message-wrapper ${isMe ? 'sent' : 'received'}`, id: `msg-${msgData.id}` });
         const msgBubble = el('div', '', { class: 'message-bubble' });
         
-        // Handle normal message display
-        const senderInfo = allUsers[msgData.senderId] || { name: 'Pengguna Dihapus', role: '' };
+        const senderInfo = msgData.sender || { name: 'Pengguna Dihapus', role: '' };
         const senderName = isMe ? 'Anda' : senderInfo.name;
-        const senderRole = msgData.senderRole || senderInfo.role;
-        const roleClass = (senderRole || '').replace(' ', '-');
+        const roleClass = (senderInfo.role || '').replace(' ', '-');
         
-        const headerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem; vertical-align: middle;">${senderRole}</span>`;
         const header = el('p', '', { class: 'message-header' });
-        header.innerHTML = headerHTML;
+        header.innerHTML = `${senderName} <span class="role-badge role-${roleClass}" style="font-size: 1rem;">${senderInfo.role}</span>`;
         msgBubble.append(header);
 
-        // AWAIT reply data before continuing
-        if (msgData.replyingToId) {
-            const repliedMsgSnap = await get(ref(db, `chats/${activeChatId}/${msgData.replyingToId}`));
-            if (repliedMsgSnap.exists()) {
-                const repliedMsg = repliedMsgSnap.val();
-                if (!repliedMsg.deleted) {
-                    const isReplyingToSelf = repliedMsg.senderId === currentUser.uid;
-                    const repliedHeaderName = isReplyingToSelf ? 'Anda' : (allUsers[repliedMsg.senderId]?.name || 'Pengguna Dihapus');
-                    
-                    const repliedMessageDiv = el('div', '', {class: 'replied-message'});
-                    repliedMessageDiv.innerHTML = `<p class="replied-header">${repliedHeaderName}</p><p class="replied-text">${repliedMsg.text}</p>`;
-                    msgBubble.append(repliedMessageDiv);
-                }
+        if (msgData.replying_to_id) {
+            const { data: repliedMsg } = await supabase.from('messages').select('text, sender:sender_id(name)').eq('id', msgData.replying_to_id).single();
+            if (repliedMsg) {
+                const repliedMessageDiv = el('div', '', {class: 'replied-message'});
+                repliedMessageDiv.innerHTML = `<p class="replied-header">${repliedMsg.sender.name}</p><p class="replied-text">${repliedMsg.text}</p>`;
+                msgBubble.append(repliedMessageDiv);
             }
         }
         
-        const text = el('div', '', { class: 'message-text' });
-        text.innerHTML = linkify(msgData.text);
-        const time = new Date(msgData.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const editedIndicator = msgData.edited ? '<span style="font-size: 1rem; opacity: 0.7; margin-left: 0.5rem;">(telah diedit)</span>' : '';
-        const footer = el('p', '', { class: 'message-footer' });
-        footer.innerHTML = time + editedIndicator;
+        const text = el('div', '', { class: 'message-text', innerHTML: linkify(msgData.text) });
+        const time = new Date(msgData.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const editedIndicator = msgData.is_edited ? '<span style="font-size: 1rem; opacity: 0.7;">(diedit)</span>' : '';
+        const footer = el('p', '', { class: 'message-footer', innerHTML: `${time} ${editedIndicator}` });
         
         const actions = el('div', '', { class: 'message-actions' });
         const replyBtn = el('button', '<i class="fas fa-reply"></i>', { class: 'btn-sm' });
-        replyBtn.onclick = () => setReplyingTo(msgId, msgData);
+        replyBtn.onclick = () => setReplyingTo(msgData.id, msgData);
         
         const reportBtn = el('button', '<i class="fas fa-flag"></i>', { class: 'btn-sm warm' });
-        reportBtn.onclick = () => openReportModal(msgId, msgData);
-        
+        reportBtn.onclick = () => openReportModal(msgData.id, msgData);
         actions.append(replyBtn, reportBtn);
 
-        const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-
+        const isAdminOrSuperAdmin = ['admin', 'super admin'].includes(currentUserData.role);
         if (isMe) {
             const editBtn = el('button', '<i class="fas fa-edit"></i>', { class: 'btn-sm info' });
-            editBtn.onclick = () => openEditModal(msgId, msgData);
+            editBtn.onclick = () => openEditModal(msgData.id, msgData);
             actions.append(editBtn);
         }
-
         if (isMe || isAdminOrSuperAdmin) {
             const deleteBtn = el('button', '<i class="fas fa-trash"></i>', { class: 'btn-sm danger' });
-            deleteBtn.onclick = () => deleteMessage(msgId, msgData);
+            deleteBtn.onclick = () => deleteMessage(msgData.id);
             actions.append(deleteBtn);
         }
 
         msgBubble.append(text, footer, actions);
         msgWrapper.append(msgBubble);
-
-        return msgWrapper; // Return the finished element
+        return msgWrapper;
     }
-    // =================================================================
-    // END OF BUG FIX AREA
-    // =================================================================
     
-    // ### NEW FEATURE: HARD DELETE ###
-    async function deleteMessage(msgId, msgData) {
-        const isMe = msgData.senderId === currentUser.uid;
-        const isAdminOrSuperAdmin = currentUserData.role === 'admin' || currentUserData.role === 'super admin';
-        
-        if (!isMe && !isAdminOrSuperAdmin) {
-            alert('Anda tidak memiliki izin untuk menghapus pesan ini.');
-            return;
-        }
-
-        if (!confirm('Apakah Anda yakin ingin menghapus pesan ini secara permanen? Aksi ini tidak dapat dibatalkan.')) {
-            return;
-        }
-
-        try {
-            // This sets the message data to null, effectively deleting it from the database.
-            await set(ref(db, `chats/${activeChatId}/${msgId}`), null);
-        } catch (error) {
-            console.error("Error deleting message:", error);
-            alert("Gagal menghapus pesan.");
-        }
+    async function deleteMessage(msgId) {
+        if (!confirm('Yakin ingin menghapus pesan ini secara permanen?')) return;
+        const { error } = await supabase.from('messages').delete().eq('id', msgId);
+        if (error) alert("Gagal menghapus pesan: " + error.message);
     }
-
 
     function setReplyingTo(msgId, msgData) {
-        const isReplyingToSelf = msgData.senderId === currentUser.uid;
-        const replyToName = isReplyingToSelf ? 'Anda' : allUsers[msgData.senderId]?.name || 'Pengguna Dihapus';
-
-        replyingTo = { id: msgId, senderName: msgData.senderName, text: msgData.text };
+        const replyToName = msgData.sender_id === currentUser.id ? 'Anda' : msgData.sender.name;
+        replyingTo = { id: msgId, senderName: replyToName, text: msgData.text };
         elements.replyingToUser.textContent = replyToName;
         elements.replyingToText.textContent = msgData.text;
         elements.replyingToBanner.style.display = 'flex';
@@ -846,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openReportModal(msgId, msgData) {
         messageToReport = { id: msgId, ...msgData };
-        elements.reportedMessageText.textContent = `"${msgData.text}" oleh ${allUsers[msgData.senderId]?.name || 'Pengguna Dihapus'}`;
+        elements.reportedMessageText.textContent = `"${msgData.text}" oleh ${msgData.sender.name}`;
         elements.reportModal.style.display = 'block';
     }
 
@@ -870,43 +674,33 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleUpdateMessage(e) {
         e.preventDefault();
         if (!messageToEdit) return;
-
         const newText = elements.editMessageInput.value.trim();
-        if (!newText || newText === messageToEdit.text) {
-            closeEditModal();
-            return;
-        }
+        if (!newText || newText === messageToEdit.text) return closeEditModal();
 
-        const updates = {
-            text: newText,
-            edited: true,
-            lastEditedAt: serverTimestamp()
-        };
+        const { error } = await supabase
+            .from('messages')
+            .update({ text: newText, is_edited: true })
+            .eq('id', messageToEdit.id);
 
-        try {
-            await update(ref(db, `chats/${activeChatId}/${messageToEdit.id}`), updates);
-            closeEditModal();
-        } catch (error) {
-            console.error("Gagal mengedit pesan:", error);
-            alert("Gagal menyimpan perubahan.");
-        }
+        if (error) alert("Gagal menyimpan perubahan: " + error.message);
+        else closeEditModal();
     }
     
     async function submitReport() {
         if (!messageToReport) return;
-        const reportData = {
-            messageId: messageToReport.id, chatId: activeChatId,
-            reportedUserId: messageToReport.senderId, reporterUserId: currentUser.uid,
-            messageText: messageToReport.text, reason: elements.reportReason.value,
-            timestamp: serverTimestamp(), status: 'pending'
-        };
-        try {
-            await push(ref(db, 'reports'), reportData);
+        const { error } = await supabase.from('reports').insert([{
+            message_id: messageToReport.id,
+            chat_id: activeChatId,
+            reported_user_id: messageToReport.sender_id,
+            reporter_user_id: currentUser.id,
+            message_text: messageToReport.text,
+            reason: elements.reportReason.value,
+            status: 'pending'
+        }]);
+        if(error) alert('Gagal mengirim laporan: ' + error.message);
+        else {
             alert('Laporan Anda telah dikirim.');
             closeReportModal();
-        } catch(e) {
-            alert('Gagal mengirim laporan.');
-            console.error(e);
         }
     }
 
@@ -916,20 +710,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupDescription = elements.groupDescriptionInput.value.trim();
         if (!groupName) return;
 
-        try {
-            const newGroupRef = push(ref(db, 'groups'));
-            await set(newGroupRef, {
-                name: groupName,
-                description: groupDescription,
-                createdBy: currentUser.uid,
-                createdAt: serverTimestamp(),
-                members: { [currentUser.uid]: true }
-            });
+        const { error } = await supabase.from('groups').insert([{
+            name: groupName,
+            description: groupDescription,
+            created_by: currentUser.id,
+            members: [currentUser.id] // Creator is the first member
+        }]);
+
+        if (error) alert("Gagal membuat grup: " + error.message);
+        else {
             elements.createGroupForm.reset();
             elements.createGroupModal.style.display = 'none';
-        } catch (error) {
-            console.error("Error creating group:", error);
-            alert("Gagal membuat grup.");
         }
     }
 
@@ -939,26 +730,23 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.currentMembersList.innerHTML = '';
         elements.addMembersList.innerHTML = '';
 
-        const members = activeGroupData.members || {};
-        
-        Object.keys(allUsers).forEach(uid => {
-            const user = allUsers[uid];
+        const members = activeGroupData.members || [];
+        Object.values(allUsers).forEach(user => {
             const li = el('li', '', { class: 'modal-user-item' });
             li.textContent = user.name;
 
-            if(members[uid]) {
-                if (uid !== activeGroupData.createdBy) {
+            if(members.includes(user.id)) {
+                if (user.id !== activeGroupData.created_by) {
                     const removeBtn = el('button', 'Keluarkan', { class: 'btn-sm danger' });
-                    removeBtn.onclick = () => removeMemberFromGroup(uid);
+                    removeBtn.onclick = () => updateGroupMembers(user.id, 'remove');
                     li.appendChild(removeBtn);
                 } else {
-                    const creatorBadge = el('span', 'Creator', { class: 'creator-badge' });
-                    li.appendChild(creatorBadge);
+                    li.appendChild(el('span', 'Creator', { class: 'creator-badge' }));
                 }
                 elements.currentMembersList.appendChild(li);
             } else {
                 const addBtn = el('button', 'Tambah', { class: 'btn-sm success' });
-                addBtn.onclick = () => addMemberToGroup(uid);
+                addBtn.onclick = () => updateGroupMembers(user.id, 'add');
                 li.appendChild(addBtn);
                 elements.addMembersList.appendChild(li);
             }
@@ -967,38 +755,28 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.manageMembersModal.style.display = 'block';
     }
 
-    async function addMemberToGroup(userId) {
-        if(!activeGroupData) return;
-        const updates = {};
-        updates[`/groups/${activeGroupData.id}/members/${userId}`] = true;
-        await update(ref(db), updates);
-        if (!activeGroupData.members) activeGroupData.members = {};
-        activeGroupData.members[userId] = true;
-        openManageMembersModal();
+    async function updateGroupMembers(userId, action) {
+        if (!activeGroupData) return;
+        let updatedMembers = [...(activeGroupData.members || [])];
+        
+        if (action === 'add' && !updatedMembers.includes(userId)) {
+            updatedMembers.push(userId);
+        } else if (action === 'remove') {
+            if (!confirm(`Yakin ingin mengeluarkan ${allUsers[userId].name} dari grup?`)) return;
+            updatedMembers = updatedMembers.filter(id => id !== userId);
+        }
+
+        const { error } = await supabase.from('groups').update({ members: updatedMembers }).eq('id', activeGroupData.id);
+        if (error) alert('Gagal memperbarui anggota: ' + error.message);
     }
 
-    async function removeMemberFromGroup(userId) {
-        if(!activeGroupData || userId === activeGroupData.createdBy) return;
-        if(confirm(`Yakin ingin mengeluarkan ${allUsers[userId].name} dari grup?`)) {
-            const updates = {};
-            updates[`/groups/${activeGroupData.id}/members/${userId}`] = null;
-            await update(ref(db), updates);
-            delete activeGroupData.members[userId];
-            openManageMembersModal();
-        }
-    }
 
     function openManageGroupModal() {
         if (!activeGroupData) return;
         elements.manageGroupTitle.textContent = `Kelola Grup: ${activeGroupData.name}`;
         elements.groupNameEditInput.value = activeGroupData.name || '';
         elements.groupDescriptionEditInput.value = activeGroupData.description || '';
-
-        const isCreator = activeGroupData.createdBy === currentUser.uid;
-        const isSuperAdmin = currentUserData.role === 'super admin';
-        
-        elements.deleteGroupBtn.style.display = (isCreator || isSuperAdmin) ? 'block' : 'none';
-        
+        elements.deleteGroupBtn.style.display = (activeGroupData.created_by === currentUser.id || currentUserData.role === 'super admin') ? 'block' : 'none';
         elements.manageGroupModal.style.display = 'block';
     }
 
@@ -1007,92 +785,66 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!activeGroupData) return;
         const newName = elements.groupNameEditInput.value.trim();
         const newDescription = elements.groupDescriptionEditInput.value.trim();
-        if (!newName) {
-            alert('Nama grup tidak boleh kosong.');
-            return;
-        }
+        if (!newName) return alert('Nama grup tidak boleh kosong.');
 
-        try {
-            await update(ref(db, `groups/${activeGroupData.id}`), {
-                name: newName,
-                description: newDescription
-            });
+        const { error } = await supabase.from('groups').update({ name: newName, description: newDescription }).eq('id', activeGroupData.id);
+        if (error) alert('Gagal memperbarui grup: ' + error.message);
+        else {
             alert('Informasi grup berhasil diperbarui.');
             elements.manageGroupModal.style.display = 'none';
-        } catch (error) {
-            console.error('Gagal memperbarui grup:', error);
-            alert('Gagal memperbarui grup.');
         }
     }
 
     async function handleDeleteGroup() {
-        if (!activeGroupData) return;
-        const groupName = activeGroupData.name;
-        
-        if (!confirm(`PERINGATAN!\nAnda akan menghapus grup "${groupName}".\nSemua riwayat percakapan di dalam grup ini juga akan dihapus secara permanen.\n\nAksi ini tidak dapat dibatalkan. Lanjutkan?`)) {
-            return;
-        }
+        if (!activeGroupData || !confirm(`PERINGATAN!\nAnda akan menghapus grup "${activeGroupData.name}" beserta semua pesannya.\nAksi ini tidak dapat dibatalkan. Lanjutkan?`)) return;
 
-        if (!confirm(`KONFIRMASI AKHIR!\nAnda benar-benar yakin ingin menghapus grup "${groupName}"?`)) {
-            return;
-        }
-
-        try {
-            const updates = {};
-            updates[`/groups/${activeGroupData.id}`] = null;
-            updates[`/chats/${activeGroupData.id}`] = null;
-
-            await update(ref(db), updates);
-            alert(`Grup "${groupName}" telah berhasil dihapus.`);
-            
+        // Panggil serverless function untuk menghapus grup dan pesannya
+        const { error } = await supabase.functions.invoke('delete-group', { body: { groupId: activeGroupData.id } });
+        if (error) alert('Gagal menghapus grup: ' + error.message);
+        else {
+            alert(`Grup "${activeGroupData.name}" telah berhasil dihapus.`);
             elements.manageGroupModal.style.display = 'none';
             document.querySelector('#group-list a[data-chat-id="general"]').click();
-
-        } catch (error) {
-            console.error('Gagal menghapus grup:', error);
-            alert('Gagal menghapus grup.');
         }
     }
     
-    function sendMessage() {
-        const messageText = elements.messageInput.value.trim();
-        if (!messageText || !activeChatId) return;
+    async function sendMessage() {
+        const text = elements.messageInput.value.trim();
+        if (!text || !activeChatId) return;
 
         const messageData = {
-            senderId: currentUser.uid,
-            senderName: currentUserData.name,
-            senderRole: currentUserData.role,
-            text: messageText,
-            timestamp: serverTimestamp()
+            chat_id: activeChatId,
+            sender_id: currentUser.id,
+            text: text,
+            replying_to_id: replyingTo ? replyingTo.id : null
         };
 
-        if (replyingTo) { messageData.replyingToId = replyingTo.id; }
-
-        const newMessageRef = push(ref(db, `chats/${activeChatId}`));
-        set(newMessageRef, messageData);
+        const { error } = await supabase.from('messages').insert([messageData]);
+        if(error) {
+            alert("Gagal mengirim pesan: " + error.message);
+            return;
+        }
         
         elements.messageInput.value = '';
         cancelReply();
     }
 
     async function openChatPermissionsModal() {
-        const permissionsSnap = await get(ref(db, 'chat_settings/general/permissions'));
-        const permissions = permissionsSnap.val() || { mode: 'all' };
+        const { data } = await supabase.from('chat_settings').select('permissions').eq('group_id', 'general').single();
+        const permissions = data?.permissions || { mode: 'all' };
         
         elements.permissionsForm.querySelector(`[name="permissionMode"][value="${permissions.mode}"]`).checked = true;
-        
         elements.userPermissionsList.innerHTML = '';
-        Object.entries(allUsers).forEach(([uid, user]) => {
-            if (user.role === 'super admin' || user.role === 'admin') return;
-            const li = el('li', '', { class: 'modal-user-item', style: 'display: flex; justify-content: space-between; align-items: center; font-size: 1.5rem;' });
+        
+        Object.values(allUsers).forEach(user => {
+            if (['super admin', 'admin'].includes(user.role)) return;
+            const li = el('li', '', { class: 'modal-user-item' });
             const nameSpan = el('span', user.name);
             const switchLabel = el('label', '', { class: 'switch' });
-            const checkbox = el('input', '', { type: 'checkbox', value: uid });
-            
-            if (permissions.mode === 'selected_users' && permissions.allowed_users && permissions.allowed_users[uid]) {
+            const checkbox = el('input', '', { type: 'checkbox', value: user.id });
+            if (permissions.mode === 'selected_users' && permissions.allowed_users?.includes(user.id)) {
                 checkbox.checked = true;
             }
-            
             switchLabel.append(checkbox, el('span', '', {class: 'slider'}));
             li.append(nameSpan, switchLabel);
             elements.userPermissionsList.appendChild(li);
@@ -1105,108 +857,56 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleSavePermissions(e) {
         e.preventDefault();
         const mode = elements.permissionsForm.querySelector('[name="permissionMode"]:checked').value;
-        const updates = { mode };
+        const newPermissions = { mode, allowed_users: null };
 
         if (mode === 'selected_users') {
-            updates.allowed_users = {};
-            elements.userPermissionsList.querySelectorAll('input:checked').forEach(input => {
-                updates.allowed_users[input.value] = true;
-            });
-        } else {
-            updates.allowed_users = null;
+            newPermissions.allowed_users = Array.from(elements.userPermissionsList.querySelectorAll('input:checked')).map(input => input.value);
         }
         
-        await set(ref(db, 'chat_settings/general/permissions'), updates);
-        alert('Pengaturan izin berhasil disimpan.');
-        elements.chatPermissionsModal.style.display = 'none';
+        const { error } = await supabase.from('chat_settings').upsert({ group_id: 'general', permissions: newPermissions }, { onConflict: 'group_id' });
+        if (error) alert('Gagal menyimpan pengaturan: ' + error.message);
+        else {
+            alert('Pengaturan izin berhasil disimpan.');
+            elements.chatPermissionsModal.style.display = 'none';
+        }
     }
 
     function setupEventListeners() {
-        elements.searchGroup.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            document.querySelectorAll('#group-list li').forEach(li => {
-                const name = li.textContent.toLowerCase();
-                li.style.display = name.includes(searchTerm) ? '' : 'list-item';
-            });
-        });
-        elements.searchUser.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            document.querySelectorAll('#user-list li').forEach(li => {
-                const name = li.textContent.toLowerCase();
-                li.style.display = name.includes(searchTerm) ? '' : 'list-item';
-            });
-        });
-
-        elements.messageForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            sendMessage();
-        });
-
-        elements.messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        
-        elements.logoutBtn.addEventListener('click', () => {
-          if (currentUser) {
-            const presenceRef = ref(db, `users/${currentUser.uid}/online`);
-            set(presenceRef, false).then(() => {
-              signOut(auth);
-            });
-          } else {
-            signOut(auth);
-          }
+        elements.searchGroup.addEventListener('input', renderChatLists);
+        elements.searchUser.addEventListener('input', renderChatLists);
+        elements.messageForm.addEventListener('submit', (e) => { e.preventDefault(); sendMessage(); });
+        elements.messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        elements.logoutBtn.addEventListener('click', async () => {
+            await supabase.from('users').update({ online: false }).eq('id', currentUser.id);
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
         });
 
         elements.cancelReplyBtn.onclick = cancelReply;
-
-        // Mobile menu events
         elements.mobileMenuBtn.onclick = () => elements.mobileMenuModal.style.display = 'block';
         elements.closeMobileMenuModal.onclick = () => elements.mobileMenuModal.style.display = 'none';
         
-        // Connect header buttons to their actions
-        [elements.guideBtn, elements.modalGuideBtn].forEach(btn => btn.onclick = () => {
-            elements.guideModal.style.display = 'block';
-            elements.mobileMenuModal.style.display = 'none';
-        });
-        [elements.manageMembersBtn, elements.modalManageMembersBtn].forEach(btn => btn.onclick = () => {
-            openManageMembersModal();
-            elements.mobileMenuModal.style.display = 'none';
-        });
-        [elements.manageGroupBtn, elements.modalManageGroupBtn].forEach(btn => btn.onclick = () => {
-            openManageGroupModal();
-            elements.mobileMenuModal.style.display = 'none';
-        });
-        [elements.chatPermissionsBtn, elements.modalChatPermissionsBtn].forEach(btn => btn.onclick = () => {
-            openChatPermissionsModal();
-            elements.mobileMenuModal.style.display = 'none';
-        });
+        [elements.guideBtn, elements.modalGuideBtn].forEach(btn => btn.onclick = () => { elements.guideModal.style.display = 'block'; elements.mobileMenuModal.style.display = 'none'; });
+        [elements.manageMembersBtn, elements.modalManageMembersBtn].forEach(btn => btn.onclick = () => { openManageMembersModal(); elements.mobileMenuModal.style.display = 'none'; });
+        [elements.manageGroupBtn, elements.modalManageGroupBtn].forEach(btn => btn.onclick = () => { openManageGroupModal(); elements.mobileMenuModal.style.display = 'none'; });
+        [elements.chatPermissionsBtn, elements.modalChatPermissionsBtn].forEach(btn => btn.onclick = () => { openChatPermissionsModal(); elements.mobileMenuModal.style.display = 'none'; });
 
         elements.closeGuideModal.onclick = () => elements.guideModal.style.display = 'none';
-        
         elements.closeReportModal.onclick = closeReportModal;
         elements.submitReportBtn.onclick = submitReport;
-
         elements.createGroupBtn.onclick = () => elements.createGroupModal.style.display = 'block';
         elements.closeCreateGroupModal.onclick = () => elements.createGroupModal.style.display = 'none';
         elements.createGroupForm.addEventListener('submit', handleCreateGroup);
-        
         elements.closeManageMembersModal.onclick = () => elements.manageMembersModal.style.display = 'none';
-        
         elements.closeManageGroupModal.onclick = () => elements.manageGroupModal.style.display = 'none';
         elements.manageGroupForm.addEventListener('submit', handleUpdateGroup);
         elements.deleteGroupBtn.onclick = handleDeleteGroup;
-        
         elements.closeChatPermissionsModal.onclick = () => elements.chatPermissionsModal.style.display = 'none';
         elements.permissionsForm.addEventListener('submit', handleSavePermissions);
-        
         elements.closeEditModal.onclick = closeEditModal;
         elements.editMessageForm.addEventListener('submit', handleUpdateMessage);
 
-        const permissionRadios = document.querySelectorAll('[name="permissionMode"]');
-        permissionRadios.forEach(radio => {
+        document.querySelectorAll('[name="permissionMode"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 elements.userPermissionsContainer.style.display = (e.target.value === 'selected_users') ? 'block' : 'none';
             });
@@ -1220,9 +920,45 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target == elements.manageGroupModal) elements.manageGroupModal.style.display = 'none';
             if (event.target == elements.chatPermissionsModal) elements.chatPermissionsModal.style.display = 'none';
             if (event.target == elements.editMessageModal) closeEditModal();
-            if (event.target == elements.mobileMenuModal) elements.mobileMenuModal.style.display = 'none'; // Close mobile menu on outside click
+            if (event.target == elements.mobileMenuModal) elements.mobileMenuModal.style.display = 'none';
         };
     }
+
+    function setupRealtimeSubscriptions() {
+        supabase.channel('public:users')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, payload => {
+                const user = payload.new || payload.old;
+                if (user && allUsers[user.id]) {
+                    allUsers[user.id] = {...allUsers[user.id], ...user};
+                    renderChatLists();
+                }
+            })
+            .subscribe();
+
+        supabase.channel('public:groups')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, payload => {
+                const group = payload.new;
+                if(payload.eventType === 'DELETE') {
+                    delete allGroups[payload.old.id];
+                } else if (group) {
+                    allGroups[group.id] = group;
+                }
+                renderChatLists();
+                // If the currently open group is updated, refresh its view
+                if(activeGroupData && group && activeGroupData.id === group.id) {
+                    openChat(group.id, group.name, 'group', group);
+                }
+            })
+            .subscribe();
+    }
+    
+    // Inisialisasi halaman
+    (async () => {
+        const loggedIn = await checkUserSession();
+        if (loggedIn) {
+            await loadInitialData();
+        }
+    })();
   </script>
 </body>
 </html>
