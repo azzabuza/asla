@@ -1166,28 +1166,33 @@
 
     // Realtime Subscriptions
     function setupRealtimeSubscriptions() {
-        supabase.channel('public:trips')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, payload => {
-                console.log('Perubahan data perjalanan terdeteksi:', payload);
-                loadMyTrips();
-            })
-            .subscribe();
+  const subscribe = (table, callback) => {
+    supabase
+      .channel(`realtime:${table}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table }, payload => {
+        console.log(`🔄 Perubahan data terdeteksi pada ${table}:`, payload);
+        try { callback(payload); } catch (err) { console.error(err); }
+      })
+      .subscribe();
+  };
 
-        supabase.channel('public:users')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, payload => {
-                console.log('Perubahan data pengguna terdeteksi:', payload);
-                loadAllUsers();
-                loadDrivers();
-            })
-            .subscribe();
-        
-        supabase.channel('public:vehicles')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, payload => {
-                console.log('Perubahan data kendaraan terdeteksi:', payload);
-                loadVehicles();
-            })
-            .subscribe();
-    }
+  // Trips
+  subscribe('trips', () => loadMyTrips());
+
+  // Users
+  subscribe('users', () => {
+    loadAllUsers();
+    loadDrivers();
+  });
+
+  // Vehicles
+  subscribe('vehicles', () => loadVehicles());
+
+  // Tambahkan juga Routes agar dropdown rute ikut update realtime
+  subscribe('routes', () => loadRoutes());
+
+  console.info('✅ Realtime listeners aktif untuk: trips, users, vehicles, routes');
+}
 
 
     // Inisialisasi halaman
