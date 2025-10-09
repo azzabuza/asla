@@ -6,6 +6,7 @@
   <title>Verifikasi Invoice</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="padding: 2rem; background-color: var(--dark-blue-gray);">
   <div class="container" style="max-width: 700px; margin: auto;">
@@ -23,7 +24,8 @@
   </div>
 
   <script type="module">
-    import { db, ref, get } from './firebase.js';
+    // Impor Supabase client dan fungsi utilitas
+    import { supabase } from './supabase-client.js';
     import { qparam, fmtDate, idr, badge } from './utils.js';
 
     const id = qparam('id');
@@ -33,16 +35,25 @@
     (async () => {
       if (!id) {
           docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> <span style="color: var(--light-lavender);">Verifikasi Gagal</span>`;
-          return content.innerHTML = '<p class="empty-state">ID Dokumen tidak ditemukan di URL. Pastikan QR Code valid.</p>';
+          content.innerHTML = '<p class="empty-state">ID Dokumen tidak ditemukan di URL. Pastikan QR Code valid.</p>';
+          return;
       }
       
-      const snap = await get(ref(db, 'trips/' + id));
-      if (!snap.exists()) {
+      // Ambil data perjalanan dari tabel 'trips' di Supabase
+      const { data, error } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('id', id)
+        .single(); // .single() untuk mendapatkan satu baris data saja
+
+      if (error || !data) {
           docHeader.innerHTML = `<i class="fas fa-times-circle" style="color: var(--red);"></i> <span style="color: var(--light-lavender);">Dokumen Tidak Ditemukan</span>`;
-          return content.innerHTML = '<p class="empty-state">Data perjalanan untuk ID ini tidak ada di database. Dokumen mungkin tidak asli.</p>';
+          content.innerHTML = '<p class="empty-state">Data perjalanan untuk ID ini tidak ada di database. Dokumen mungkin tidak asli.</p>';
+          console.error(error);
+          return;
       }
       
-      const d = snap.val();
+      const d = data;
       docHeader.innerHTML = `<i class="fas fa-check-circle" style="color: var(--green);"></i> <span style="color: var(--light-lavender);">Dokumen Invoice Terverifikasi</span>`;
       
       const ruteDisplay = `${d.asal}, ${Array.isArray(d.tujuan) ? d.tujuan.join(', ') : d.tujuan}`;
@@ -51,11 +62,11 @@
         <h2 style="text-align: center; margin-bottom: 2rem; color: var(--light-lavender);">Detail Perjalanan</h2>
         <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; font-size: 1.5rem;">
           <strong style="color: var(--slate-gray);">Trip ID:</strong> <code style="color: var(--cyan);">${id}</code>
-          <strong style="color: var(--slate-gray);">Sopir:</strong> <span style="color: var(--light-lavender);">${d.driverName}</span>
-          <strong style="color: var(--slate-gray);">Kendaraan:</strong> <span style="color: var(--light-lavender);">${d.vehicleNumber}</span>
+          <strong style="color: var(--slate-gray);">Sopir:</strong> <span style="color: var(--light-lavender);">${d.driver_name}</span>
+          <strong style="color: var(--slate-gray);">Kendaraan:</strong> <span style="color: var(--light-lavender);">${d.vehicle_number}</span>
           <strong style="color: var(--slate-gray);">Rute:</strong> <span style="color: var(--light-lavender);">${ruteDisplay}</span>
           <strong style="color: var(--slate-gray);">Muatan:</strong> <span style="color: var(--light-lavender);">${d.muatan}</span>
-          <strong style="color: var(--slate-gray);">Uang Jalan:</strong> <span style="color: var(--light-lavender);">${idr(d.uangJalan)}</span>
+          <strong style="color: var(--slate-gray);">Uang Jalan:</strong> <span style="color: var(--light-lavender);">${idr(d.uang_jalan)}</span>
           <strong style="color: var(--slate-gray);">Berangkat:</strong> <span style="color: var(--light-lavender);">${fmtDate(d.tanggal)}</span>
           <strong style="color: var(--slate-gray);">Status:</strong> <span id="status-badge"></span>
         </div>
