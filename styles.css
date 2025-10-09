@@ -1387,14 +1387,6 @@ body.light-mode .replied-text { color: var(--slate-gray); opacity: 1; }
     .main-wrapper {
         border-radius: 1rem;
     }
-    
-    .main-content {
-        padding: 0.5rem;
-    }
-    
-    .content-container {
-        padding: 0.5rem;
-    }
 
     .card-header {
         font-size: 1.6rem;
