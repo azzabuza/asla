@@ -557,7 +557,6 @@
         elements.userName.textContent = currentUserName;
         elements.userEmail.textContent = currentUser.email;
 
-        // Set user online status
         await supabase.from('users').update({ online: true }).eq('id', currentUser.id);
     }
 
@@ -717,8 +716,10 @@
         elements.driverSelect.innerHTML = '<option value="">-- Pilih Supir --</option>';
         if (allDrivers.length > 0) {
             allDrivers.forEach(driver => {
-                const option = el('option', driver.name, { value: driver.id });
-                elements.driverSelect.appendChild(option);
+                if (driver.name) {
+                    const option = el('option', driver.name, { value: driver.id });
+                    elements.driverSelect.appendChild(option);
+                }
             });
         } else {
             elements.driverSelect.innerHTML = '<option value="">Tidak ada supir aktif</option>';
