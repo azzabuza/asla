@@ -39,7 +39,8 @@
           </div>
           <ul>
             <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
-            <li id="deletion-request-menu-item" style="display: none;"><a href="#deletion-requests" class="nav-link"><i class="fas fa-user-slash"></i> Permintaan Penghapusan</a></li>
+            <li id="deletion-request-menu-item" style="display: none;"><a href="#deletion-requests" class="nav-link"><i class="fas fa-user-slash"></i> Permintaan Hapus Pengguna</a></li>
+            <li id="asset-deletion-request-menu-item" style="display: none;"><a href="#asset-deletion-requests" class="nav-link"><i class="fas fa-archive"></i> Permintaan Hapus Aset</a></li>
             <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
             <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
           </ul>
@@ -317,6 +318,31 @@
                     </thead>
                     <tbody id="deletionRequestList">
                       <tr><td colspan="5">Memuat permintaan...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div id="page-asset-deletion-requests" class="page">
+            <section class="card">
+              <h2 class="card-header">Permintaan Penghapusan Aset (Rute & Kendaraan)</h2>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Tipe Aset</th>
+                        <th>Informasi Aset</th>
+                        <th>Diminta oleh</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="assetDeletionRequestList">
+                      <tr><td colspan="6">Memuat permintaan...</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -654,7 +680,8 @@
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: '<i class="fas fa-truck"></i> Informasi Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
         users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
-        'deletion-requests': { title: '<i class="fas fa-user-slash"></i> Permintaan Penghapusan', subtitle: 'Tinjau dan proses permintaan penghapusan pengguna.' },
+        'deletion-requests': { title: '<i class="fas fa-user-slash"></i> Permintaan Hapus Pengguna', subtitle: 'Tinjau permintaan penghapusan pengguna.' },
+        'asset-deletion-requests': { title: '<i class="fas fa-archive"></i> Permintaan Hapus Aset', subtitle: 'Tinjau permintaan penghapusan rute dan kendaraan.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
         vehicles: { title: '<i class="fas fa-car"></i> Manajemen Kendaraan', subtitle: 'Kelola daftar kendaraan operasional.' },
         finance: { title: '<i class="fas fa-wallet"></i> Informasi Keuangan', subtitle: 'Lacak semua transaksi uang jalan dari perjalanan.' },
@@ -753,6 +780,8 @@
         totalUangJalan: document.getElementById('totalUangJalan'),
         deletionRequestMenuItem: document.getElementById('deletion-request-menu-item'),
         deletionRequestList: document.getElementById('deletionRequestList'),
+        assetDeletionRequestMenuItem: document.getElementById('asset-deletion-request-menu-item'),
+        assetDeletionRequestList: document.getElementById('assetDeletionRequestList'),
     };
 
     let currentUser = null;
@@ -897,6 +926,7 @@
             elements.lockdownMenuItem.style.display = 'block';
             elements.backupMenuItem.style.display = 'block';
             elements.deletionRequestMenuItem.style.display = 'block';
+            elements.assetDeletionRequestMenuItem.style.display = 'block';
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -948,24 +978,21 @@
         subscribeTable('users', loadUsers);
         subscribeTable('routes', loadRoutes);
         subscribeTable('vehicles', loadVehicles);
-        subscribeTable('deletion_requests', loadDeletionRequests); // Listener baru
+        subscribeTable('deletion_requests', loadDeletionRequests);
 
         console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles, deletion_requests)');
     }
     
     async function loadDeletionRequests() {
         if (currentUserData.role !== 'super admin') return;
-        const { data, error } = await supabase.from('deletion_requests').select(`
-            *,
-            requester:requested_by ( name ),
-            user:user_to_delete ( name )
-        `);
+        const { data, error } = await supabase.from('deletion_requests').select(`*, requester:requested_by ( name ), user:user_to_delete ( name )`);
         if (error) {
             console.error('Gagal memuat permintaan penghapusan:', error);
             return;
         }
         allDeletionRequests = data;
-        displayDeletionRequests();
+        displayUserDeletionRequests();
+        displayAssetDeletionRequests();
     }
     
     async function loadRoutes() {
@@ -1204,9 +1231,6 @@
         if (currentPage < totalPages) displayTrips(currentPage + 1); 
     });
 
-    // =========================================================================
-    // FUNGSI YANG DIPERBARUI: `displayUsers`
-    // =========================================================================
     function displayUsers(page) {
       elements.userList.innerHTML = '';
       currentUserPage = page;
@@ -1234,7 +1258,7 @@
               if (currentUserData.role === 'super admin') {
                   actionButtonHTML = `<button class="delete-user-btn" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
               } else if (currentUserData.role === 'admin') {
-                  const existingRequest = allDeletionRequests.find(req => req.user_to_delete === u.id && req.status === 'pending');
+                  const existingRequest = allDeletionRequests.find(req => req.item_id === u.id && req.item_type === 'user' && req.status === 'pending');
                   if (existingRequest) {
                       actionButtonHTML = `<button class="request-deletion-btn" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
                   } else {
@@ -1260,20 +1284,20 @@
       const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
       elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
       elements.prevUserBtn.disabled = currentUserPage === 1;
-      elements.nextUserBtn.disabled = currentUserPage === totalPages;
+      elements.nextUserBtn.disabled = totalPages === 0 || currentUserPage === totalPages;
     }
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) displayUsers(currentUserPage - 1); });
     elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(allUsers.length / rowsPerPage); if (currentUserPage < totalPages) displayUsers(currentUserPage + 1); });
     
-    // =========================================================================
-    // FUNGSI BARU: Untuk meminta penghapusan (Admin)
-    // =========================================================================
     async function requestUserDeletion(uid, name) {
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus pengguna: ${name}.\nLanjutkan?`)) return;
         
         const { error } = await supabase.from('deletion_requests').insert({
             requested_by: currentUser.id,
             user_to_delete: uid,
+            item_id: uid,
+            item_type: 'user',
+            item_info: name,
             status: 'pending'
         });
 
@@ -1281,18 +1305,13 @@
             alert('Gagal mengirim permintaan: ' + error.message);
         } else {
             alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
-            // loadDeletionRequests(); // Realtime akan menangani ini
         }
     }
 
-    // =========================================================================
-    // FUNGSI BARU: Untuk menangani persetujuan/penolakan (Super Admin)
-    // =========================================================================
-    async function handleDeletionRequest(requestId, action, userIdToDelete) {
+    async function handleUserDeletionRequest(requestId, action, userIdToDelete) {
         if (action === 'approve') {
             if (!confirm('Anda akan MENGHAPUS pengguna ini secara permanen. Lanjutkan?')) return;
             
-            // Panggil Edge Function untuk menghapus
             const { error: funcError } = await supabase.functions.invoke('delete-user', { body: { uid: userIdToDelete } });
             if (funcError) {
                 alert('Gagal menghapus pengguna: ' + funcError.message);
@@ -1300,7 +1319,6 @@
             }
         }
         
-        // Update status permintaan
         const newStatus = (action === 'approve') ? 'approved' : 'rejected';
         const { error } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId);
         
@@ -1311,9 +1329,6 @@
         }
     }
     
-    // =========================================================================
-    // KODE YANG DIPERBARUI: Event listener untuk menghapus atau meminta hapus
-    // =========================================================================
     elements.userList.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
@@ -1322,7 +1337,6 @@
         const name = btn.dataset.name;
 
         if (btn.classList.contains('delete-user-btn')) {
-            // Logika Super Admin
             if (confirm(`Yakin ingin MENGHAPUS PERMANEN akun dan data untuk pengguna: ${name}?`)) {
                 try {
                     const { error } = await supabase.functions.invoke('delete-user', { body: { uid } });
@@ -1333,22 +1347,19 @@
                 }
             }
         } else if (btn.classList.contains('request-deletion-btn')) {
-            // Logika Admin
             requestUserDeletion(uid, name);
         }
     });
 
-    // =========================================================================
-    // FUNGSI BARU: Menampilkan daftar permintaan penghapusan
-    // =========================================================================
-    function displayDeletionRequests() {
+    function displayUserDeletionRequests() {
+        const userRequests = allDeletionRequests.filter(req => req.item_type === 'user');
         elements.deletionRequestList.innerHTML = '';
-        if (allDeletionRequests.length === 0) {
-            elements.deletionRequestList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada permintaan penghapusan.</td></tr>';
+        if (userRequests.length === 0) {
+            elements.deletionRequestList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada permintaan penghapusan pengguna.</td></tr>';
             return;
         }
 
-        allDeletionRequests.forEach(req => {
+        userRequests.forEach(req => {
             const tr = el('tr');
             const targetUserName = req.user ? req.user.name : 'Pengguna tidak ditemukan';
             const requesterName = req.requester ? req.requester.name : 'Admin tidak ditemukan';
@@ -1382,9 +1393,104 @@
         const requestId = btn.dataset.reqId;
         const userIdToDelete = btn.dataset.uid;
 
-        handleDeletionRequest(requestId, action, userIdToDelete);
+        handleUserDeletionRequest(requestId, action, userIdToDelete);
     });
 
+    // =========================================================================
+    // BARU: Fungsi-fungsi untuk Permintaan Hapus Aset (Rute & Kendaraan)
+    // =========================================================================
+    
+    async function requestAssetDeletion(itemId, itemType, itemInfo) {
+        if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
+        
+        const { error } = await supabase.from('deletion_requests').insert({
+            requested_by: currentUser.id,
+            item_id: itemId,
+            item_type: itemType,
+            item_info: itemInfo,
+            status: 'pending'
+        });
+
+        if (error) {
+            alert('Gagal mengirim permintaan: ' + error.message);
+        } else {
+            alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
+        }
+    }
+
+    async function handleAssetDeletionRequest(requestId, action, itemId, itemType) {
+        if (action === 'approve') {
+            if (!confirm(`Anda akan MENGHAPUS ${itemType} ini secara permanen. Lanjutkan?`)) return;
+            
+            const tableName = itemType === 'route' ? 'routes' : 'vehicles';
+            const { error: deleteError } = await supabase.from(tableName).delete().eq('id', itemId);
+
+            if (deleteError) {
+                alert(`Gagal menghapus ${itemType}: ` + deleteError.message);
+                return;
+            }
+        }
+        
+        const newStatus = (action === 'approve') ? 'approved' : 'rejected';
+        const { error } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId);
+        
+        if (error) {
+            alert('Gagal memperbarui status permintaan: ' + error.message);
+        } else {
+            alert(`Permintaan telah berhasil di-${newStatus === 'approved' ? 'setujui' : 'tolak'}.`);
+        }
+    }
+
+    function displayAssetDeletionRequests() {
+        const assetRequests = allDeletionRequests.filter(req => req.item_type === 'route' || req.item_type === 'vehicle');
+        elements.assetDeletionRequestList.innerHTML = '';
+        if (assetRequests.length === 0) {
+            elements.assetDeletionRequestList.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada permintaan penghapusan aset.</td></tr>';
+            return;
+        }
+
+        assetRequests.forEach(req => {
+            const tr = el('tr');
+            const requesterName = req.requester ? req.requester.name : 'Admin tidak ditemukan';
+            const itemTypeDisplay = req.item_type === 'route' ? 'Rute' : 'Kendaraan';
+            
+            let actionsHTML = '';
+            if (req.status === 'pending') {
+                actionsHTML = `
+                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}" data-item-id="${req.item_id}" data-item-type="${req.item_type}"><i class="fas fa-check"></i> Setujui</button>
+                    <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
+                `;
+            } else {
+                actionsHTML = `<span>Telah diproses</span>`;
+            }
+
+            tr.innerHTML = `
+                <td data-label="Tipe Aset">${itemTypeDisplay}</td>
+                <td data-label="Informasi Aset">${req.item_info}</td>
+                <td data-label="Diminta oleh">${requesterName}</td>
+                <td data-label="Tanggal">${new Date(req.created_at).toLocaleString('id-ID')}</td>
+                <td data-label="Status">${req.status}</td>
+                <td data-label="Aksi">${actionsHTML}</td>
+            `;
+            elements.assetDeletionRequestList.appendChild(tr);
+        });
+    }
+
+    elements.assetDeletionRequestList.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        
+        const action = btn.dataset.action;
+        const requestId = btn.dataset.reqId;
+        const itemId = btn.dataset.itemId;
+        const itemType = btn.dataset.itemType;
+
+        handleAssetDeletionRequest(requestId, action, itemId, itemType);
+    });
+    
+    // =========================================================================
+    // MODIFIKASI: displayRoutes & displayVehicles
+    // =========================================================================
 
     function displayRoutes(page) {
       elements.routeList.innerHTML = '';
@@ -1399,16 +1505,29 @@
       } else {
         paginatedRoutes.forEach(route => {
           const tr = el('tr');
-          tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
-          deleteBtn.onclick = async () => {
-            if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
-                const { error } = await supabase.from('routes').delete().eq('id', route.id);
-                if (error) alert(`Gagal menghapus rute: ${error.message}`);
-            }
-          };
-          actionsCell.appendChild(deleteBtn);
+          let actionButton;
+
+          if (currentUserData.role === 'super admin') {
+              actionButton = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
+              actionButton.onclick = async () => {
+                  if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
+                      const { error } = await supabase.from('routes').delete().eq('id', route.id);
+                      if (error) alert(`Gagal menghapus rute: ${error.message}`);
+                  }
+              };
+          } else { // Role is 'admin'
+              const existingRequest = allDeletionRequests.find(req => req.item_id === route.id && req.item_type === 'route' && req.status === 'pending');
+              if (existingRequest) {
+                  actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+              } else {
+                  actionButton = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm' });
+                  actionButton.onclick = () => requestAssetDeletion(route.id, 'route', `${route.code} - ${route.address}`);
+              }
+          }
+          
+          actionsCell.appendChild(actionButton);
+          tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           tr.appendChild(actionsCell);
           elements.routeList.appendChild(tr);
         });
@@ -1416,7 +1535,7 @@
       const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage);
       elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
       elements.prevRouteBtn.disabled = currentRoutePage === 1;
-      elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
+      elements.nextRouteBtn.disabled = totalPages === 0 || currentRoutePage === totalPages;
     }
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1); });
     elements.nextRouteBtn.addEventListener('click', () => { 
@@ -1438,16 +1557,29 @@
       } else {
         paginatedVehicles.forEach(vehicle => {
           const tr = el('tr');
-          tr.innerHTML = `<td data-label="No. Kendaraan">${vehicle.vehicle_number}</td><td data-label="Unit">${vehicle.unit || '-'}</td><td data-label="Kepemilikan">${vehicle.ownership || '-'}</td>`;
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
-          deleteBtn.onclick = async () => {
-            if (confirm(`Yakin ingin hapus Kendaraan ${vehicle.vehicle_number}?`)) {
-                const { error } = await supabase.from('vehicles').delete().eq('id', vehicle.id);
-                if (error) alert(`Gagal menghapus kendaraan: ${error.message}`);
-            }
-          };
-          actionsCell.appendChild(deleteBtn);
+          let actionButton;
+
+          if (currentUserData.role === 'super admin') {
+              actionButton = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
+              actionButton.onclick = async () => {
+                  if (confirm(`Yakin ingin hapus Kendaraan ${vehicle.vehicle_number}?`)) {
+                      const { error } = await supabase.from('vehicles').delete().eq('id', vehicle.id);
+                      if (error) alert(`Gagal menghapus kendaraan: ${error.message}`);
+                  }
+              };
+          } else { // Role is 'admin'
+              const existingRequest = allDeletionRequests.find(req => req.item_id === vehicle.id && req.item_type === 'vehicle' && req.status === 'pending');
+              if (existingRequest) {
+                  actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+              } else {
+                  actionButton = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm' });
+                  actionButton.onclick = () => requestAssetDeletion(vehicle.id, 'vehicle', `${vehicle.vehicle_number} (${vehicle.unit})`);
+              }
+          }
+
+          actionsCell.appendChild(actionButton);
+          tr.innerHTML = `<td data-label="No. Kendaraan">${vehicle.vehicle_number}</td><td data-label="Unit">${vehicle.unit || '-'}</td><td data-label="Kepemilikan">${vehicle.ownership || '-'}</td>`;
           tr.appendChild(actionsCell);
           elements.vehicleList.appendChild(tr);
         });
@@ -1455,7 +1587,7 @@
       const totalPages = Math.ceil(filteredVehicles.length / rowsPerPage);
       elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages}`;
       elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
-      elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
+      elements.nextVehicleBtn.disabled = totalPages === 0 || currentVehiclePage === totalPages;
     }
     elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1); });
     elements.nextVehicleBtn.addEventListener('click', () => { 
@@ -1490,7 +1622,7 @@
       const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
       elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages}`;
       elements.prevFinanceBtn.disabled = currentFinancePage === 1;
-      elements.nextFinanceBtn.disabled = currentFinancePage === totalPages;
+      elements.nextFinanceBtn.disabled = totalPages === 0 || currentFinancePage === totalPages;
     }
     elements.prevFinanceBtn.addEventListener('click', () => { if (currentFinancePage > 1) displayFinance(currentFinancePage - 1); });
     elements.nextFinanceBtn.addEventListener('click', () => {
