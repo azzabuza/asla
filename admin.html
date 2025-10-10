@@ -910,38 +910,38 @@
     }
 
     // === Supabase Realtime Auto Update ===
-let __realtimeSubscribed = false;
+    let __realtimeSubscribed = false;
 
-function setupRealtimeListeners() {
-  if (__realtimeSubscribed) return;
-  __realtimeSubscribed = true;
+    function setupRealtimeListeners() {
+    if (__realtimeSubscribed) return;
+    __realtimeSubscribed = true;
 
-  const subscribeTable = (tableName, loaderFn) => {
-    try {
-      const channel = supabase
-        .channel(`realtime-${tableName}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: tableName },
-          (payload) => {
-            console.log(`[Realtime][${tableName}]`, payload);
-            try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
-          }
-        )
-        .subscribe();
-    } catch (err) {
-      console.error(`Gagal subscribe realtime ${tableName}:`, err);
+    const subscribeTable = (tableName, loaderFn) => {
+        try {
+        const channel = supabase
+            .channel(`realtime-${tableName}`)
+            .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: tableName },
+            (payload) => {
+                console.log(`[Realtime][${tableName}]`, payload);
+                try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
+            }
+            )
+            .subscribe();
+        } catch (err) {
+        console.error(`Gagal subscribe realtime ${tableName}:`, err);
+        }
+    };
+
+    // Aktifkan realtime untuk semua tabel penting
+    subscribeTable('trips', loadTrips);
+    subscribeTable('users', loadUsers);
+    subscribeTable('routes', loadRoutes);
+    subscribeTable('vehicles', loadVehicles);
+
+    console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles)');
     }
-  };
-
-  // Aktifkan realtime untuk semua tabel penting
-  subscribeTable('trips', loadTrips);
-  subscribeTable('users', loadUsers);
-  subscribeTable('routes', loadRoutes);
-  subscribeTable('vehicles', loadVehicles);
-
-  console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles)');
-}
 
 
 
@@ -1369,33 +1369,42 @@ function setupRealtimeListeners() {
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) { displayUsers(currentUserPage - 1); } });
     elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(allUsers.length / rowsPerPage); if (currentUserPage < totalPages) { displayUsers(currentUserPage + 1); } });
     
+    // =========================================================================
+    // KODE YANG DIPERBARUI: Event listener untuk menghapus pengguna
+    // =========================================================================
     elements.userList.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('delete-user-btn')) {
-            const uid = e.target.dataset.uid;
-            const name = e.target.dataset.name;
-            if (confirm(`Yakin ingin hapus data user: ${name}?`)) {
-                // Hapus dari tabel users
-                const { error: deleteUserError } = await supabase.from('users').delete().eq('id', uid);
-                if (deleteUserError) {
-                    alert(`Gagal menghapus profil pengguna: ${deleteUserError.message}`);
-                    return;
-                }
-                
-                // Hapus dari Supabase Auth (memerlukan fungsi server)
-                // Ini adalah contoh, Anda perlu implementasi di server
-                // const { data, error } = await supabase.functions.invoke('delete-user', { body: { uid } });
-                // if (error) {
-                //     alert(`Gagal menghapus akun: ${error.message}`);
-                // } else {
-                //     alert(`Data user ${name} berhasil dihapus.`);
-                //     loadUsers();
-                // }
+        // Gunakan .closest() untuk memastikan kita mendapatkan tombol bahkan jika ikon di dalamnya yang diklik
+        const deleteBtn = e.target.closest('.delete-user-btn');
 
-                alert(`Profil user ${name} berhasil dihapus. Untuk penghapusan akun, lakukan dari dasbor Supabase.`);
-                loadUsers();
+        if (deleteBtn && !deleteBtn.disabled) {
+            const uid = deleteBtn.dataset.uid;
+            const name = deleteBtn.dataset.name;
+
+            if (confirm(`Yakin ingin MENGHAPUS PERMANEN akun dan data untuk pengguna: ${name}? Aksi ini tidak dapat dibatalkan.`)) {
+                try {
+                    // Panggil Edge Function 'delete-user' yang sudah kita buat
+                    const { data, error } = await supabase.functions.invoke('delete-user', {
+                        body: { uid }
+                    });
+
+                    if (error) {
+                        // Jika function gagal, tampilkan error
+                        throw error;
+                    }
+
+                    alert(`Pengguna ${name} berhasil dihapus sepenuhnya dari sistem.`);
+                    // Data akan diperbarui secara otomatis oleh listener realtime,
+                    // jadi pemanggilan loadUsers() tidak diperlukan lagi.
+
+                } catch (err) {
+                    alert(`Gagal menghapus pengguna: ${err.message}`);
+                }
             }
         }
     });
+    // =========================================================================
+    // AKHIR DARI KODE YANG DIPERBARUI
+    // =========================================================================
 
     function displayRoutes(page) {
       elements.routeList.innerHTML = '';
