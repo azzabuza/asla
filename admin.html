@@ -75,7 +75,7 @@
         </div>
         <div class="sidebar-footer">
           <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-          <p>V.3.0.5</p>
+          <p>V.3.1.0</p>
         </div>
       </div>
     </nav>
@@ -934,10 +934,10 @@
 
         const subscribeTable = (tableName, loaderFn) => {
             try {
-                supabase.channel(`realtime-${tableName}`)
+                supabase.channel(`public:${tableName}`)
                     .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
                         console.log(`[Realtime][${tableName}]`, payload);
-                        try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
+                        loaderFn();
                     })
                     .subscribe();
             } catch (err) {
@@ -951,7 +951,7 @@
         subscribeTable('vehicles', loadVehicles);
         subscribeTable('deletion_requests', loadDeletionRequests);
 
-        console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles, deletion_requests)');
+        console.info('✅ Realtime listeners aktif.');
     }
     
     async function loadDeletionRequests() {
@@ -961,7 +961,7 @@
             console.error('Gagal memuat permintaan penghapusan:', error);
             return;
         }
-        allDeletionRequests = data;
+        allDeletionRequests = data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         displayDeletionRequests();
     }
     
@@ -1222,17 +1222,21 @@
           const tr = el('tr');
           const isCurrentUser = (u.id === currentUser.id);
           const isTargetSuperAdmin = u.role === 'super admin';
+          const actionsCell = el('td', '', {'data-label': 'Aksi'});
           
-          let actionButtonHTML = '';
           if (!isCurrentUser && !isTargetSuperAdmin) {
+              const itemInfo = u.name || `User ID ${u.id}`;
               if (currentUserData.role === 'super admin') {
-                  actionButtonHTML = `<button class="delete-btn btn-sm danger" data-item-id="${u.id}" data-item-type="user" data-item-info="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
+                  const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo });
+                  actionsCell.appendChild(deleteBtn);
               } else if (currentUserData.role === 'admin') {
-                  const existingRequest = allDeletionRequests.find(req => req.item_type === 'user' && req.item_info.includes(`(ID: ${u.id})`) && req.status === 'pending');
+                  const existingRequest = allDeletionRequests.find(req => req.item_type === 'user' && req.item_id === u.id && req.status === 'pending');
                   if (existingRequest) {
-                      actionButtonHTML = `<button class="btn-sm" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
+                      const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+                      actionsCell.appendChild(requestedBtn);
                   } else {
-                      actionButtonHTML = `<button class="request-deletion-btn btn-sm warm" data-item-id="${u.id}" data-item-type="user" data-item-info="${u.name || ''}"><i class="fa-solid fa-user-slash"></i> Minta Hapus</button>`;
+                      const requestBtn = el('button', '<i class="fa-solid fa-user-slash"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo });
+                      actionsCell.appendChild(requestBtn);
                   }
               }
           }
@@ -1246,8 +1250,8 @@
               <td data-label="Status Karyawan">${u.employee_status || '-'}</td>
               <td data-label="Login Terakhir">${u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-'}</td>
               <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
-              <td data-label="Aksi">${actionButtonHTML}</td>
           `;
+          tr.appendChild(actionsCell);
           elements.userList.appendChild(tr);
         });
       }
@@ -1264,20 +1268,15 @@
     // =========================================================================
 
     async function createDeletionRequest(itemId, itemType, itemInfo) {
-        const friendlyInfo = `${itemInfo} (ID: ${itemId})`;
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
         
         const payload = {
             requested_by: currentUser.id,
             item_type: itemType,
-            item_info: friendlyInfo, // Simpan info deskriptif dan ID di sini
+            item_id: itemId,
+            item_info: itemInfo,
             status: 'pending'
         };
-
-        // Khusus untuk user, kita tetap isi kolom user_to_delete jika ada, untuk backward compatibility
-        if (itemType === 'user') {
-            payload.user_to_delete = itemId;
-        }
 
         const { error } = await supabase.from('deletion_requests').insert(payload);
 
@@ -1285,18 +1284,11 @@
             alert('Gagal mengirim permintaan: ' + error.message);
         } else {
             alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
-            loadDeletionRequests(); // Muat ulang data permintaan
+            // Tidak perlu load ulang manual jika realtime aktif
         }
     }
 
-    async function handleDeletionRequest(requestId, action, itemType, itemInfo) {
-        const idMatch = itemInfo.match(/\(ID: (.*?)\)/);
-        if (!idMatch || !idMatch[1]) {
-            alert('Gagal memproses permintaan: ID item tidak ditemukan dalam informasi.');
-            return;
-        }
-        const itemId = idMatch[1];
-        
+    async function handleDeletionRequest(requestId, action, itemType, itemId, itemInfo) {
         if (action === 'approve') {
             if (!confirm(`Anda akan MENGHAPUS ${itemType} (${itemInfo}) ini secara permanen. Lanjutkan?`)) return;
 
@@ -1323,7 +1315,6 @@
             alert('Gagal memperbarui status permintaan: ' + updateError.message);
         } else {
             alert(`Permintaan telah berhasil di-${newStatus === 'approved' ? 'setujui' : 'tolak'}.`);
-            loadDeletionRequests(); // Muat ulang data permintaan
         }
     }
 
@@ -1345,7 +1336,7 @@
             let actionsHTML = '';
             if (req.status === 'pending') {
                 actionsHTML = `
-                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}" data-item-type="${req.item_type}" data-item-info="${req.item_info}"><i class="fas fa-check"></i> Setujui</button>
+                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}"><i class="fas fa-check"></i> Setujui</button>
                     <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
                 `;
             } else {
@@ -1360,6 +1351,10 @@
                 <td data-label="Status">${req.status}</td>
                 <td data-label="Aksi">${actionsHTML}</td>
             `;
+            // Simpan data di elemen tr untuk diakses nanti
+            tr.dataset.itemType = req.item_type;
+            tr.dataset.itemId = req.item_id;
+            tr.dataset.itemInfo = req.item_info;
             elements.deletionRequestList.appendChild(tr);
         });
     }
@@ -1368,24 +1363,24 @@
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
         
-        const { action, reqId, itemType, itemInfo } = btn.dataset;
-        handleDeletionRequest(reqId, action, itemType, itemInfo);
+        const tr = btn.closest('tr');
+        const { action, reqId } = btn.dataset;
+        const { itemType, itemId, itemInfo } = tr.dataset;
+        handleDeletionRequest(reqId, action, itemType, itemId, itemInfo);
     });
     
-    // Menambahkan event listener ke tabel user, rute, dan kendaraan
-    ['userList', 'routeList', 'vehicleList'].forEach(listId => {
-      document.getElementById(listId).addEventListener('click', async (e) => {
-          const btn = e.target.closest('button');
-          if (!btn) return;
+    // Event listener terpusat untuk semua tombol Minta Hapus dan Hapus Langsung
+    document.querySelector('.content-container').addEventListener('click', async (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
 
-          const { itemId, itemType, itemInfo } = btn.dataset;
+        const { itemId, itemType, itemInfo } = btn.dataset;
 
-          if (btn.classList.contains('request-deletion-btn')) {
-              createDeletionRequest(itemId, itemType, itemInfo);
-          } else if (btn.classList.contains('delete-btn')) { // Tombol hapus langsung untuk Super Admin
-              handleDeletionRequest(null, 'approve', itemType, `${itemInfo} (ID: ${itemId})`);
-          }
-      });
+        if (btn.classList.contains('request-deletion-btn')) {
+            createDeletionRequest(itemId, itemType, itemInfo);
+        } else if (btn.classList.contains('delete-btn')) { // Tombol hapus langsung untuk Super Admin
+            handleDeletionRequest(null, 'approve', itemType, itemId, itemInfo);
+        }
     });
 
     // =========================================================================
@@ -1406,21 +1401,22 @@
         paginatedRoutes.forEach(route => {
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          let actionButton;
           const itemInfo = `${route.code} - ${route.address}`;
 
           if (currentUserData.role === 'super admin') {
-              actionButton = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
+              const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
+              actionsCell.appendChild(deleteBtn);
           } else { // Role is 'admin'
-              const existingRequest = allDeletionRequests.find(req => req.item_type === 'route' && req.item_info.includes(`(ID: ${route.id})`) && req.status === 'pending');
+              const existingRequest = allDeletionRequests.find(req => req.item_type === 'route' && req.item_id == route.id && req.status === 'pending');
               if (existingRequest) {
-                  actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+                  const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+                  actionsCell.appendChild(requestedBtn);
               } else {
-                  actionButton = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
+                  const requestBtn = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
+                  actionsCell.appendChild(requestBtn);
               }
           }
           
-          actionsCell.appendChild(actionButton);
           tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           tr.appendChild(actionsCell);
           elements.routeList.appendChild(tr);
@@ -1452,21 +1448,22 @@
         paginatedVehicles.forEach(vehicle => {
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          let actionButton;
           const itemInfo = `${vehicle.vehicle_number} (${vehicle.unit})`;
 
           if (currentUserData.role === 'super admin') {
-              actionButton = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
+              const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
+              actionsCell.appendChild(deleteBtn);
           } else { // Role is 'admin'
-              const existingRequest = allDeletionRequests.find(req => req.item_type === 'vehicle' && req.item_info.includes(`(ID: ${vehicle.id})`) && req.status === 'pending');
+              const existingRequest = allDeletionRequests.find(req => req.item_type === 'vehicle' && req.item_id == vehicle.id && req.status === 'pending');
               if (existingRequest) {
-                  actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+                  const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
+                  actionsCell.appendChild(requestedBtn);
               } else {
-                  actionButton = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
+                  const requestBtn = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
+                  actionsCell.appendChild(requestBtn);
               }
           }
 
-          actionsCell.appendChild(actionButton);
           tr.innerHTML = `<td data-label="No. Kendaraan">${vehicle.vehicle_number}</td><td data-label="Unit">${vehicle.unit || '-'}</td><td data-label="Kepemilikan">${vehicle.ownership || '-'}</td>`;
           tr.appendChild(actionsCell);
           elements.vehicleList.appendChild(tr);
