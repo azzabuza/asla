@@ -1258,7 +1258,7 @@
               if (currentUserData.role === 'super admin') {
                   actionButtonHTML = `<button class="delete-user-btn btn-sm danger" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
               } else if (currentUserData.role === 'admin') {
-                  const existingRequest = allDeletionRequests.find(req => req.item_id === u.id && req.item_type === 'user' && req.status === 'pending');
+                  const existingRequest = allDeletionRequests.find(req => req.user_to_delete === u.id && req.item_type === 'user' && req.status === 'pending');
                   if (existingRequest) {
                       actionButtonHTML = `<button class="btn-sm" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
                   } else {
@@ -1295,7 +1295,6 @@
         const { error } = await supabase.from('deletion_requests').insert({
             requested_by: currentUser.id,
             user_to_delete: uid,
-            item_id: uid,
             item_type: 'user',
             item_info: name,
             status: 'pending'
@@ -1403,13 +1402,20 @@
     async function requestAssetDeletion(itemId, itemType, itemInfo) {
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
         
-        const { error } = await supabase.from('deletion_requests').insert({
+        const payload = {
             requested_by: currentUser.id,
-            item_id: itemId,
             item_type: itemType,
             item_info: itemInfo,
             status: 'pending'
-        });
+        };
+
+        if (itemType === 'route') {
+            payload.route_to_delete = itemId;
+        } else if (itemType === 'vehicle') {
+            payload.vehicle_to_delete = itemId;
+        }
+
+        const { error } = await supabase.from('deletion_requests').insert(payload);
 
         if (error) {
             alert('Gagal mengirim permintaan: ' + error.message);
@@ -1453,11 +1459,12 @@
             const tr = el('tr');
             const requesterName = req.requester ? req.requester.name : 'Admin tidak ditemukan';
             const itemTypeDisplay = req.item_type === 'route' ? 'Rute' : 'Kendaraan';
+            const itemId = req.route_to_delete || req.vehicle_to_delete;
             
             let actionsHTML = '';
             if (req.status === 'pending') {
                 actionsHTML = `
-                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}" data-item-id="${req.item_id}" data-item-type="${req.item_type}"><i class="fas fa-check"></i> Setujui</button>
+                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}" data-item-id="${itemId}" data-item-type="${req.item_type}"><i class="fas fa-check"></i> Setujui</button>
                     <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
                 `;
             } else {
@@ -1517,7 +1524,7 @@
                   }
               };
           } else { // Role is 'admin'
-              const existingRequest = allDeletionRequests.find(req => req.item_id === route.id && req.item_type === 'route' && req.status === 'pending');
+              const existingRequest = allDeletionRequests.find(req => req.route_to_delete === route.id && req.item_type === 'route' && req.status === 'pending');
               if (existingRequest) {
                   actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
               } else {
@@ -1569,7 +1576,7 @@
                   }
               };
           } else { // Role is 'admin'
-              const existingRequest = allDeletionRequests.find(req => req.item_id === vehicle.id && req.item_type === 'vehicle' && req.status === 'pending');
+              const existingRequest = allDeletionRequests.find(req => req.vehicle_to_delete === vehicle.id && req.item_type === 'vehicle' && req.status === 'pending');
               if (existingRequest) {
                   actionButton = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
               } else {
