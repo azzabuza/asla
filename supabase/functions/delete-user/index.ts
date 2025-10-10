@@ -1,12 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// supabase/functions/delete-user/index.ts
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
+Deno.serve(async (req) => {
+  // Tangani preflight request (penting untuk CORS)
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -14,40 +12,34 @@ serve(async (req) => {
   try {
     const { uid } = await req.json();
     if (!uid) {
-      throw new Error("User ID (uid) diperlukan.");
+      throw new Error("User ID (uid) is required.");
     }
 
-    // Client ini memiliki hak akses admin dan aman digunakan di server
+    // Buat admin client untuk bisa menghapus user
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 1. Hapus pengguna dari Supabase Authentication
-    //    Ini harus dilakukan pertama kali
+    // Hapus user dari sistem autentikasi
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(uid);
     if (authError) {
-      // Jika pengguna sudah tidak ada di auth, kita bisa mengabaikan error ini
-      // dan tetap melanjutkan menghapus dari tabel 'users'
-      if (authError.message !== 'User not found') {
-          throw authError;
+      // Jika user sudah tidak ada di auth, anggap berhasil dan lanjutkan
+      if (authError.message !== "User not found") {
+        throw authError;
       }
     }
-
-    // 2. Hapus profil pengguna dari tabel 'users'
-    const { error: dbError } = await supabaseAdmin
-      .from('users')
-      .delete()
-      .eq('id', uid);
+    
+    // Hapus data user dari tabel public.users
+    const { error: dbError } = await supabaseAdmin.from('users').delete().eq('id', uid);
     if (dbError) {
-      throw dbError;
+      console.warn(`Warning: Could not delete user from public.users table:`, dbError.message);
     }
 
-    return new Response(JSON.stringify({ message: `Pengguna ${uid} telah dihapus sepenuhnya.` }), {
+    return new Response(JSON.stringify({ message: `User ${uid} deleted successfully.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
-
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
