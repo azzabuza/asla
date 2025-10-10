@@ -75,7 +75,7 @@
         </div>
         <div class="sidebar-footer">
           <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-          <p>V.3.2.1</p>
+          <p>V.3.3.0</p>
         </div>
       </div>
     </nav>
@@ -775,7 +775,6 @@
     const rowsPerPage = 20;
 
     function refreshAllViews() {
-        console.log("🔄 Merender ulang semua tampilan...");
         displayTrips(currentPage);
         displayUsers(currentUserPage);
         displayRoutes(currentRoutePage);
@@ -802,9 +801,8 @@
                 elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
                 
-                const sidebar = document.querySelector('.sidebar');
-                if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
+                if (window.innerWidth <= 1024) {
+                    document.querySelector('.sidebar').classList.remove('active');
                 }
             });
         });
@@ -841,11 +839,7 @@
     setupNavigation();
     
     function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-      } else {
-        document.body.classList.remove('light-mode');
-      }
+      document.body.classList.toggle('light-mode', theme === 'light');
     }
 
     function applyFont(font) {
@@ -859,9 +853,7 @@
         applyTheme(savedTheme);
         applyFont(savedFont);
 
-        if (savedTheme === 'light') {
-            elements.themeToggle.checked = true;
-        }
+        elements.themeToggle.checked = (savedTheme === 'light');
         elements.fontSelector.value = savedFont;
 
         elements.themeToggle.addEventListener('change', (e) => {
@@ -888,14 +880,14 @@
         const { data, error } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
 
         if (error || !data) {
-            alert('Gagal memuat data pengguna.');
+            alert('Gagal memuat data pengguna. Sesi Anda mungkin tidak valid.');
             await supabase.auth.signOut();
             window.location.href = 'login.html';
             return;
         }
 
         currentUserData = data;
-        if (currentUserData.role !== 'admin' && currentUserData.role !== 'super admin') {
+        if (!['admin', 'super admin'].includes(currentUserData.role)) {
             alert('Anda tidak memiliki akses ke halaman ini.');
             await supabase.auth.signOut();
             window.location.href = 'login.html';
@@ -903,7 +895,7 @@
         }
 
         if (currentUserData.locked) {
-            alert('Akun Anda telah dinonaktifkan.');
+            alert('Akun Anda telah dinonaktifkan oleh Super Admin.');
             await supabase.auth.signOut();
             window.location.href = 'login.html';
             return;
@@ -913,12 +905,11 @@
         elements.userEmail.textContent = currentUser.email;
 
         if (currentUserData.role === 'super admin') {
-            elements.lockdownMenuItem.style.display = 'block';
-            elements.backupMenuItem.style.display = 'block';
-            elements.deletionRequestsMenu.style.display = 'block';
-            const adminOption = el('option', 'Admin', { value: 'admin' });
+            ['lockdown-menu-item', 'backup-menu-item', 'deletion-requests-menu'].forEach(id => {
+                document.getElementById(id).style.display = 'block';
+            });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
-              elements.newUserRole.appendChild(adminOption);
+              elements.newUserRole.appendChild(el('option', 'Admin', { value: 'admin' }));
             }
         }
     }
@@ -938,73 +929,89 @@
         allTrips = tripsRes.data || [];
         allDeletionRequests = (requestsRes.data || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
-        routeCodeMap = {};
-        allRoutes.forEach(route => { routeCodeMap[route.address] = route.code; });
+        routeCodeMap = Object.fromEntries(allRoutes.map(route => [route.address, route.code]));
         
         refreshAllViews();
         
-        elements.filterRole.onchange = () => displayUsers(1);
-        elements.searchName.oninput = () => displayUsers(1);
-        elements.filterTripStatus.onchange = () => displayTrips(1);
-        elements.searchTrip.oninput = () => displayTrips(1);
-        elements.searchRoute.oninput = () => displayRoutes(1);
-        elements.searchVehicle.oninput = () => displayVehicles(1);
-        elements.searchFinance.oninput = () => displayFinance(1);
-    }
-
-    function setupRealtimeListeners() {
-        const handleRealtimeChange = (payload, updateFunction) => {
-            console.log(`[Realtime] Perubahan terdeteksi:`, payload);
-            updateFunction(payload);
-        };
-
-        supabase.channel('public-changes')
-            .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => handleRealtimeChange(payload, updateLocalData))
-            .subscribe();
-
-        console.info('✅ Realtime listener terpusat aktif.');
-    }
-
-    function updateLocalData(payload) {
-        const { table, eventType, new: newRecord, old: oldRecord } = payload;
-        let idField = 'id';
-        let targetArray;
-
-        switch(table) {
-            case 'users': targetArray = allUsers; break;
-            case 'trips': targetArray = allTrips; break;
-            case 'routes': targetArray = allRoutes; break;
-            case 'vehicles': targetArray = allVehicles; break;
-            case 'deletion_requests': targetArray = allDeletionRequests; break;
-            default: return;
-        }
-
-        if (eventType === 'INSERT') {
-            targetArray.unshift(newRecord);
-        } else if (eventType === 'UPDATE') {
-            const index = targetArray.findIndex(item => item[idField] == newRecord[idField]);
-            if (index !== -1) targetArray[index] = newRecord;
-        } else if (eventType === 'DELETE') {
-            const recordId = oldRecord[idField] || (oldRecord.keys ? oldRecord.keys[idField] : null);
-            const index = targetArray.findIndex(item => item[idField] == recordId);
-            if (index !== -1) targetArray.splice(index, 1);
-        }
-        
-        // Selalu sortir ulang deletion requests
-        if(table === 'deletion_requests') {
-             allDeletionRequests.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        }
-
-        refreshAllViews();
+        ['change', 'input'].forEach(evt => {
+            elements.filterRole.addEventListener(evt, () => displayUsers(1));
+            elements.searchName.addEventListener(evt, () => displayUsers(1));
+            elements.filterTripStatus.addEventListener(evt, () => displayTrips(1));
+            elements.searchTrip.addEventListener(evt, () => displayTrips(1));
+            elements.searchRoute.addEventListener(evt, () => displayRoutes(1));
+            elements.searchVehicle.addEventListener(evt, () => displayVehicles(1));
+            elements.searchFinance.addEventListener(evt, () => displayFinance(1));
+        });
     }
     
+    // =========================================================================
+    // REALTIME SETUP (STABLE VERSION)
+    // =========================================================================
+    async function reFetchUsers() {
+        const { data } = await supabase.from('users').select('*');
+        if (data) { allUsers = data; refreshAllViews(); }
+    }
+    async function reFetchTrips() {
+        const { data } = await supabase.from('trips').select('*').order('created_at', { ascending: false });
+        if (data) { allTrips = data; refreshAllViews(); }
+    }
+    async function reFetchRoutes() {
+        const { data } = await supabase.from('routes').select('*');
+        if (data) {
+            allRoutes = data;
+            routeCodeMap = Object.fromEntries(allRoutes.map(route => [route.address, route.code]));
+            refreshAllViews();
+        }
+    }
+    async function reFetchVehicles() {
+        const { data } = await supabase.from('vehicles').select('*');
+        if (data) { allVehicles = data; refreshAllViews(); }
+    }
+    async function reFetchDeletionRequests() {
+        if (currentUserData.role !== 'super admin') return;
+        const { data } = await supabase.from('deletion_requests').select(`*, requester:requested_by ( name )`);
+        if (data) {
+            allDeletionRequests = data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            displayDeletionRequests();
+        }
+    }
+    
+    function setupRealtimeListeners() {
+        console.log("🚀 Menyiapkan listener realtime yang stabil...");
+        
+        supabase.channel('public:users')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => { console.log('🔄 Perubahan pada tabel Users'); reFetchUsers(); })
+          .subscribe();
+
+        supabase.channel('public:trips')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => { console.log('🔄 Perubahan pada tabel Trips'); reFetchTrips(); })
+          .subscribe();
+
+        supabase.channel('public:routes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'routes' }, () => { console.log('🔄 Perubahan pada tabel Routes'); reFetchRoutes(); })
+          .subscribe();
+          
+        supabase.channel('public:vehicles')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, () => { console.log('🔄 Perubahan pada tabel Vehicles'); reFetchVehicles(); })
+          .subscribe();
+
+        if (currentUserData.role === 'super admin') {
+            supabase.channel('public:deletion_requests')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'deletion_requests' }, () => { console.log('🔄 Perubahan pada tabel Deletion Requests'); reFetchDeletionRequests(); })
+              .subscribe();
+        }
+        
+        console.info('✅ Semua listener realtime aktif.');
+    }
+
     function displayRecentActivity(page) {
         elements.recentActivityList.innerHTML = '';
         currentActivityPage = page;
         const start = (page - 1) * activityRowsPerPage;
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
-        elements.activityPaginationControls.style.display = allTrips.length > 5 ? 'flex' : 'none';
-        if (allTrips.length === 0) {
+        elements.activityPaginationControls.style.display = allTrips.length > activityRowsPerPage ? 'flex' : 'none';
+        
+        if (paginatedActivities.length === 0) {
             elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
             paginatedActivities.forEach(trip => {
@@ -1042,27 +1049,23 @@
         elements.totalRoutes.textContent = allRoutes.length;
         elements.totalVehicles.textContent = allVehicles.length;
         elements.totalUsers.textContent = allUsers.length;
-        const onlineCount = allUsers.filter(u => u.online).length;
-        elements.onlineUsers.textContent = onlineCount;
+        elements.onlineUsers.textContent = allUsers.filter(u => u.online).length;
         
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        let thisMonthCount = 0;
-        let lastMonthCount = 0;
-        const activeVehiclesToday = new Set();
-        allTrips.forEach(trip => {
-            const tripDate = new Date(trip.tanggal + "T00:00:00");
-            if (tripDate.getFullYear() === currentYear && tripDate.getMonth() === currentMonth) thisMonthCount++;
-            const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
-            if (tripDate.getFullYear() === lastMonthDate.getFullYear() && tripDate.getMonth() === lastMonthDate.getMonth()) lastMonthCount++;
-            if (trip.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(trip.status)) activeVehiclesToday.add(trip.vehicle_number);
-        });
-        
-        elements.tripsThisMonth.textContent = thisMonthCount;
-        elements.tripsLastMonth.textContent = lastMonthCount;
-        elements.activeVehiclesToday.textContent = activeVehiclesToday.size;
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        elements.tripsThisMonth.textContent = allTrips.filter(t => new Date(t.tanggal) >= currentMonthStart).length;
+        elements.tripsLastMonth.textContent = allTrips.filter(t => {
+            const tripDate = new Date(t.tanggal);
+            return tripDate >= lastMonthStart && tripDate <= lastMonthEnd;
+        }).length;
+        elements.activeVehiclesToday.textContent = new Set(allTrips
+            .filter(t => t.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(t.status))
+            .map(t => t.vehicle_number)
+        ).size;
     }
 
     function openInvoiceModal(trip) {
@@ -1281,16 +1284,15 @@
     
     async function createDeletionRequest(itemId, itemType, itemInfo) {
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
-        
         const { error } = await supabase.from('deletion_requests').insert({
             requested_by: currentUser.id, item_type: itemType, item_id: itemId, item_info: itemInfo
         });
-
         if (error) alert('Gagal mengirim permintaan: ' + error.message);
         else alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
     }
 
     async function handleDeletionRequest(requestId, action, itemType, itemId, itemInfo) {
+        const isDirectDelete = !requestId;
         if (action === 'approve') {
             if (!confirm(`Anda akan MENGHAPUS ${itemType} (${itemInfo}) ini secara permanen. Lanjutkan?`)) return;
 
@@ -1305,7 +1307,11 @@
             }
 
             if (deleteError) {
-                alert(`Gagal menghapus ${itemType}: ` + deleteError.message);
+                alert(`Gagal menghapus ${itemType}: ${deleteError.message}`);
+                return;
+            }
+            if (isDirectDelete) {
+                alert(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} berhasil dihapus.`);
                 return;
             }
         }
@@ -1336,7 +1342,7 @@
                     <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
                 `;
             } else {
-                actionsHTML = `<span>Telah diproses</span>`;
+                actionsHTML = `<span class="status-${req.status}">${req.status}</span>`;
             }
 
             tr.innerHTML = `
@@ -1344,7 +1350,7 @@
                 <td data-label="Detail Item">${req.item_info}</td>
                 <td data-label="Diminta oleh">${requesterName}</td>
                 <td data-label="Tanggal">${new Date(req.created_at).toLocaleString('id-ID')}</td>
-                <td data-label="Status">${req.status}</td>
+                <td data-label="Status">${badge(req.status)}</td>
                 <td data-label="Aksi">${actionsHTML}</td>
             `;
             tr.dataset.itemType = req.item_type;
@@ -1508,31 +1514,29 @@
 
     elements.addVehicleForm.addEventListener('submit', async (e) => { 
         e.preventDefault(); 
-        const vehicleNumber = document.getElementById('vehicleNumberInput').value.toUpperCase(); 
-        const unit = document.getElementById('vehicleUnit').value; 
-        const ownership = document.getElementById('vehicleOwnership').value;
+        const { value: vehicleNumber } = document.getElementById('vehicleNumberInput');
+        const { value: unit } = document.getElementById('vehicleUnit');
+        const { value: ownership } = document.getElementById('vehicleOwnership');
         elements.addVehicleStatus.style.display = 'block'; elements.addVehicleStatus.textContent = 'Menambahkan...'; 
-        const { error } = await supabase.from('vehicles').insert([{ vehicle_number: vehicleNumber, unit, ownership }]);
-        if (error) {
-            elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
-        } else {
+        const { error } = await supabase.from('vehicles').insert([{ vehicle_number: vehicleNumber.toUpperCase(), unit, ownership }]);
+        if (error) elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
+        else {
             elements.addVehicleStatus.textContent = '✔️ Kendaraan berhasil ditambahkan.'; 
-            elements.addVehicleForm.reset(); 
+            e.target.reset(); 
             setTimeout(() => { elements.addVehicleStatus.style.display = 'none'; }, 3000);
         }
     });
 
     elements.addRouteForm.addEventListener('submit', async (e) => { 
         e.preventDefault(); 
-        const code = document.getElementById('routeCode').value.toUpperCase(); 
-        const address = document.getElementById('routeAddress').value; 
+        const { value: code } = document.getElementById('routeCode');
+        const { value: address } = document.getElementById('routeAddress');
         elements.addRouteStatus.style.display = 'block'; elements.addRouteStatus.textContent = 'Menambahkan...';
-        const { error } = await supabase.from('routes').insert([{ code, address }]);
-        if (error) {
-            elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
-        } else {
+        const { error } = await supabase.from('routes').insert([{ code: code.toUpperCase(), address }]);
+        if (error) elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
+        else {
             elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.'; 
-            elements.addRouteForm.reset(); 
+            e.target.reset(); 
             setTimeout(() => { elements.addRouteStatus.style.display = 'none'; }, 3000); 
         }
     });
@@ -1541,31 +1545,33 @@
         e.preventDefault();
         elements.addUserStatus.style.display = 'block'; 
         elements.addUserStatus.textContent = 'Menambahkan...';
-        const name = document.getElementById('newUserName').value;
-        const email = document.getElementById('newUserEmail').value;
-        const password = document.getElementById('newUserPassword').value;
-        const role = document.getElementById('newUserRole').value;
-        const nik = document.getElementById('newUserNik').value;
-        const gender = document.getElementById('newUserGender').value;
-        const employeeStatus = document.getElementById('newUserStatus').value;
+        const formData = new FormData(e.target);
+        const userData = Object.fromEntries(formData.entries());
         
         const { data, error } = await supabase.functions.invoke('create-user', { 
-            body: { email, password, name, role, nik, gender, employeeStatus } 
+            body: { 
+                email: document.getElementById('newUserEmail').value,
+                password: document.getElementById('newUserPassword').value,
+                name: document.getElementById('newUserName').value,
+                role: document.getElementById('newUserRole').value,
+                nik: document.getElementById('newUserNik').value,
+                gender: document.getElementById('newUserGender').value,
+                employeeStatus: document.getElementById('newUserStatus').value,
+             } 
         });
 
-        if (error || data.error) {
+        if (error || (data && data.error)) {
             elements.addUserStatus.textContent = 'Gagal: ' + (error?.message || data.error);
         } else {
-            elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
-            elements.addUserForm.reset();
-            // Tidak perlu update manual, realtime akan menangani
+            elements.addUserStatus.textContent = `✔️ User ${data.name} berhasil ditambahkan.`;
+            e.target.reset();
             setTimeout(() => { elements.addUserStatus.style.display = 'none'; }, 3000);
         }
     });
     
     function loadRoleStats() { 
-        if (allUsers.length === 0) { elements.roleStats.textContent = "Memuat data user..."; return; }
-        const userMap = allUsers.reduce((acc, user) => { acc[user.id] = user; return acc; }, {});
+        if (allUsers.length === 0) { elements.roleStats.textContent = "Tidak ada data untuk ditampilkan."; return; }
+        const userMap = Object.fromEntries(allUsers.map(user => [user.id, user]));
         let activities = { admin: [], coordinator: [], driver: [] }; 
         allTrips.forEach(trip => { 
             const tripInfo = `${routeCodeMap[trip.asal] || trip.asal}, ${Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan)}`;
@@ -1642,11 +1648,10 @@
       const action = lock ? 'menonaktifkan' : 'mengaktifkan';
       if (confirm(`Anda yakin ingin ${action} semua pengguna (kecuali super admin)?`)) {
         const usersToUpdate = allUsers.filter(u => u.role !== 'super admin').map(u => u.id);
-        const { error } = await supabase.from('users').update({ locked: lock }).in('id', usersToUpdate);
-        if (error) {
-            alert('Gagal memperbarui status pengguna: ' + error.message);
-        } else {
-            alert('Status semua pengguna berhasil diperbarui.');
+        if (usersToUpdate.length > 0) {
+            const { error } = await supabase.from('users').update({ locked: lock }).in('id', usersToUpdate);
+            if (error) alert('Gagal memperbarui status pengguna: ' + error.message);
+            else alert('Status semua pengguna berhasil diperbarui.');
         }
       } else {
         e.target.checked = !lock;
