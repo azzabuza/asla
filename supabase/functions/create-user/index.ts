@@ -1,22 +1,20 @@
-// Lokasi file: supabase/functions/delete-group/index.ts
+// supabase/functions/create-user/index.ts
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
+Deno.serve(async (req) => {
+  // Tangani preflight request
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { groupId } = await req.json();
-    if (!groupId) {
-      throw new Error("Group ID is required");
+    const { email, password, name, role, nik, gender, employeeStatus } = await req.json();
+    
+    // Validasi input
+    if (!email || !password || !name || !role) {
+        throw new Error("Email, password, name, and role are required.");
     }
 
     const supabaseAdmin = createClient(
@@ -24,27 +22,44 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Hapus semua pesan yang terkait dengan grup ini
-    const { error: deleteMessagesError } = await supabaseAdmin
-      .from('messages')
-      .delete()
-      .eq('chat_id', groupId);
+    // Buat user di sistem Autentikasi Supabase
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true, // Langsung konfirmasi email
+    });
 
-    if (deleteMessagesError) {
-      throw deleteMessagesError;
+    if (authError) {
+      throw authError;
+    }
+    if (!user) {
+        throw new Error("Failed to create user in authentication system.");
     }
 
-    // Hapus grup itu sendiri
-    const { error: deleteGroupError } = await supabaseAdmin
-      .from('groups')
-      .delete()
-      .eq('id', groupId);
+    // Masukkan data profil ke tabel 'users'
+    const { data: profileData, error: dbError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: user.id,
+        email: email,
+        name: name,
+        role: role,
+        nik: nik,
+        gender: gender,
+        employee_status: employeeStatus,
+        online: false
+      })
+      .select()
+      .single(); // Tambahkan .select().single() untuk mengembalikan data yang baru dibuat
 
-    if (deleteGroupError) {
-      throw deleteGroupError;
+    if (dbError) {
+      // Jika gagal memasukkan ke tabel, hapus user yang sudah terbuat di auth
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
+      throw dbError;
     }
 
-    return new Response(JSON.stringify({ message: `Group ${groupId} and its messages have been deleted.` }), {
+    // Kirim kembali data profil lengkap
+    return new Response(JSON.stringify(profileData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
