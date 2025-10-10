@@ -75,7 +75,7 @@
         </div>
         <div class="sidebar-footer">
           <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-          <p>V.3.3.0</p>
+          <p>V.4.0.0 (Stable)</p>
         </div>
       </div>
     </nav>
@@ -809,15 +809,11 @@
 
         elements.closeInvoiceModal.onclick = () => {
             elements.invoiceModal.style.display = 'none';
-            elements.recipientName.value = '';
-            elements.recipientAddress.value = '';
         }
 
         window.onclick = (event) => {
           if (event.target == elements.invoiceModal) {
             elements.invoiceModal.style.display = "none";
-            elements.recipientName.value = '';
-            elements.recipientAddress.value = '';
           }
         }
         
@@ -831,8 +827,6 @@
             if(currentTripForInvoice) {
                 generateInvoicePDF(currentTripForInvoice.id, currentTripForInvoice, recipientName, recipientAddress);
                 elements.invoiceModal.style.display = 'none';
-                elements.recipientName.value = '';
-                elements.recipientAddress.value = '';
             }
         });
     }
@@ -871,34 +865,24 @@
 
     async function checkUserSession() {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            window.location.href = 'login.html';
-            return;
-        }
+        if (!session) { window.location.href = 'login.html'; return; }
         currentUser = session.user;
 
         const { data, error } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
-
         if (error || !data) {
             alert('Gagal memuat data pengguna. Sesi Anda mungkin tidak valid.');
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-            return;
+            await supabase.auth.signOut(); window.location.href = 'login.html'; return;
         }
 
         currentUserData = data;
         if (!['admin', 'super admin'].includes(currentUserData.role)) {
             alert('Anda tidak memiliki akses ke halaman ini.');
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-            return;
+            await supabase.auth.signOut(); window.location.href = 'login.html'; return;
         }
 
         if (currentUserData.locked) {
             alert('Akun Anda telah dinonaktifkan oleh Super Admin.');
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-            return;
+            await supabase.auth.signOut(); window.location.href = 'login.html'; return;
         }
 
         elements.userName.textContent = currentUserData.name || 'Admin';
@@ -928,7 +912,6 @@
         allUsers = usersRes.data || [];
         allTrips = tripsRes.data || [];
         allDeletionRequests = (requestsRes.data || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-
         routeCodeMap = Object.fromEntries(allRoutes.map(route => [route.address, route.code]));
         
         refreshAllViews();
@@ -945,63 +928,58 @@
     }
     
     // =========================================================================
-    // REALTIME SETUP (STABLE VERSION)
+    // REALTIME SETUP (STABLE VERSION 2)
     // =========================================================================
-    async function reFetchUsers() {
-        const { data } = await supabase.from('users').select('*');
-        if (data) { allUsers = data; refreshAllViews(); }
-    }
-    async function reFetchTrips() {
-        const { data } = await supabase.from('trips').select('*').order('created_at', { ascending: false });
-        if (data) { allTrips = data; refreshAllViews(); }
-    }
-    async function reFetchRoutes() {
-        const { data } = await supabase.from('routes').select('*');
-        if (data) {
-            allRoutes = data;
-            routeCodeMap = Object.fromEntries(allRoutes.map(route => [route.address, route.code]));
-            refreshAllViews();
-        }
-    }
-    async function reFetchVehicles() {
-        const { data } = await supabase.from('vehicles').select('*');
-        if (data) { allVehicles = data; refreshAllViews(); }
-    }
-    async function reFetchDeletionRequests() {
-        if (currentUserData.role !== 'super admin') return;
-        const { data } = await supabase.from('deletion_requests').select(`*, requester:requested_by ( name )`);
-        if (data) {
-            allDeletionRequests = data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-            displayDeletionRequests();
+    async function reFetchData(tableName) {
+        console.log(`[Realtime] 🔄 Mengambil data baru untuk tabel: ${tableName}`);
+        switch(tableName) {
+            case 'users':
+                const { data: users } = await supabase.from('users').select('*');
+                if (users) { allUsers = users; refreshAllViews(); }
+                break;
+            case 'trips':
+                const { data: trips } = await supabase.from('trips').select('*').order('created_at', { ascending: false });
+                if (trips) { allTrips = trips; refreshAllViews(); }
+                break;
+            case 'routes':
+                const { data: routes } = await supabase.from('routes').select('*');
+                if (routes) {
+                    allRoutes = routes;
+                    routeCodeMap = Object.fromEntries(allRoutes.map(route => [route.address, route.code]));
+                    refreshAllViews();
+                }
+                break;
+            case 'vehicles':
+                const { data: vehicles } = await supabase.from('vehicles').select('*');
+                if (vehicles) { allVehicles = vehicles; refreshAllViews(); }
+                break;
+            case 'deletion_requests':
+                if (currentUserData.role !== 'super admin') return;
+                const { data: requests } = await supabase.from('deletion_requests').select(`*, requester:requested_by ( name )`);
+                if (requests) {
+                    allDeletionRequests = requests.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                    displayDeletionRequests();
+                }
+                break;
         }
     }
     
     function setupRealtimeListeners() {
         console.log("🚀 Menyiapkan listener realtime yang stabil...");
-        
-        supabase.channel('public:users')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => { console.log('🔄 Perubahan pada tabel Users'); reFetchUsers(); })
-          .subscribe();
-
-        supabase.channel('public:trips')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => { console.log('🔄 Perubahan pada tabel Trips'); reFetchTrips(); })
-          .subscribe();
-
-        supabase.channel('public:routes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'routes' }, () => { console.log('🔄 Perubahan pada tabel Routes'); reFetchRoutes(); })
-          .subscribe();
-          
-        supabase.channel('public:vehicles')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, () => { console.log('🔄 Perubahan pada tabel Vehicles'); reFetchVehicles(); })
-          .subscribe();
-
+        const tables = ['users', 'trips', 'routes', 'vehicles'];
         if (currentUserData.role === 'super admin') {
-            supabase.channel('public:deletion_requests')
-              .on('postgres_changes', { event: '*', schema: 'public', table: 'deletion_requests' }, () => { console.log('🔄 Perubahan pada tabel Deletion Requests'); reFetchDeletionRequests(); })
-              .subscribe();
+            tables.push('deletion_requests');
         }
-        
-        console.info('✅ Semua listener realtime aktif.');
+
+        tables.forEach(table => {
+            supabase.channel(`public:${table}`)
+              .on('postgres_changes', { event: '*', schema: 'public', table: table }, () => reFetchData(table))
+              .subscribe((status) => {
+                  if (status === 'SUBSCRIBED') {
+                      console.log(`✅ Berhasil subscribe ke tabel: ${table}`);
+                  }
+              });
+        });
     }
 
     function displayRecentActivity(page) {
@@ -1058,14 +1036,8 @@
         const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
         elements.tripsThisMonth.textContent = allTrips.filter(t => new Date(t.tanggal) >= currentMonthStart).length;
-        elements.tripsLastMonth.textContent = allTrips.filter(t => {
-            const tripDate = new Date(t.tanggal);
-            return tripDate >= lastMonthStart && tripDate <= lastMonthEnd;
-        }).length;
-        elements.activeVehiclesToday.textContent = new Set(allTrips
-            .filter(t => t.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(t.status))
-            .map(t => t.vehicle_number)
-        ).size;
+        elements.tripsLastMonth.textContent = allTrips.filter(t => new Date(t.tanggal) >= lastMonthStart && new Date(t.tanggal) <= lastMonthEnd).length;
+        elements.activeVehiclesToday.textContent = new Set(allTrips.filter(t => t.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(t.status)).map(t => t.vehicle_number)).size;
     }
 
     function openInvoiceModal(trip) {
@@ -1132,30 +1104,24 @@
       currentPage = page;
       const searchTerm = elements.searchTrip.value.toLowerCase();
       const statusFilter = elements.filterTripStatus.value;
-      const filteredTrips = allTrips.filter(trip => {
-          const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
-          const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-          const searchMatch = !searchTerm || (trip.id || '').toLowerCase().includes(searchTerm) || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
-          return statusMatch && searchMatch;
-      });
+      const filteredTrips = allTrips.filter(trip => (statusFilter === 'all' || trip.status === statusFilter) && (!searchTerm || `${trip.id} ${trip.driver_name} ${trip.asal} ${Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : trip.tujuan}`.toLowerCase().includes(searchTerm)));
       const start = (currentPage - 1) * rowsPerPage;
       const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+      
       if (paginatedTrips.length === 0 && filteredTrips.length > 0 && currentPage > 1) { currentPage = Math.ceil(filteredTrips.length / rowsPerPage); return displayTrips(currentPage); }
+      
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
         elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
             const tr = el('tr');
-            const asalCode = routeCodeMap[trip.asal] || trip.asal;
-            const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
-            const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
+            const ruteDisplay = `${routeCodeMap[trip.asal] || trip.asal}, ${Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan)}`;
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content: flex-end;' });
+            
             if (trip.status === 'submitted') {
-                const approveBtn = el('button', 'Setujui', { class: 'btn-sm success', 'data-trip-id': trip.id, 'data-action': 'approve' });
-                const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger', 'data-trip-id': trip.id, 'data-action': 'reject' });
-                actionsContainer.append(approveBtn, rejectBtn);
+                actionsContainer.append(el('button', 'Setujui', { class: 'btn-sm success', 'data-trip-id': trip.id, 'data-action': 'approve' }), el('button', 'Tolak', { class: 'btn-sm danger', 'data-trip-id': trip.id, 'data-action': 'reject' }));
             }
             if (['approved', 'delivering', 'arriving_soon', 'arrived'].includes(trip.status)) {
                 const invButton = el('button', '<i class="fas fa-file-invoice"></i> Invoice', { class: 'btn-sm info' });
@@ -1163,14 +1129,11 @@
                 actionsContainer.append(invButton);
             }
             if (currentUserData.role === 'super admin') {
-                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm', 'data-trip-id': trip.id, 'data-trip-info': ruteDisplay, 'data-action': 'delete-trip' });
-                actionsContainer.appendChild(deleteBtn);
+                actionsContainer.appendChild(el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm', 'data-trip-id': trip.id, 'data-trip-info': ruteDisplay, 'data-action': 'delete-trip' }));
             }
             actionsCell.appendChild(actionsContainer);
-            const statusCell = el('td', '', {'data-label': 'Status'});
-            statusCell.appendChild(badge(trip.status));
             tr.innerHTML = `<td data-label="Trip ID">${trip.id}</td><td data-label="Rute">${ruteDisplay}</td><td data-label="Supir">${trip.driver_name || 'N/A'}</td><td data-label="No. Kendaraan">${trip.vehicle_number || 'N/A'}</td><td data-label="Muatan">${trip.muatan || 'N/A'}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
-            tr.append(statusCell, actionsCell);
+            tr.append(el('td', '', {'data-label': 'Status'}, [badge(trip.status)]), actionsCell);
             elements.tripList.appendChild(tr);
         });
       }
@@ -1184,7 +1147,6 @@
         let additionalData = {};
         if (status === 'approved') additionalData = { approved_at: new Date().toISOString(), approved_by: currentUser.id, is_read_coor: false };
         if (status === 'rejected') additionalData = { rejected_at: new Date().toISOString(), rejected_by: currentUser.id, is_read_coor: false };
-
         const { error } = await supabase.from('trips').update({ status, ...additionalData }).eq('id', tripId);
         if (error) alert(`Gagal memperbarui status: ${error.message}`);
     }
@@ -1199,73 +1161,56 @@
     
     elements.prevBtn.addEventListener('click', () => { if (currentPage > 1) displayTrips(currentPage - 1); });
     elements.nextBtn.addEventListener('click', () => { 
-        const filtered = allTrips.filter(t => (elements.filterTripStatus.value === 'all' || t.status === elements.filterTripStatus.value));
-        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        const totalPages = Math.ceil(allTrips.filter(t => (elements.filterTripStatus.value === 'all' || t.status === elements.filterTripStatus.value)).length / rowsPerPage); 
         if (currentPage < totalPages) displayTrips(currentPage + 1); 
     });
 
     elements.tripList.addEventListener('click', (e) => {
         const button = e.target.closest('button[data-action]');
         if (!button) return;
-
         const action = button.dataset.action;
-        if (action === 'approve' || action === 'reject') {
-            updateTripStatus(parseInt(button.dataset.tripId), action);
-        } else if (action === 'delete-trip') {
-            deleteTrip(parseInt(button.dataset.tripId), button.dataset.tripInfo);
-        }
+        const tripId = parseInt(button.dataset.tripId);
+        if (action === 'approve' || action === 'reject') updateTripStatus(tripId, action);
+        else if (action === 'delete-trip') deleteTrip(tripId, button.dataset.tripInfo);
     });
 
     function displayUsers(page) {
       elements.userList.innerHTML = '';
       currentUserPage = page;
       const roleOrder = ['super admin', 'admin', 'coordinator', 'driver'];
-      const sortedUsers = [...allUsers].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
-      const filteredUsers = sortedUsers.filter(u => {
-        const nameMatch = !elements.searchName.value || (u.name || '').toLowerCase().includes(elements.searchName.value.toLowerCase());
-        const roleMatch = elements.filterRole.value === 'all' || u.role === elements.filterRole.value;
-        return nameMatch && roleMatch;
-      });
+      const searchTerm = elements.searchName.value.toLowerCase();
+      const roleFilter = elements.filterRole.value;
+      
+      const filteredUsers = allUsers
+        .filter(u => (roleFilter === 'all' || u.role === roleFilter) && (!searchTerm || (u.name || '').toLowerCase().includes(searchTerm)))
+        .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+
       const start = (currentUserPage - 1) * rowsPerPage;
       const paginatedUsers = filteredUsers.slice(start, start + rowsPerPage);
+      
       if (paginatedUsers.length === 0 && filteredUsers.length > 0 && currentUserPage > 1) { currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage); return displayUsers(currentUserPage); }
+      
       elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedUsers.length === 0) {
         elements.userList.innerHTML = '<tr><td colspan="8">Tidak ada user ditemukan.</td></tr>';
       } else {
         paginatedUsers.forEach(u => {
           const tr = el('tr');
-          const isCurrentUser = (u.id === currentUser.id);
-          const isTargetSuperAdmin = u.role === 'super admin';
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
-          
-          if (!isCurrentUser && !isTargetSuperAdmin) {
+          if (u.id !== currentUser.id && u.role !== 'super admin') {
               const itemInfo = u.name || `User ID ${u.id}`;
               if (currentUserData.role === 'super admin') {
-                  const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo });
-                  actionsCell.appendChild(deleteBtn);
+                  actionsCell.appendChild(el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo }));
               } else if (currentUserData.role === 'admin') {
                   const existingRequest = allDeletionRequests.find(req => req.item_type === 'user' && req.item_id === u.id && req.status === 'pending');
                   if (existingRequest) {
-                      const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
-                      actionsCell.appendChild(requestedBtn);
+                      actionsCell.appendChild(el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true }));
                   } else {
-                      const requestBtn = el('button', '<i class="fa-solid fa-user-slash"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo });
-                      actionsCell.appendChild(requestBtn);
+                      actionsCell.appendChild(el('button', '<i class="fa-solid fa-user-slash"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': u.id, 'data-item-type': 'user', 'data-item-info': itemInfo }));
                   }
               }
           }
-
-          const roleClass = (u.role || '').replace(' ', '-');
-          tr.innerHTML = `
-              <td data-label="Nama">${u.name || '-'}</td>
-              <td data-label="Role"><span class="role-badge role-${roleClass}">${u.role || '-'}</span></td>
-              <td data-label="NIK">${u.nik || '-'}</td>
-              <td data-label="Jenis Kelamin">${u.gender || '-'}</td>
-              <td data-label="Status Karyawan">${u.employee_status || '-'}</td>
-              <td data-label="Login Terakhir">${u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-'}</td>
-              <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
-          `;
+          tr.innerHTML = `<td data-label="Nama">${u.name || '-'}</td><td data-label="Role"><span class="role-badge role-${(u.role || '').replace(' ', '-')}">${u.role || '-'}</span></td><td data-label="NIK">${u.nik || '-'}</td><td data-label="Jenis Kelamin">${u.gender || '-'}</td><td data-label="Status Karyawan">${u.employee_status || '-'}</td><td data-label="Login Terakhir">${u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-'}</td><td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>`;
           tr.appendChild(actionsCell);
           elements.userList.appendChild(tr);
         });
@@ -1273,54 +1218,36 @@
       const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
       elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages || 1}`;
       elements.prevUserBtn.disabled = currentUserPage === 1;
-      elements.nextUserBtn.disabled = totalPages === 0 || currentUserPage >= totalPages;
+      elements.nextUserBtn.disabled = currentUserPage >= totalPages;
     }
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) displayUsers(currentUserPage - 1); });
     elements.nextUserBtn.addEventListener('click', () => { 
-        const filtered = allUsers.filter(u => (elements.filterRole.value === 'all' || u.role === elements.filterRole.value));
-        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        const totalPages = Math.ceil(allUsers.filter(u => (elements.filterRole.value === 'all' || u.role === elements.filterRole.value)).length / rowsPerPage);
         if (currentUserPage < totalPages) displayUsers(currentUserPage + 1); 
     });
     
     async function createDeletionRequest(itemId, itemType, itemInfo) {
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
-        const { error } = await supabase.from('deletion_requests').insert({
-            requested_by: currentUser.id, item_type: itemType, item_id: itemId, item_info: itemInfo
-        });
+        const { error } = await supabase.from('deletion_requests').insert({ requested_by: currentUser.id, item_type: itemType, item_id: itemId, item_info: itemInfo });
         if (error) alert('Gagal mengirim permintaan: ' + error.message);
-        else alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
+        else alert('Permintaan penghapusan telah dikirim.');
     }
 
     async function handleDeletionRequest(requestId, action, itemType, itemId, itemInfo) {
         const isDirectDelete = !requestId;
         if (action === 'approve') {
             if (!confirm(`Anda akan MENGHAPUS ${itemType} (${itemInfo}) ini secara permanen. Lanjutkan?`)) return;
-
-            let deleteError = null;
-            if (itemType === 'user') {
-                const { error } = await supabase.functions.invoke('delete-user', { body: { uid: itemId } });
-                deleteError = error;
-            } else {
-                const tableName = itemType === 'route' ? 'routes' : 'vehicles';
-                const { error } = await supabase.from(tableName).delete().eq('id', itemId);
-                deleteError = error;
-            }
-
-            if (deleteError) {
-                alert(`Gagal menghapus ${itemType}: ${deleteError.message}`);
-                return;
-            }
-            if (isDirectDelete) {
-                alert(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} berhasil dihapus.`);
-                return;
-            }
+            const { error: deleteError } = itemType === 'user'
+                ? await supabase.functions.invoke('delete-user', { body: { uid: itemId } })
+                : await supabase.from(itemType === 'route' ? 'routes' : 'vehicles').delete().eq('id', itemId);
+            if (deleteError) { alert(`Gagal menghapus ${itemType}: ${deleteError.message}`); return; }
+            if (isDirectDelete) { alert(`${itemType} berhasil dihapus.`); return; }
         }
         
         const newStatus = (action === 'approve') ? 'approved' : 'rejected';
         const { error } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId);
-        
         if (error) alert('Gagal memperbarui status permintaan: ' + error.message);
-        else alert(`Permintaan telah berhasil di-${newStatus === 'approved' ? 'setujui' : 'tolak'}.`);
+        else alert(`Permintaan telah di-${newStatus}.`);
     }
 
     function displayDeletionRequests() {
@@ -1332,30 +1259,15 @@
 
         allDeletionRequests.forEach(req => {
             const tr = el('tr');
-            const requesterName = req.requester ? req.requester.name : 'Admin Dihapus';
-            let itemTypeDisplay = req.item_type.charAt(0).toUpperCase() + req.item_type.slice(1);
-
             let actionsHTML = '';
             if (req.status === 'pending') {
-                actionsHTML = `
-                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}"><i class="fas fa-check"></i> Setujui</button>
-                    <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
-                `;
+                actionsHTML = `<button class="btn-sm success" data-action="approve" data-req-id="${req.id}"><i class="fas fa-check"></i> Setujui</button> <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>`;
             } else {
                 actionsHTML = `<span class="status-${req.status}">${req.status}</span>`;
             }
 
-            tr.innerHTML = `
-                <td data-label="Tipe">${itemTypeDisplay}</td>
-                <td data-label="Detail Item">${req.item_info}</td>
-                <td data-label="Diminta oleh">${requesterName}</td>
-                <td data-label="Tanggal">${new Date(req.created_at).toLocaleString('id-ID')}</td>
-                <td data-label="Status">${badge(req.status)}</td>
-                <td data-label="Aksi">${actionsHTML}</td>
-            `;
-            tr.dataset.itemType = req.item_type;
-            tr.dataset.itemId = req.item_id;
-            tr.dataset.itemInfo = req.item_info;
+            tr.innerHTML = `<td data-label="Tipe">${req.item_type}</td><td data-label="Detail Item">${req.item_info}</td><td data-label="Diminta oleh">${req.requester?.name || 'N/A'}</td><td data-label="Tanggal">${new Date(req.created_at).toLocaleString('id-ID')}</td><td data-label="Status">${badge(req.status)}</td><td data-label="Aksi">${actionsHTML}</td>`;
+            Object.assign(tr.dataset, { itemType: req.item_type, itemId: req.item_id, itemInfo: req.item_info });
             elements.deletionRequestList.appendChild(tr);
         });
     }
@@ -1363,13 +1275,11 @@
     elements.deletionRequestList.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
-        
         const tr = btn.closest('tr');
-        const { action, reqId } = btn.dataset;
-        const { itemType, itemId, itemInfo } = tr.dataset;
-        handleDeletionRequest(reqId, action, itemType, itemId, itemInfo);
+        handleDeletionRequest(btn.dataset.reqId, btn.dataset.action, tr.dataset.itemType, tr.dataset.itemId, tr.dataset.itemInfo);
     });
     
+    // Event listener terpusat yang dikembalikan
     document.querySelector('.content-container').addEventListener('click', async (e) => {
         const btn = e.target.closest('button[data-item-id]');
         if (!btn) return;
@@ -1387,9 +1297,12 @@
       elements.routeList.innerHTML = '';
       currentRoutePage = page;
       const searchTerm = elements.searchRoute.value.toLowerCase();
-      const filteredRoutes = allRoutes.filter(route => !searchTerm || (route.code || '').toLowerCase().includes(searchTerm) || (route.address || '').toLowerCase().includes(searchTerm));
-      const paginatedRoutes = filteredRoutes.slice((currentRoutePage - 1) * rowsPerPage, currentRoutePage * rowsPerPage);
+      const filteredRoutes = allRoutes.filter(route => !searchTerm || `${route.code} ${route.address}`.toLowerCase().includes(searchTerm));
+      const start = (currentRoutePage - 1) * rowsPerPage;
+      const paginatedRoutes = filteredRoutes.slice(start, start + rowsPerPage);
+      
       if (paginatedRoutes.length === 0 && filteredRoutes.length > 0 && currentRoutePage > 1) { currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage); return displayRoutes(currentRoutePage); }
+      
       elements.routePaginationControls.style.display = filteredRoutes.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedRoutes.length === 0) {
         elements.routeList.innerHTML = '<tr><td colspan="3">Tidak ada rute ditemukan.</td></tr>';
@@ -1398,21 +1311,16 @@
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const itemInfo = `${route.code} - ${route.address}`;
-
           if (currentUserData.role === 'super admin') {
-              const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
-              actionsCell.appendChild(deleteBtn);
+              actionsCell.appendChild(el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo }));
           } else {
               const existingRequest = allDeletionRequests.find(req => req.item_type === 'route' && req.item_id == route.id && req.status === 'pending');
               if (existingRequest) {
-                  const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
-                  actionsCell.appendChild(requestedBtn);
+                  actionsCell.appendChild(el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true }));
               } else {
-                  const requestBtn = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
-                  actionsCell.appendChild(requestBtn);
+                  actionsCell.appendChild(el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo }));
               }
           }
-          
           tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           tr.appendChild(actionsCell);
           elements.routeList.appendChild(tr);
@@ -1421,12 +1329,11 @@
       const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage);
       elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages || 1}`;
       elements.prevRouteBtn.disabled = currentRoutePage === 1;
-      elements.nextRouteBtn.disabled = totalPages === 0 || currentRoutePage >= totalPages;
+      elements.nextRouteBtn.disabled = currentRoutePage >= totalPages;
     }
     elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1); });
     elements.nextRouteBtn.addEventListener('click', () => { 
-        const filtered = allRoutes.filter(r => !elements.searchRoute.value || (r.code || '').toLowerCase().includes(elements.searchRoute.value.toLowerCase()) || (r.address || '').toLowerCase().includes(elements.searchRoute.value.toLowerCase()));
-        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        const totalPages = Math.ceil(allRoutes.filter(r => !elements.searchRoute.value || `${r.code} ${r.address}`.toLowerCase().includes(elements.searchRoute.value.toLowerCase())).length / rowsPerPage); 
         if (currentRoutePage < totalPages) displayRoutes(currentRoutePage + 1); 
     });
     
@@ -1434,9 +1341,12 @@
       elements.vehicleList.innerHTML = '';
       currentVehiclePage = page;
       const searchTerm = elements.searchVehicle.value.toLowerCase();
-      const filteredVehicles = allVehicles.filter(v => !searchTerm || (v.vehicle_number || '').toLowerCase().includes(searchTerm) || (v.unit || '').toLowerCase().includes(searchTerm));
-      const paginatedVehicles = filteredVehicles.slice((currentVehiclePage - 1) * rowsPerPage, currentVehiclePage * rowsPerPage);
+      const filteredVehicles = allVehicles.filter(v => !searchTerm || `${v.vehicle_number} ${v.unit}`.toLowerCase().includes(searchTerm));
+      const start = (currentVehiclePage - 1) * rowsPerPage;
+      const paginatedVehicles = filteredVehicles.slice(start, start + rowsPerPage);
+      
       if (paginatedVehicles.length === 0 && filteredVehicles.length > 0 && currentVehiclePage > 1) { currentVehiclePage = Math.ceil(filteredVehicles.length / rowsPerPage); return displayVehicles(currentVehiclePage); }
+      
       elements.vehiclePaginationControls.style.display = filteredVehicles.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedVehicles.length === 0) {
         elements.vehicleList.innerHTML = '<tr><td colspan="4">Tidak ada kendaraan ditemukan.</td></tr>';
@@ -1445,21 +1355,16 @@
           const tr = el('tr');
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const itemInfo = `${vehicle.vehicle_number} (${vehicle.unit})`;
-
           if (currentUserData.role === 'super admin') {
-              const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
-              actionsCell.appendChild(deleteBtn);
+              actionsCell.appendChild(el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo }));
           } else {
               const existingRequest = allDeletionRequests.find(req => req.item_type === 'vehicle' && req.item_id == vehicle.id && req.status === 'pending');
               if (existingRequest) {
-                  const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
-                  actionsCell.appendChild(requestedBtn);
+                  actionsCell.appendChild(el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true }));
               } else {
-                  const requestBtn = el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
-                  actionsCell.appendChild(requestBtn);
+                  actionsCell.appendChild(el('button', '<i class="fa-solid fa-archive"></i> Minta Hapus', { class: 'btn-sm warm request-deletion-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo }));
               }
           }
-
           tr.innerHTML = `<td data-label="No. Kendaraan">${vehicle.vehicle_number}</td><td data-label="Unit">${vehicle.unit || '-'}</td><td data-label="Kepemilikan">${vehicle.ownership || '-'}</td>`;
           tr.appendChild(actionsCell);
           elements.vehicleList.appendChild(tr);
@@ -1468,12 +1373,11 @@
       const totalPages = Math.ceil(filteredVehicles.length / rowsPerPage);
       elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages || 1}`;
       elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
-      elements.nextVehicleBtn.disabled = totalPages === 0 || currentVehiclePage >= totalPages;
+      elements.nextVehicleBtn.disabled = currentVehiclePage >= totalPages;
     }
     elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1); });
     elements.nextVehicleBtn.addEventListener('click', () => { 
-        const filtered = allVehicles.filter(v => !elements.searchVehicle.value || (v.vehicle_number || '').toLowerCase().includes(elements.searchVehicle.value.toLowerCase()) || (v.unit || '').toLowerCase().includes(elements.searchVehicle.value.toLowerCase()));
-        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        const totalPages = Math.ceil(allVehicles.filter(v => !elements.searchVehicle.value || `${v.vehicle_number} ${v.unit}`.toLowerCase().includes(elements.searchVehicle.value.toLowerCase())).length / rowsPerPage); 
         if (currentVehiclePage < totalPages) displayVehicles(currentVehiclePage + 1);
     });
 
@@ -1481,34 +1385,31 @@
       elements.financeList.innerHTML = '';
       currentFinancePage = page;
       const searchTerm = elements.searchFinance.value.toLowerCase();
-      const filteredTrips = allTrips.filter(trip => {
-        const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-        return !searchTerm || (trip.id || '').toLowerCase().includes(searchTerm) || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
-      });
+      const filteredTrips = allTrips.filter(trip => !searchTerm || `${trip.id} ${trip.driver_name} ${trip.asal} ${Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : trip.tujuan}`.toLowerCase().includes(searchTerm));
       const totalUangJalan = filteredTrips.reduce((sum, trip) => sum + (Number(trip.uang_jalan) || 0), 0);
       elements.totalUangJalan.textContent = idr(totalUangJalan);
-      const paginatedTrips = filteredTrips.slice((currentFinancePage - 1) * rowsPerPage, currentFinancePage * rowsPerPage);
+      const start = (currentFinancePage - 1) * rowsPerPage;
+      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+      
       elements.financePaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
         elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data keuangan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
           const tr = el('tr');
-          const asalCode = routeCodeMap[trip.asal] || trip.asal;
-          const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
-          tr.innerHTML = `<td data-label="Trip ID">${trip.id}</td><td data-label="Rute">${asalCode}, ${tujuanCodes}</td><td data-label="Supir">${trip.driver_name || 'N/A'}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td>`;
+          const ruteDisplay = `${routeCodeMap[trip.asal] || trip.asal}, ${Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan)}`;
+          tr.innerHTML = `<td data-label="Trip ID">${trip.id}</td><td data-label="Rute">${ruteDisplay}</td><td data-label="Supir">${trip.driver_name || 'N/A'}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td>`;
           elements.financeList.appendChild(tr);
         });
       }
       const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
       elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages || 1}`;
       elements.prevFinanceBtn.disabled = currentFinancePage === 1;
-      elements.nextFinanceBtn.disabled = totalPages === 0 || currentFinancePage >= totalPages;
+      elements.nextFinanceBtn.disabled = currentFinancePage >= totalPages;
     }
     elements.prevFinanceBtn.addEventListener('click', () => { if (currentFinancePage > 1) displayFinance(currentFinancePage - 1); });
     elements.nextFinanceBtn.addEventListener('click', () => {
-        const filtered = allTrips.filter(t => !elements.searchFinance.value || (t.id || '').toLowerCase().includes(elements.searchFinance.value.toLowerCase()));
-        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        const totalPages = Math.ceil(allTrips.filter(t => !elements.searchFinance.value || `${t.id} ${t.driver_name}`.toLowerCase().includes(elements.searchFinance.value.toLowerCase())).length / rowsPerPage);
         if (currentFinancePage < totalPages) displayFinance(currentFinancePage + 1);
     });
 
@@ -1545,8 +1446,6 @@
         e.preventDefault();
         elements.addUserStatus.style.display = 'block'; 
         elements.addUserStatus.textContent = 'Menambahkan...';
-        const formData = new FormData(e.target);
-        const userData = Object.fromEntries(formData.entries());
         
         const { data, error } = await supabase.functions.invoke('create-user', { 
             body: { 
@@ -1563,7 +1462,7 @@
         if (error || (data && data.error)) {
             elements.addUserStatus.textContent = 'Gagal: ' + (error?.message || data.error);
         } else {
-            elements.addUserStatus.textContent = `✔️ User ${data.name} berhasil ditambahkan.`;
+            elements.addUserStatus.textContent = `✔️ User ${data.name || 'baru'} berhasil ditambahkan.`;
             e.target.reset();
             setTimeout(() => { elements.addUserStatus.style.display = 'none'; }, 3000);
         }
@@ -1575,21 +1474,10 @@
         let activities = { admin: [], coordinator: [], driver: [] }; 
         allTrips.forEach(trip => { 
             const tripInfo = `${routeCodeMap[trip.asal] || trip.asal}, ${Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan)}`;
-            if (trip.approved_by && trip.approved_at) { 
-                const coorName = userMap[trip.coor_id]?.name || 'Koordinator Dihapus'; 
-                activities.admin.push({ userId: trip.approved_by, time: trip.approved_at, action: `Menyetujui trip dari ${coorName}`, tripId: trip.id }); 
-            } 
-            if (trip.rejected_by && trip.rejected_at) { 
-                const coorName = userMap[trip.coor_id]?.name || 'Koordinator Dihapus'; 
-                activities.admin.push({ userId: trip.rejected_by, time: trip.rejected_at, action: `Menolak trip dari ${coorName}`, tripId: trip.id }); 
-            } 
-            if (trip.coor_id && trip.created_at) { 
-                const driverName = trip.driver_name || 'Supir Tidak Dikenal'; 
-                activities.coordinator.push({ userId: trip.coor_id, time: trip.created_at, action: `Membuat trip untuk ${driverName}`, tripId: trip.id }); 
-            } 
-            if (trip.driver_id && trip.arrived_at) { 
-                activities.driver.push({ userId: trip.driver_id, time: trip.arrived_at, action: `Menyelesaikan trip ${tripInfo}`, tripId: trip.id }); 
-            } 
+            if (trip.approved_by && trip.approved_at) activities.admin.push({ userId: trip.approved_by, time: trip.approved_at, action: `Menyetujui trip dari ${userMap[trip.coor_id]?.name || 'N/A'}` }); 
+            if (trip.rejected_by && trip.rejected_at) activities.admin.push({ userId: trip.rejected_by, time: trip.rejected_at, action: `Menolak trip dari ${userMap[trip.coor_id]?.name || 'N/A'}` }); 
+            if (trip.coor_id && trip.created_at) activities.coordinator.push({ userId: trip.coor_id, time: trip.created_at, action: `Membuat trip untuk ${trip.driver_name || 'N/A'}` }); 
+            if (trip.driver_id && trip.arrived_at) activities.driver.push({ userId: trip.driver_id, time: trip.arrived_at, action: `Menyelesaikan trip ${tripInfo}` }); 
         }); 
         
         const createActivityTable = (role, title) => { 
@@ -1598,9 +1486,7 @@
             const sortedActivities = activities[role].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 15); 
             tableHtml += `<div class="table-responsive"><table><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`; 
             sortedActivities.forEach(act => { 
-                const userName = userMap[act.userId]?.name || 'User Dihapus'; 
-                const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); 
-                tableHtml += `<tr><td data-label="Nama">${userName}</td><td data-label="Aksi">${act.action}</td><td data-label="Waktu">${actionTime}</td></tr>`; 
+                tableHtml += `<tr><td data-label="Nama">${userMap[act.userId]?.name || 'User Dihapus'}</td><td data-label="Aksi">${act.action}</td><td data-label="Waktu">${new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</td></tr>`; 
             }); 
             return tableHtml + '</tbody></table></div>'; 
         }; 
@@ -1611,8 +1497,7 @@
       elements.lockdownUserList.innerHTML = '';
       let allLocked = true;
       let eligibleUsers = 0;
-      const roleOrder = ['super admin', 'admin', 'coordinator', 'driver'];
-      const sortedUsers = [...allUsers].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+      const sortedUsers = [...allUsers].sort((a, b) => ['super admin', 'admin', 'coordinator', 'driver'].indexOf(a.role) - ['super admin', 'admin', 'coordinator', 'driver'].indexOf(b.role));
       
       sortedUsers.forEach(user => {
         const tr = el('tr');
@@ -1626,12 +1511,8 @@
           const switchInput = el('input', '', { type: 'checkbox' });
           switchInput.checked = user.locked || false;
           switchInput.addEventListener('change', async (e) => {
-            const isLocked = e.target.checked;
-            const { error } = await supabase.from('users').update({ locked: isLocked }).eq('id', user.id);
-            if (error) {
-                alert('Gagal mengubah status: ' + error.message);
-                e.target.checked = !isLocked;
-            }
+            const { error } = await supabase.from('users').update({ locked: e.target.checked }).eq('id', user.id);
+            if (error) { alert('Gagal mengubah status: ' + error.message); e.target.checked = !e.target.checked; }
           });
           switchLabel.append(switchInput, el('span', '', { class: 'slider' }));
           statusCell.appendChild(switchLabel);
@@ -1645,8 +1526,7 @@
 
     elements.massLockdownSwitch.addEventListener('change', async (e) => {
       const lock = e.target.checked;
-      const action = lock ? 'menonaktifkan' : 'mengaktifkan';
-      if (confirm(`Anda yakin ingin ${action} semua pengguna (kecuali super admin)?`)) {
+      if (confirm(`Anda yakin ingin ${lock ? 'menonaktifkan' : 'mengaktifkan'} semua pengguna (kecuali super admin)?`)) {
         const usersToUpdate = allUsers.filter(u => u.role !== 'super admin').map(u => u.id);
         if (usersToUpdate.length > 0) {
             const { error } = await supabase.from('users').update({ locked: lock }).in('id', usersToUpdate);
@@ -1686,11 +1566,9 @@
             head: [headers], body: body, startY: 60, theme: 'grid',
             headStyles: { fillColor: [26, 34, 53] }, styles: { fontSize: 9 },
             didDrawPage: function (data) {
-                const pageCount = doc.internal.getNumberOfPages();
                 doc.setFontSize(8);
-                const pageHeight = doc.internal.pageSize.height;
-                doc.text(`Halaman ${data.pageNumber} dari ${pageCount}`, data.settings.margin.left, pageHeight - 10);
-                doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 196 - data.settings.margin.right, pageHeight - 10, { align: 'right' });
+                doc.text(`Halaman ${data.pageNumber} dari ${doc.internal.getNumberOfPages()}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+                doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, doc.internal.pageSize.width - data.settings.margin.right, doc.internal.pageSize.height - 10, { align: 'right' });
             }
         });
         doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
@@ -1698,52 +1576,50 @@
     
     function handleExport(format) {
       const reportType = elements.reportType.value;
-      let dataForExcel, bodyForPDF, headers, filename, title, summary;
+      let data, headers, filename, title, summary;
       const statusMap = { submitted: "Menunggu", approved: "Disetujui", delivering: "Dalam Perjalanan", arriving_soon: "Hampir Sampai", arrived: "Selesai", rejected: "Ditolak" };
       switch (reportType) {
         case 'trips':
           const startDate = elements.startDate.value, endDate = elements.endDate.value;
           if (!startDate || !endDate) { alert("Silakan pilih rentang tanggal terlebih dahulu."); return; }
-          const filteredTrips = allTrips.filter(t => t.tanggal >= startDate && t.tanggal <= endDate);
-          dataForExcel = filteredTrips.map(t => ({ 'Rute': `${routeCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.tujuan] || t.tujuan)}`, 'Supir': t.driver_name || 'N/A', 'No. Kendaraan': t.vehicle_number || 'N/A', 'Muatan': t.muatan || 'N/A', 'Uang Jalan': idr(t.uang_jalan), 'Tanggal': fmtDate(t.tanggal), 'Status': statusMap[t.status] || t.status }));
-          bodyForPDF = dataForExcel.map(Object.values); headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
-          filename = 'Laporan_Perjalanan'; title = `Laporan Perjalanan`; summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal Perjalanan: ${filteredTrips.length}`;
+          data = allTrips.filter(t => t.tanggal >= startDate && t.tanggal <= endDate).map(t => ({ 'Rute': `${routeCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.tujuan] || t.tujuan)}`, 'Supir': t.driver_name || 'N/A', 'Kendaraan': t.vehicle_number || 'N/A', 'Muatan': t.muatan || 'N/A', 'Uang Jalan': idr(t.uang_jalan), 'Tanggal': fmtDate(t.tanggal), 'Status': statusMap[t.status] || t.status }));
+          headers = ["Rute", "Supir", "Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
+          filename = 'Laporan_Perjalanan'; title = `Laporan Perjalanan`; summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal: ${data.length} perjalanan`;
           break;
         case 'users':
-          dataForExcel = allUsers.map(u => ({ 'Nama': u.name || '-', 'Role': u.role || '-', 'Login Terakhir': u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-', 'Status': u.online ? 'Online' : 'Offline' }));
-          bodyForPDF = dataForExcel.map(Object.values); headers = ["Nama", "Role", "Login Terakhir", "Status"];
-          filename = 'Laporan_Pengguna'; title = 'Laporan Data Pengguna'; summary = `Total Pengguna: ${allUsers.length}`;
+          data = allUsers.map(u => ({ 'Nama': u.name || '-', 'Role': u.role || '-', 'Login Terakhir': u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-', 'Status': u.online ? 'Online' : 'Offline' }));
+          headers = ["Nama", "Role", "Login Terakhir", "Status"];
+          filename = 'Laporan_Pengguna'; title = 'Laporan Data Pengguna'; summary = `Total: ${data.length} pengguna`;
           break;
         case 'routes':
-          dataForExcel = allRoutes.map(r => ({ 'Kode': r.code, 'Alamat/Lokasi': r.address }));
-          bodyForPDF = dataForExcel.map(Object.values); headers = ["Kode", "Alamat/Lokasi"];
-          filename = 'Laporan_Rute'; title = 'Laporan Data Rute'; summary = `Total Rute: ${allRoutes.length}`;
+          data = allRoutes.map(r => ({ 'Kode': r.code, 'Alamat/Lokasi': r.address }));
+          headers = ["Kode", "Alamat/Lokasi"];
+          filename = 'Laporan_Rute'; title = 'Laporan Data Rute'; summary = `Total: ${data.length} rute`;
           break;
         case 'vehicles':
-          dataForExcel = allVehicles.map(v => ({ 'No. Kendaraan': v.vehicle_number, 'Unit': v.unit, 'Kepemilikan': v.ownership }));
-          bodyForPDF = dataForExcel.map(Object.values); headers = ["No. Kendaraan", "Unit", "Kepemilikan"];
-          filename = 'Laporan_Kendaraan'; title = 'Laporan Data Kendaraan'; summary = `Total Kendaraan: ${allVehicles.length}`;
+          data = allVehicles.map(v => ({ 'No. Kendaraan': v.vehicle_number, 'Unit': v.unit, 'Kepemilikan': v.ownership }));
+          headers = ["No. Kendaraan", "Unit", "Kepemilikan"];
+          filename = 'Laporan_Kendaraan'; title = 'Laporan Data Kendaraan'; summary = `Total: ${data.length} kendaraan`;
           break;
       }
-      if (format === 'excel') exportToExcel(dataForExcel, filename, title); 
-      else if (format === 'pdf') exportToPDF(headers, bodyForPDF, filename, title, summary);
+      if (format === 'excel') exportToExcel(data, filename, title); 
+      else if (format === 'pdf') exportToPDF(headers, data.map(Object.values), filename, title, summary);
     }
     
     async function handleBackup() {
-        console.log("Memulai proses backup...");
-        const dataToBackup = {};
+        alert("Memulai proses backup...");
         try {
-            const { data: users } = await supabase.from('users').select('*'); dataToBackup.users = users;
-            const { data: trips } = await supabase.from('trips').select('*'); dataToBackup.trips = trips;
-            const { data: routes } = await supabase.from('routes').select('*'); dataToBackup.routes = routes;
-            const { data: vehicles } = await supabase.from('vehicles').select('*'); dataToBackup.vehicles = vehicles;
-            const jsonString = JSON.stringify(dataToBackup, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url;
+            const [users, trips, routes, vehicles] = await Promise.all([
+                supabase.from('users').select('*'), supabase.from('trips').select('*'),
+                supabase.from('routes').select('*'), supabase.from('vehicles').select('*')
+            ]);
+            const dataToBackup = { users: users.data, trips: trips.data, routes: routes.data, vehicles: vehicles.data };
+            const blob = new Blob([JSON.stringify(dataToBackup, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
             a.download = `backup-sla-trucking-${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            a.click();
+            URL.revokeObjectURL(a.href);
             alert('Backup berhasil diunduh!');
         } catch (error) {
             console.error("Gagal melakukan backup:", error);
@@ -1754,31 +1630,33 @@
     async function handleRestore() {
         const file = elements.restoreFileInput.files[0];
         if (!file) { alert('Silakan pilih file backup terlebih dahulu.'); return; }
-        if (!confirm('PERINGATAN!\n\nAnda akan menimpa SEMUA data yang ada dengan data dari file ini. Aksi ini tidak dapat dibatalkan.\n\nApakah Anda benar-benar yakin ingin melanjutkan?')) return;
-        if (!confirm('KONFIRMASI AKHIR!\n\nIni adalah kesempatan terakhir untuk membatalkan. Setelah ini, data lama akan hilang selamanya.\n\nLanjutkan pemulihan data?')) return;
+        if (!confirm('PERINGATAN!\nAnda akan menimpa SEMUA data. Aksi ini tidak dapat dibatalkan.\nLanjutkan?')) return;
+        if (!confirm('KONFIRMASI AKHIR!\nData lama akan hilang selamanya.\nLanjutkan pemulihan data?')) return;
+        
         const reader = new FileReader();
         reader.onload = async (event) => {
             try {
                 const data = JSON.parse(event.target.result);
-                elements.restoreStatus.style.display = 'block'; elements.restoreStatus.textContent = 'Memulihkan data... Harap jangan tutup halaman ini.';
-                if (!data.users || !data.trips || !data.routes || !data.vehicles) throw new Error("File backup tidak valid atau rusak.");
+                elements.restoreStatus.textContent = 'Memulihkan data... Harap tunggu.';
+                if (!data.users || !data.trips || !data.routes || !data.vehicles) throw new Error("File backup tidak valid.");
+                
                 await supabase.from('trips').delete().neq('id', 0);
                 await supabase.from('vehicles').delete().neq('id', 0);
                 await supabase.from('routes').delete().neq('id', 0);
+                
                 await supabase.from('users').upsert(data.users);
                 await supabase.from('trips').insert(data.trips);
                 await supabase.from('vehicles').insert(data.vehicles);
                 await supabase.from('routes').insert(data.routes);
+                
                 elements.restoreStatus.textContent = '✔️ Data berhasil dipulihkan. Halaman akan dimuat ulang.';
-                alert('Data berhasil dipulihkan. Sistem akan dimuat ulang sekarang.');
+                alert('Data berhasil dipulihkan.');
                 setTimeout(() => window.location.reload(), 2000);
             } catch (error) {
-                console.error("Gagal memulihkan data:", error);
                 elements.restoreStatus.textContent = `Gagal: ${error.message}`;
                 alert(`Gagal memulihkan data: ${error.message}`);
             }
         };
-        reader.onerror = () => { alert('Gagal membaca file.'); };
         reader.readAsText(file);
     }
 
