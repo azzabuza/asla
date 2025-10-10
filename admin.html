@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,573 +18,599 @@
   <div class="content-wrapper">
     <nav class="sidebar">
       <div class="sidebar-wrapper">
-      <div class="sidebar-header">
-        <h2>Administrator</h2>
-      </div>
-      <div class="sidebar-account">
-        <p id="userName">Memuat...</p>
-        <small id="userEmail">Memuat...</small>
-      </div>
-      <div class="sidebar-menu">
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-circle-info"></i> Informasi</h4>
+        <div class="sidebar-header">
+          <h2>Administrator</h2>
         </div>
+        <div class="sidebar-account">
+          <p id="userName">Memuat...</p>
+          <small id="userEmail">Memuat...</small>
+        </div>
+        <div class="sidebar-menu">
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-circle-info"></i> Informasi</h4>
+          </div>
           <ul>
             <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a href="#monitoring" class="nav-link"><i class="fas fa-truck"></i> Informasi Perjalanan</a></li>
             <li><a href="#finance" class="nav-link"><i class="fas fa-wallet"></i> Informasi Keuangan</a></li>
           </ul>
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-briefcase"></i> Manajemen</h4>
-        </div>
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-briefcase"></i> Manajemen</h4>
+          </div>
           <ul>
             <li><a href="#users" class="nav-link"><i class="fas fa-users"></i> Manajemen Pengguna</a></li>
+            <li id="deletion-request-menu-item" style="display: none;"><a href="#deletion-requests" class="nav-link"><i class="fas fa-user-slash"></i> Permintaan Penghapusan</a></li>
             <li><a href="#routes" class="nav-link"><i class="fas fa-route"></i> Manajemen Rute</a></li>
             <li><a href="#vehicles" class="nav-link"><i class="fas fa-car"></i> Manajemen Kendaraan</a></li>
           </ul>
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-bars-progress"></i> Tambah</h4>
-        </div>
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-bars-progress"></i> Tambah</h4>
+          </div>
           <ul>
             <li><a href="#addusers" class="nav-link"><i class="fas fa-user-plus"></i> Tambah Pengguna</a></li>
             <li><a href="#addrutes" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</a></li>
             <li><a href="#addvehicles" class="nav-link"><i class="fas fa-car-side"></i> Tambah Kendaraan</a></li>
           </ul>
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-book"></i> Dokumentasi</h4>
-        </div>
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-book"></i> Dokumentasi</h4>
+          </div>
           <ul>
             <li><a href="#performance" class="nav-link"><i class="fas fa-chart-line"></i> Kinerja Role</a></li>
             <li><a href="#documentation" class="nav-link"><i class="fas fa-file-alt"></i> Dokumentasi Laporan</a></li>
           </ul>
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-gear"></i> Sistem</h4>
-        </div>
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-gear"></i> Sistem</h4>
+          </div>
           <ul>
             <li id="lockdown-menu-item" style="display: none;"><a href="#lockdown" class="nav-link"><i class="fas fa-lock"></i> Protokol Lockdown</a></li>
             <li id="backup-menu-item" style="display: none;"><a href="#backup" class="nav-link"><i class="fas fa-database"></i> Pencadangan Data</a></li>
             <li><a href="#tampilan" class="nav-link"><i class="fas fa-palette"></i> Tampilan</a></li>
           </ul>
-        <div class="sidebar-menu-header">
-          <h4><i class="fa-solid fa-thumbs-up"></i> Sosial</h4>
-        </div>
+          <div class="sidebar-menu-header">
+            <h4><i class="fa-solid fa-thumbs-up"></i> Sosial</h4>
+          </div>
           <ul>
             <li><a href="forum.html"><i class="fa-solid fa-comments"></i> Forum Diskusi</a></li>
           </ul>
-      </div>
-      <div class="sidebar-footer">
-        <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-        <p>V.3.0.4</p>
-      </div>
         </div>
+        <div class="sidebar-footer">
+          <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+          <p>V.3.0.4</p>
+        </div>
+      </div>
     </nav>
 
     <main class="main-content">
       <div class="main-wrapper">
-      <header class="main-header">
-        <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle sidebar" style="padding: 1rem; width: 4rem;">
-                <i class="fas fa-bars"></i>
-            </button>
-        <div class="main-header-content">
-          <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-          <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
-        </div>
-        <div class="main-header-menu">
-        <ul>
-          <li><a href="forum.html"><i class="fa-solid fa-comments"></i> Forum Diskusi</a></li>
-          <li><a href="#"><i class="fa-solid fa-user"></i> Tim IT</a></li>
-          <li><a href="#"><i class="fa-solid fa-face-smile"></i> Pusat Bantuan</a></li>
-        </ul>
+        <header class="main-header">
+          <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle sidebar" style="padding: 1rem; width: 4rem;">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="main-header-content">
+            <h1 id="pageTitle"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+            <p id="pageSubtitle">Ringkasan umum dan statistik sistem.</p>
           </div>
-      </header>
-    <div class="content-container">
-      <div id="page-dashboard" class="page active">
-        <div class="dashboard-grid">
-            <div class="stat-card">
+          <div class="main-header-menu">
+            <ul>
+              <li><a href="forum.html"><i class="fa-solid fa-comments"></i> Forum Diskusi</a></li>
+              <li><a href="#"><i class="fa-solid fa-user"></i> Tim IT</a></li>
+              <li><a href="#"><i class="fa-solid fa-face-smile"></i> Pusat Bantuan</a></li>
+            </ul>
+          </div>
+        </header>
+        <div class="content-container">
+          <div id="page-dashboard" class="page active">
+            <div class="dashboard-grid">
+              <div class="stat-card">
                 <h3>Total Perjalanan</h3>
                 <p id="totalTrips">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Perjalanan Bulan Ini</h3>
                 <p id="tripsThisMonth">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Perjalanan Bulan Lalu</h3>
                 <p id="tripsLastMonth">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Pengguna Online</h3>
                 <p id="onlineUsers">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Total Pengguna</h3>
                 <p id="totalUsers">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Total Rute</h3>
                 <p id="totalRoutes">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Total Kendaraan</h3>
                 <p id="totalVehicles">0</p>
-            </div>
-            <div class="stat-card">
+              </div>
+              <div class="stat-card">
                 <h3>Kendaraan Aktif Hari Ini</h3>
                 <p id="activeVehiclesToday">0</p>
+              </div>
             </div>
-        </div>
-        <div class="card" style="margin-top: 1rem;">
-            <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
-            <div class="card-body">
+            <div class="card" style="margin-top: 1rem;">
+              <h2 class="card-header">Aktivitas Perjalanan Terkini</h2>
+              <div class="card-body">
                 <div class="table-responsive">
-                    <table id="recentActivityTable">
-                        <thead>
-                            <tr>
-                                <th>Deskripsi</th>
-                                <th>Uang Jalan</th>
-                                <th>Tanggal</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentActivityList">
-                            <tr><td colspan="4">Memuat aktivitas...</td></tr>
-                        </tbody>
-                    </table>
+                  <table id="recentActivityTable">
+                    <thead>
+                      <tr>
+                        <th>Deskripsi</th>
+                        <th>Uang Jalan</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recentActivityList">
+                      <tr><td colspan="4">Memuat aktivitas...</td></tr>
+                    </tbody>
+                  </table>
                 </div>
                 <div id="activity-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
-                    <button id="prevActivityBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-                    <span id="activityPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-                    <button id="nextActivityBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                  <button id="prevActivityBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="activityPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextActivityBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
                 </div>
+              </div>
             </div>
-        </div>
-      </div>
+          </div>
 
-      <div id="page-monitoring" class="page">
-        <section class="card">
-          <h2 class="card-header">Daftar Perjalanan</h2>
-          <div class="card-body">
-            <div class="table-controls">
-              <div class="form-group">
-                <label>Filter Status</label>
-                <select id="filterTripStatus">
-                  <option value="all">Semua</option>
-                  <option value="submitted">Menunggu</option>
-                  <option value="approved">Disetujui</option>
-                  <option value="delivering">Dalam Perjalanan</option>
-                  <option value="arriving_soon">Hampir Sampai</option>
-                  <option value="rejected">Ditolak</option>
-                  <option value="arrived">Selesai</option>
-                </select>
+          <div id="page-monitoring" class="page">
+            <section class="card">
+              <h2 class="card-header">Daftar Perjalanan</h2>
+              <div class="card-body">
+                <div class="table-controls">
+                  <div class="form-group">
+                    <label>Filter Status</label>
+                    <select id="filterTripStatus">
+                      <option value="all">Semua</option>
+                      <option value="submitted">Menunggu</option>
+                      <option value="approved">Disetujui</option>
+                      <option value="delivering">Dalam Perjalanan</option>
+                      <option value="arriving_soon">Hampir Sampai</option>
+                      <option value="rejected">Ditolak</option>
+                      <option value="arrived">Selesai</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Cari Supir / Rute</label>
+                    <input type="text" id="searchTrip" placeholder="Ketikkan sesuatu"/>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table id="tripTable">
+                    <thead>
+                      <tr>
+                        <th>Trip ID</th>
+                        <th>Rute</th>
+                        <th>Supir</th>
+                        <th>No. Kendaraan</th>
+                        <th>Muatan</th>
+                        <th>Uang Jalan</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tripList">
+                      <tr><td colspan="9">Memuat data...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
+                  <button id="prevBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="pageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Cari Supir / Rute</label>
-                <input type="text" id="searchTrip" placeholder="Ketikkan sesuatu"/>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table id="tripTable">
-                <thead>
-                  <tr>
-                    <th>Trip ID</th>
-                    <th>Rute</th>
-                    <th>Supir</th>
-                    <th>No. Kendaraan</th>
-                    <th>Muatan</th>
-                    <th>Uang Jalan</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="tripList">
-                  <tr><td colspan="9">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
-              <button id="prevBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="pageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
+            </section>
           </div>
-        </section>
-      </div>
 
-      <div id="page-finance" class="page">
-        <section class="card">
-          <h2 class="card-header">Data Keuangan Perjalanan</h2>
-          <div class="card-body">
-            <div class="table-controls" style="grid-template-columns: 1fr;">
-              <div class="form-group">
-                <label>Cari Supir / Rute / Trip ID</label>
-                <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
+          <div id="page-finance" class="page">
+            <section class="card">
+              <h2 class="card-header">Data Keuangan Perjalanan</h2>
+              <div class="card-body">
+                <div class="table-controls" style="grid-template-columns: 1fr;">
+                  <div class="form-group">
+                    <label>Cari Supir / Rute / Trip ID</label>
+                    <input type="text" id="searchFinance" placeholder="Ketikkan sesuatu..." />
+                  </div>
+                </div>
+                <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
+                  <h3>Total Pengeluaran</h3>
+                  <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Trip ID</th>
+                        <th>Rute</th>
+                        <th>Supir</th>
+                        <th>Tanggal</th>
+                        <th>Uang Jalan</th>
+                      </tr>
+                    </thead>
+                    <tbody id="financeList">
+                      <tr><td colspan="5">Memuat data keuangan...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
+                  <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                </div>
               </div>
-            </div>
-            <div class="stat-card" style="margin-bottom: 1rem; text-align: left; padding: 1.5rem;">
-                <h3>Total Pengeluaran</h3>
-                <p id="totalUangJalan" style="font-size: 2.5rem;">Rp 0</p>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Trip ID</th>
-                    <th>Rute</th>
-                    <th>Supir</th>
-                    <th>Tanggal</th>
-                    <th>Uang Jalan</th>
-                  </tr>
-                </thead>
-                <tbody id="financeList">
-                  <tr><td colspan="5">Memuat data keuangan...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="finance-pagination-controls" style="display: none; margin-top: 1.5rem; text-align: center; gap: 1rem;">
-              <button id="prevFinanceBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="financePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextFinanceBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
+            </section>
           </div>
-        </section>
-      </div>
-      
-      <div id="page-users" class="page">
-        <section class="card">
-          <h2 class="card-header">Daftar Semua Pengguna</h2>
-          <div class="card-body">
-            <div class="table-controls">
-              <div class="form-group">
-                <label>Filter Role</label>
-                <select id="filterRole"><option value="all">Semua</option>
-                  <option value="admin">Admin</option>
-                  <option value="coordinator">Koordinator</option>
-                  <option value="driver">Supir</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Cari Nama</label>
-                <input type="text" id="searchName" placeholder="Ketikkan nama" />
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nama</th>
-                    <th>Role</th>
-                    <th>NIK</th>
-                    <th>Jenis Kelamin</th>
-                    <th>Status Karyawan</th>
-                    <th>Login Terakhir</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="userList">
-                  <tr>
-                    <td colspan="8">Memuat data...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="user-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
-                <button id="prevUserBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-                <span id="userPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-                <button id="nextUserBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
-          </div>
-        </section>
-      </div>
 
-      <div id="page-routes" class="page">
-        <section class="card">
-          <h2 class="card-header">Daftar Rute Tersimpan</h2>
-          <div class="card-body">
-            <div class="table-controls" style="grid-template-columns: 1fr;">
-              <div class="form-group">
-                <label>Cari Kode / Alamat Rute</label>
-                <input type="text" id="searchRoute" placeholder="Ketikkan alamat" />
+          <div id="page-users" class="page">
+            <section class="card">
+              <h2 class="card-header">Daftar Semua Pengguna</h2>
+              <div class="card-body">
+                <div class="table-controls">
+                  <div class="form-group">
+                    <label>Filter Role</label>
+                    <select id="filterRole">
+                      <option value="all">Semua</option>
+                      <option value="admin">Admin</option>
+                      <option value="coordinator">Koordinator</option>
+                      <option value="driver">Supir</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Cari Nama</label>
+                    <input type="text" id="searchName" placeholder="Ketikkan nama" />
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Nama</th>
+                        <th>Role</th>
+                        <th>NIK</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Status Karyawan</th>
+                        <th>Login Terakhir</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="userList">
+                      <tr>
+                        <td colspan="8">Memuat data...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="user-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
+                  <button id="prevUserBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="userPageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextUserBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                </div>
               </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Kode</th>
-                    <th>Rute</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="routeList">
-                  <tr><td colspan="3">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="route-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
-              <button id="prevRouteBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="routePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextRouteBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
+            </section>
           </div>
-        </section>
-      </div>
+          
+          <div id="page-deletion-requests" class="page">
+            <section class="card">
+              <h2 class="card-header">Permintaan Penghapusan Pengguna</h2>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Pengguna (Target)</th>
+                        <th>Diminta oleh (Admin)</th>
+                        <th>Tanggal Permintaan</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="deletionRequestList">
+                      <tr><td colspan="5">Memuat permintaan...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
 
-      <div id="page-vehicles" class="page">
-        <section class="card">
-          <h2 class="card-header">Daftar Kendaraan Tersimpan</h2>
-          <div class="card-body">
-            <div class="table-controls" style="grid-template-columns: 1fr;">
-              <div class="form-group">
-                <label>Cari No. Kendaraan / Unit</label>
-                <input type="text" id="searchVehicle" placeholder="Ketikkan kendaraan" />
+          <div id="page-routes" class="page">
+            <section class="card">
+              <h2 class="card-header">Daftar Rute Tersimpan</h2>
+              <div class="card-body">
+                <div class="table-controls" style="grid-template-columns: 1fr;">
+                  <div class="form-group">
+                    <label>Cari Kode / Alamat Rute</label>
+                    <input type="text" id="searchRoute" placeholder="Ketikkan alamat" />
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Kode</th>
+                        <th>Rute</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="routeList">
+                      <tr><td colspan="3">Memuat data...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="route-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
+                  <button id="prevRouteBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="routePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextRouteBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                </div>
               </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>No. Kendaraan</th>
-                    <th>Unit</th>
-                    <th>Kepemilikan</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="vehicleList">
-                  <tr><td colspan="4">Memuat data...</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="vehicle-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
-              <button id="prevVehicleBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
-              <span id="vehiclePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
-              <button id="nextVehicleBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
-            </div>
+            </section>
           </div>
-        </section>
-      </div>
-      
-      <div id="page-addusers" class="page">
-          <section class="card">
+
+          <div id="page-vehicles" class="page">
+            <section class="card">
+              <h2 class="card-header">Daftar Kendaraan Tersimpan</h2>
+              <div class="card-body">
+                <div class="table-controls" style="grid-template-columns: 1fr;">
+                  <div class="form-group">
+                    <label>Cari No. Kendaraan / Unit</label>
+                    <input type="text" id="searchVehicle" placeholder="Ketikkan kendaraan" />
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>No. Kendaraan</th>
+                        <th>Unit</th>
+                        <th>Kepemilikan</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="vehicleList">
+                      <tr><td colspan="4">Memuat data...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="vehicle-pagination-controls" style="display: none; margin-top: 1rem; text-align: center; gap: 1rem;">
+                  <button id="prevVehicleBtn"><i class="fa-solid fa-arrow-left"></i> Sebelumnya</button>
+                  <span id="vehiclePageInfo" style="color: var(--light-lavender); font-size: 1.5rem; font-weight: 500; margin: 0 1rem; padding: 0;"></span>
+                  <button id="nextVehicleBtn"><i class="fa-solid fa-arrow-right"></i> Berikutnya</button>
+                </div>
+              </div>
+            </section>
+          </div>
+          
+          <div id="page-addusers" class="page">
+            <section class="card">
               <h2 class="card-header">Tambah Pengguna Baru</h2>
               <div class="card-body">
-                  <form id="addUserForm">
-                      <div class="form-group">
-                        <label for="newUserName">Nama</label>
-                        <input type="text" id="newUserName" placeholder="Ketikkan nama" autocomplete="off" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="newUserEmail">Email</label>
-                        <input type="email" id="newUserEmail" placeholder="Ketikkan email" autocomplete="off" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="newUserPassword">Password</label>
-                        <input type="password" id="newUserPassword" placeholder="Ketikkan password" autocomplete="new-password" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="newUserNik">Nomor Identitas (NIK)</label>
-                        <input type="number" id="newUserNik" placeholder="Ketikkan nomor NIK" autocomplete="off" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="newUserGender">Jenis Kelamin</label>
-                        <select id="newUserGender" required>
-                          <option value="">-- Pilih Jenis --</option>
-                          <option value="Laki-laki">Laki-laki</option>
-                          <option value="Perempuan">Perempuan</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="newUserStatus">Status Karyawan</label>
-                        <select id="newUserStatus" required>
-                          <option value="">-- Pilih Status --</option>
-                          <option value="Tetap">Tetap</option>
-                          <option value="Kontrak">Kontrak</option>
-                          <option value="Freelance">Freelance</option>
-                        </select>
-                      </div>
-                    <div class="form-group">
-                        <label for="newUserRole">Role</label>
-                        <select id="newUserRole" required>
-                          <option value="">-- Pilih Role --</option>
-                          <option value="coordinator">Koordinator</option>
-                          <option value="driver">Supir</option>
-                        </select>
-                      </div>
-                      <button type="submit"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
-                  </form>
-                  <p id="addUserStatus" class="form-status"></p>
+                <form id="addUserForm">
+                  <div class="form-group">
+                    <label for="newUserName">Nama</label>
+                    <input type="text" id="newUserName" placeholder="Ketikkan nama" autocomplete="off" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserEmail">Email</label>
+                    <input type="email" id="newUserEmail" placeholder="Ketikkan email" autocomplete="off" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserPassword">Password</label>
+                    <input type="password" id="newUserPassword" placeholder="Ketikkan password" autocomplete="new-password" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserNik">Nomor Identitas (NIK)</label>
+                    <input type="number" id="newUserNik" placeholder="Ketikkan nomor NIK" autocomplete="off" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserGender">Jenis Kelamin</label>
+                    <select id="newUserGender" required>
+                      <option value="">-- Pilih Jenis --</option>
+                      <option value="Laki-laki">Laki-laki</option>
+                      <option value="Perempuan">Perempuan</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserStatus">Status Karyawan</label>
+                    <select id="newUserStatus" required>
+                      <option value="">-- Pilih Status --</option>
+                      <option value="Tetap">Tetap</option>
+                      <option value="Kontrak">Kontrak</option>
+                      <option value="Freelance">Freelance</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="newUserRole">Role</label>
+                    <select id="newUserRole" required>
+                      <option value="">-- Pilih Role --</option>
+                      <option value="coordinator">Koordinator</option>
+                      <option value="driver">Supir</option>
+                    </select>
+                  </div>
+                  <button type="submit"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
+                </form>
+                <p id="addUserStatus" class="form-status"></p>
               </div>
-          </section>
-      </div>
-      <div id="page-addrutes" class="page">
-          <section class="card">
-            <h2 class="card-header">Tambah Rute Baru</h2>
-            <div class="card-body">
-              <form id="addRouteForm">
+            </section>
+          </div>
+          <div id="page-addrutes" class="page">
+            <section class="card">
+              <h2 class="card-header">Tambah Rute Baru</h2>
+              <div class="card-body">
+                <form id="addRouteForm">
+                  <div class="form-group">
+                    <label for="routeCode">Kode Rute</label>
+                    <input type="text" id="routeCode" placeholder="Ketikkan kode" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="routeAddress">Alamat/Lokasi</label>
+                    <input type="text" id="routeAddress" placeholder="Ketikkan alamat" required>
+                  </div>
+                  <button type="submit"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</button>
+                </form>
+                <p id="addRouteStatus" class="form-status"></p>
+              </div>
+            </section>
+          </div>
+          <div id="page-addvehicles" class="page">
+            <section class="card">
+              <h2 class="card-header">Tambah Kendaraan Baru</h2>
+              <div class="card-body">
+                <form id="addVehicleForm">
+                  <div class="form-group">
+                    <label for="vehicleNumberInput">No. Kendaraan</label>
+                    <input type="text" id="vehicleNumberInput" placeholder="Ketikkan nomor polisi" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="vehicleUnit">Unit</label>
+                    <input type="text" id="vehicleUnit" placeholder="Ketikkan kendaraan" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="vehicleOwnership">Kepemilikan</label>
+                    <select id="vehicleOwnership" required>
+                      <option value="">-- Pilih Kepemilikan --</option>
+                      <option value="Perusahaan">Perusahaan</option>
+                      <option value="Sewa">Sewa</option>
+                    </select>
+                  </div>
+                  <button type="submit"><i class="fa-solid fa-car"></i> Tambah Kendaraan</button>
+                </form>
+                <p id="addVehicleStatus" class="form-status"></p>
+              </div>
+            </section>
+          </div>
+          <div id="page-performance" class="page">
+            <section class="card">
+              <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
+              <div id="roleStats" class="card-body">Memuat statistik...</div>
+            </section>
+          </div>
+
+          <div id="page-documentation" class="page">
+            <section class="card">
+              <h2 class="card-header">Buat Laporan</h2>
+              <div class="card-body">
                 <div class="form-group">
-                  <label for="routeCode">Kode Rute</label>
-                  <input type="text" id="routeCode" placeholder="Ketikkan kode" required>
-                </div>
-                <div class="form-group">
-                  <label for="routeAddress">Alamat/Lokasi</label>
-                  <input type="text" id="routeAddress" placeholder="Ketikkan alamat" required>
-                </div>
-                <button type="submit"><i class="fa-solid fa-map-location-dot"></i> Tambah Rute</button>
-              </form>
-              <p id="addRouteStatus" class="form-status"></p>
-            </div>
-          </section>
-      </div>
-      <div id="page-addvehicles" class="page">
-          <section class="card">
-            <h2 class="card-header">Tambah Kendaraan Baru</h2>
-            <div class="card-body">
-              <form id="addVehicleForm">
-                <div class="form-group">
-                  <label for="vehicleNumberInput">No. Kendaraan</label>
-                  <input type="text" id="vehicleNumberInput" placeholder="Ketikkan nomor polisi" required>
-                </div>
-                <div class="form-group">
-                  <label for="vehicleUnit">Unit</label>
-                  <input type="text" id="vehicleUnit" placeholder="Ketikkan kendaraan" required>
-                </div>
-                <div class="form-group">
-                  <label for="vehicleOwnership">Kepemilikan</label>
-                  <select id="vehicleOwnership" required>
-                    <option value="">-- Pilih Kepemilikan --</option>
-                    <option value="Perusahaan">Perusahaan</option>
-                    <option value="Sewa">Sewa</option>
+                  <label for="reportType">Pilih Jenis Data</label>
+                  <select id="reportType">
+                    <option value="trips">Laporan Perjalanan</option>
+                    <option value="users">Laporan Pengguna</option>
+                    <option value="routes">Laporan Rute</option>
+                    <option value="vehicles">Laporan Kendaraan</option>
                   </select>
                 </div>
-                <button type="submit"><i class="fa-solid fa-car"></i> Tambah Kendaraan</button>
-              </form>
-              <p id="addVehicleStatus" class="form-status"></p>
-            </div>
-          </section>
-      </div>
-      <div id="page-performance" class="page">
-        <section class="card">
-          <h2 class="card-header">Aktivitas Terbaru Berdasarkan Role</h2>
-          <div id="roleStats" class="card-body">Memuat statistik...</div>
-        </section>
-      </div>
-
-      <div id="page-documentation" class="page">
-        <section class="card">
-          <h2 class="card-header">Buat Laporan</h2>
-          <div class="card-body">
-            <div class="form-group">
-              <label for="reportType">Pilih Jenis Data</label>
-              <select id="reportType">
-                <option value="trips">Laporan Perjalanan</option>
-                <option value="users">Laporan Pengguna</option>
-                <option value="routes">Laporan Rute</option>
-                <option value="vehicles">Laporan Kendaraan</option>
-              </select>
-            </div>
-            <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div>
+                <div id="dateFilterContainer" class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div>
                     <label for="startDate">Dari Tanggal</label>
                     <input type="date" id="startDate">
-                </div>
-                <div>
+                  </div>
+                  <div>
                     <label for="endDate">Sampai Tanggal</label>
                     <input type="date" id="endDate">
+                  </div>
                 </div>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button id="exportPdfBtn"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</button>
-                <button id="exportExcelBtn"><i class="fa-solid fa-file-excel"></i> Unduh Excel</button>
-            </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                  <button id="exportPdfBtn"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</button>
+                  <button id="exportExcelBtn"><i class="fa-solid fa-file-excel"></i> Unduh Excel</button>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
 
-      <div id="page-tampilan" class="page">
-        <section class="card">
-          <h2 class="card-header">Tema Tampilan</h2>
-          <div class="card-body">
-            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0;">
-              <label for="themeToggle" style="margin: 0;">Mode Terang</label>
-              <label class="switch">
-                <input type="checkbox" id="themeToggle">
-                <span class="slider"></span>
-              </label>
-            </div>
+          <div id="page-tampilan" class="page">
+            <section class="card">
+              <h2 class="card-header">Tema Tampilan</h2>
+              <div class="card-body">
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0;">
+                  <label for="themeToggle" style="margin: 0;">Mode Terang</label>
+                  <label class="switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </section>
+            <section class="card">
+              <h2 class="card-header">Font Tampilan</h2>
+              <div class="card-body">
+                <div class="form-group" style="margin: 0;">
+                  <label for="fontSelector">Pilih Font</label>
+                  <select id="fontSelector">
+                    <option value="'Poppins', sans-serif">Poppins (Default)</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                  </select>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
-        <section class="card">
-          <h2 class="card-header">Font Tampilan</h2>
-          <div class="card-body">
-            <div class="form-group" style="margin: 0;">
-              <label for="fontSelector">Pilih Font</label>
-              <select id="fontSelector">
-                <option value="'Poppins', sans-serif">Poppins (Default)</option>
-                <option value="'Roboto', sans-serif">Roboto</option>
-              </select>
-            </div>
-          </div>
-        </section>
-      </div>
 
-      <div id="page-lockdown" class="page">
-        <section class="card">
-          <h2 class="card-header">Mode Lockdown Pengguna</h2>
-          <div class="card-body">
-            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-              <label for="massLockdownSwitch" style="margin: 0;">Lockdown Semua Pengguna</label>
-              <label class="switch">
-                <input type="checkbox" id="massLockdownSwitch">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nama Pengguna</th>
-                    <th>Role</th>
-                    <th>Status Pengguna</th>
-                  </tr>
-                </thead>
-                <tbody id="lockdownUserList">
-                  <tr><td colspan="3">Memuat data pengguna...</td></tr>
-                </tbody>
-              </table>
-            </div>
+          <div id="page-lockdown" class="page">
+            <section class="card">
+              <h2 class="card-header">Mode Lockdown Pengguna</h2>
+              <div class="card-body">
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                  <label for="massLockdownSwitch" style="margin: 0;">Lockdown Semua Pengguna</label>
+                  <label class="switch">
+                    <input type="checkbox" id="massLockdownSwitch">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Nama Pengguna</th>
+                        <th>Role</th>
+                        <th>Status Pengguna</th>
+                      </tr>
+                    </thead>
+                    <tbody id="lockdownUserList">
+                      <tr><td colspan="3">Memuat data pengguna...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
-      
-      <div id="page-backup" class="page">
-        <section class="card">
-          <h2 class="card-header">Pencadangan Data</h2>
-          <div class="card-body">
-            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
-            <button id="downloadBackupBtn"><i class="fas fa-download"></i> Unduh Semua Data (.json)</button>
+          
+          <div id="page-backup" class="page">
+            <section class="card">
+              <h2 class="card-header">Pencadangan Data</h2>
+              <div class="card-body">
+                <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">Unduh salinan semua data sistem (pengguna, perjalanan, rute, kendaraan) dalam satu file JSON. Simpan file ini di tempat yang aman.</p>
+                <button id="downloadBackupBtn"><i class="fas fa-download"></i> Unduh Semua Data (.json)</button>
+              </div>
+            </section>
+            <section class="card">
+              <h2 class="card-header" style="color: var(--red);">Pemulihan Data</h2>
+              <div class="card-body">
+                <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">
+                  <strong style="color: var(--orange);">PERINGATAN:</strong> Aksi ini akan <strong style="text-decoration: underline;">menimpa seluruh data</strong> yang ada di database dengan data dari file yang Anda unggah. Aksi ini tidak dapat dibatalkan. Lanjutkan hanya jika Anda benar-benar yakin.
+                </p>
+                <div class="form-group">
+                  <label for="restoreFileInput">Pilih File Pencadangan (.json)</label>
+                  <input type="file" id="restoreFileInput" accept=".json">
+                </div>
+                <button id="restoreBackupBtn" class="logout-button" style="width: 100%;"><i class="fas fa-upload"></i> Unggah dan Pulihkan Data</button>
+                <p id="restoreStatus" class="form-status"></p>
+              </div>
+            </section>
           </div>
-        </section>
-        <section class="card">
-          <h2 class="card-header" style="color: var(--red);">Pemulihan Data</h2>
-          <div class="card-body">
-            <p style="color: var(--light-lavender); font-size: 1.5rem; margin-bottom: 1rem;">
-              <strong style="color: var(--orange);">PERINGATAN:</strong> Aksi ini akan <strong style="text-decoration: underline;">menimpa seluruh data</strong> yang ada di database dengan data dari file yang Anda unggah. Aksi ini tidak dapat dibatalkan. Lanjutkan hanya jika Anda benar-benar yakin.
-            </p>
-            <div class="form-group">
-                <label for="restoreFileInput">Pilih File Pencadangan (.json)</label>
-                <input type="file" id="restoreFileInput" accept=".json">
-            </div>
-            <button id="restoreBackupBtn" class="logout-button" style="width: 100%;"><i class="fas fa-upload"></i> Unggah dan Pulihkan Data</button>
-            <p id="restoreStatus" class="form-status"></p>
-          </div>
-        </section>
-      </div>
-</div>
-<footer class="main-footer">
-        <p><strong style="color: var(--orange);">PERINGATAN:</strong> Hati-hati dalam mengeksekusi data.</p>
-      </footer>
         </div>
+        <footer class="main-footer">
+          <p><strong style="color: var(--orange);">PERINGATAN:</strong> Hati-hati dalam mengeksekusi data.</p>
+        </footer>
+      </div>
     </main>
     
   </div>
@@ -606,35 +632,29 @@
   </div>
 
   <script type="module">
-    // Impor client Supabase dan utilitas
     import { supabase } from './supabase-client.js';
     import { badge, fmtDate, el, idr } from './utils.js';
 
-    // --- Hamburger Menu & Overlay Logic ---
     document.addEventListener('DOMContentLoaded', () => {
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
-
-        // Toggle sidebar saat hamburger di-klik
         hamburger.addEventListener('click', (event) => {
-            event.stopPropagation(); // Mencegah event klik menyebar ke elemen lain
+            event.stopPropagation();
             sidebar.classList.toggle('active');
         });
-
-        // Menutup sidebar saat area konten utama di-klik (hanya di mode mobile)
         mainContent.addEventListener('click', () => {
             if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
             }
         });
     });
-    // --- End Hamburger Menu Logic ---
 
     const pageContent = {
         dashboard: { title: '<i class="fas fa-tachometer-alt"></i> Dashboard', subtitle: 'Ringkasan umum dan statistik sistem.' },
         monitoring: { title: '<i class="fas fa-truck"></i> Informasi Perjalanan', subtitle: 'Pusat kelola dan pemantauan seluruh data perjalanan.' },
         users: { title: '<i class="fas fa-users"></i> Manajemen Pengguna', subtitle: 'Kelola semua data pengguna dalam sistem.' },
+        'deletion-requests': { title: '<i class="fas fa-user-slash"></i> Permintaan Penghapusan', subtitle: 'Tinjau dan proses permintaan penghapusan pengguna.' },
         routes: { title: '<i class="fas fa-route"></i> Manajemen Rute', subtitle: 'Kelola daftar rute yang tersedia.' },
         vehicles: { title: '<i class="fas fa-car"></i> Manajemen Kendaraan', subtitle: 'Kelola daftar kendaraan operasional.' },
         finance: { title: '<i class="fas fa-wallet"></i> Informasi Keuangan', subtitle: 'Lacak semua transaksi uang jalan dari perjalanan.' },
@@ -731,6 +751,8 @@
         recipientName: document.getElementById('recipientName'),
         recipientAddress: document.getElementById('recipientAddress'),
         totalUangJalan: document.getElementById('totalUangJalan'),
+        deletionRequestMenuItem: document.getElementById('deletion-request-menu-item'),
+        deletionRequestList: document.getElementById('deletionRequestList'),
     };
 
     let currentUser = null;
@@ -739,6 +761,7 @@
     let allTrips = [];
     let allRoutes = [];
     let allVehicles = [];
+    let allDeletionRequests = [];
     let routeCodeMap = {};
     let currentTripForInvoice = null;
     let currentPage = 1;
@@ -762,7 +785,6 @@
                 elements.pageTitle.innerHTML = pageContent[targetId].title;
                 elements.pageSubtitle.textContent = pageContent[targetId].subtitle;
                 
-                // Close sidebar after navigation on mobile
                 const sidebar = document.querySelector('.sidebar');
                 if (sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
@@ -801,7 +823,6 @@
     }
     setupNavigation();
     
-    // Theme and Font Logic
     function applyTheme(theme) {
       if (theme === 'light') {
         document.body.classList.add('light-mode');
@@ -839,7 +860,6 @@
         });
     });
 
-    // Fungsi untuk memeriksa sesi pengguna
     async function checkUserSession() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -848,11 +868,7 @@
         }
         currentUser = session.user;
 
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
+        const { data, error } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
 
         if (error || !data) {
             alert('Gagal memuat data pengguna.');
@@ -880,6 +896,7 @@
         if (currentUserData.role === 'super admin') {
             elements.lockdownMenuItem.style.display = 'block';
             elements.backupMenuItem.style.display = 'block';
+            elements.deletionRequestMenuItem.style.display = 'block';
             const adminOption = el('option', 'Admin', { value: 'admin' });
             if (!elements.newUserRole.querySelector('option[value="admin"]')) {
               elements.newUserRole.appendChild(adminOption);
@@ -887,13 +904,13 @@
         }
     }
 
-    // Fungsi untuk memuat data awal
     async function loadInitialData() {
         await Promise.all([
             loadRoutes(),
             loadVehicles(),
             loadUsers(),
-            loadTrips()
+            loadTrips(),
+            loadDeletionRequests()
         ]);
         
         loadDashboardStats();
@@ -909,88 +926,75 @@
         elements.searchFinance.oninput = () => displayFinance(1);
     }
 
-    // === Supabase Realtime Auto Update ===
     let __realtimeSubscribed = false;
-
     function setupRealtimeListeners() {
-    if (__realtimeSubscribed) return;
-    __realtimeSubscribed = true;
+        if (__realtimeSubscribed) return;
+        __realtimeSubscribed = true;
 
-    const subscribeTable = (tableName, loaderFn) => {
-        try {
-        const channel = supabase
-            .channel(`realtime-${tableName}`)
-            .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: tableName },
-            (payload) => {
-                console.log(`[Realtime][${tableName}]`, payload);
-                try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
+        const subscribeTable = (tableName, loaderFn) => {
+            try {
+                supabase.channel(`realtime-${tableName}`)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
+                        console.log(`[Realtime][${tableName}]`, payload);
+                        try { loaderFn(); } catch (err) { console.error('Gagal update:', err); }
+                    })
+                    .subscribe();
+            } catch (err) {
+                console.error(`Gagal subscribe realtime ${tableName}:`, err);
             }
-            )
-            .subscribe();
-        } catch (err) {
-        console.error(`Gagal subscribe realtime ${tableName}:`, err);
-        }
-    };
+        };
 
-    // Aktifkan realtime untuk semua tabel penting
-    subscribeTable('trips', loadTrips);
-    subscribeTable('users', loadUsers);
-    subscribeTable('routes', loadRoutes);
-    subscribeTable('vehicles', loadVehicles);
+        subscribeTable('trips', loadTrips);
+        subscribeTable('users', loadUsers);
+        subscribeTable('routes', loadRoutes);
+        subscribeTable('vehicles', loadVehicles);
+        subscribeTable('deletion_requests', loadDeletionRequests); // Listener baru
 
-    console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles)');
+        console.info('✅ Realtime listeners aktif (trips, users, routes, vehicles, deletion_requests)');
     }
-
-
-
     
-    
-    // Fungsi untuk memuat data rute
-    async function loadRoutes() {
-        const { data, error } = await supabase.from('routes').select('*');
+    async function loadDeletionRequests() {
+        if (currentUserData.role !== 'super admin') return;
+        const { data, error } = await supabase.from('deletion_requests').select(`
+            *,
+            requester:requested_by ( name ),
+            user:user_to_delete ( name )
+        `);
         if (error) {
-            console.error('Gagal memuat rute:', error);
+            console.error('Gagal memuat permintaan penghapusan:', error);
             return;
         }
+        allDeletionRequests = data;
+        displayDeletionRequests();
+    }
+    
+    async function loadRoutes() {
+        const { data, error } = await supabase.from('routes').select('*');
+        if (error) { console.error('Gagal memuat rute:', error); return; }
         allRoutes = data;
         routeCodeMap = {};
-        allRoutes.forEach(route => {
-            routeCodeMap[route.address] = route.code;
-        });
+        allRoutes.forEach(route => { routeCodeMap[route.address] = route.code; });
         displayRoutes(1);
     }
 
-    // Fungsi untuk memuat data kendaraan
     async function loadVehicles() {
         const { data, error } = await supabase.from('vehicles').select('*');
-        if (error) {
-            console.error('Gagal memuat kendaraan:', error);
-            return;
-        }
+        if (error) { console.error('Gagal memuat kendaraan:', error); return; }
         allVehicles = data;
         displayVehicles(1);
     }
 
-    // Fungsi untuk memuat data pengguna
     async function loadUsers() {
         const { data, error } = await supabase.from('users').select('*');
-        if (error) {
-            console.error('Gagal memuat pengguna:', error);
-            return;
-        }
+        if (error) { console.error('Gagal memuat pengguna:', error); return; }
         allUsers = data;
         displayUsers(1);
+        displayLockdownUsers();
     }
 
-    // Fungsi untuk memuat data perjalanan
     async function loadTrips() {
         const { data, error } = await supabase.from('trips').select('*').order('created_at', { ascending: false });
-        if (error) {
-            console.error('Gagal memuat perjalanan:', error);
-            return;
-        }
+        if (error) { console.error('Gagal memuat perjalanan:', error); return; }
         allTrips = data;
         displayTrips(1);
         displayFinance(1);
@@ -1003,7 +1007,7 @@
         const paginatedActivities = allTrips.slice(start, start + activityRowsPerPage);
         elements.activityPaginationControls.style.display = allTrips.length > 20 ? 'flex' : 'none';
         if (allTrips.length === 0) {
-            elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state" style="padding: 1rem; text-align: center;">Belum ada aktivitas perjalanan.</td></tr>';
+            elements.recentActivityList.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada aktivitas perjalanan.</td></tr>';
         } else {
             paginatedActivities.forEach(trip => {
                 const tr = el('tr');
@@ -1016,20 +1020,12 @@
                     case 'rejected': actionText = "dibatalkan perjalanannya"; break;
                     case 'arrived': actionText = "menyelesaikan rute"; break;
                 }
-                
                 const asalCode = routeCodeMap[trip.asal] || trip.asal;
-                let tujuanCodes;
-                if (Array.isArray(trip.tujuan)) {
-                    tujuanCodes = trip.tujuan.map(t => routeCodeMap[t] || t).join(', ');
-                } else {
-                    tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
-                }
+                const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
                 const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
-                
                 const description = `<span style="color: var(--cyan); font-weight: 500;">${trip.driver_name || 'N/A'}</span> ${actionText} <span style="color: var(--green); font-weight: 500;">${ruteDisplay}</span>`;
                 const statusCell = el('td', '', {'data-label': 'Status'});
                 statusCell.appendChild(badge(trip.status));
-                
                 tr.innerHTML = `<td data-label="Deskripsi">${description}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
                 tr.appendChild(statusCell);
                 elements.recentActivityList.appendChild(tr);
@@ -1055,30 +1051,15 @@
         const todayStr = now.toISOString().split('T')[0];
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth();
-
         let thisMonthCount = 0;
         let lastMonthCount = 0;
         const activeVehiclesToday = new Set();
-
         allTrips.forEach(trip => {
             const tripDate = new Date(trip.tanggal + "T00:00:00");
-            const tripYear = tripDate.getFullYear();
-            const tripMonth = tripDate.getMonth();
-
-            if (tripYear === currentYear && tripMonth === currentMonth) {
-                thisMonthCount++;
-            }
-            
-            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-            if (tripYear === lastMonthYear && tripMonth === lastMonth) {
-                lastMonthCount++;
-            }
-
-            if (trip.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(trip.status)) {
-                activeVehiclesToday.add(trip.vehicle_number);
-            }
+            if (tripDate.getFullYear() === currentYear && tripDate.getMonth() === currentMonth) thisMonthCount++;
+            const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+            if (tripDate.getFullYear() === lastMonthDate.getFullYear() && tripDate.getMonth() === lastMonthDate.getMonth()) lastMonthCount++;
+            if (trip.tanggal === todayStr && ['approved', 'delivering', 'arriving_soon'].includes(trip.status)) activeVehiclesToday.add(trip.vehicle_number);
         });
         
         elements.tripsThisMonth.textContent = thisMonthCount;
@@ -1097,16 +1078,8 @@
         const tempQrContainer = document.createElement('div');
         const url = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/invoice-checking.html?id=${tripId}`;
         return new Promise(resolve => {
-            new QRCode(tempQrContainer, {
-                text: url,
-                width: 128,
-                height: 128,
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            setTimeout(() => {
-                const canvas = tempQrContainer.querySelector('canvas');
-                resolve(canvas.toDataURL());
-            }, 100);
+            new QRCode(tempQrContainer, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.H });
+            setTimeout(() => { resolve(tempQrContainer.querySelector('canvas').toDataURL()); }, 100);
         });
     }
 
@@ -1114,76 +1087,44 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const qrCodeDataUrl = await generateQrCodeDataURL(tripId);
-
-        // Header
-        doc.setFontSize(20);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
-        
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal');
         const companyAddress = 'Dahromo 1, RT.02, Kel. Segoroyoso, Kec. Pleret, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55791';
         const addressLines = doc.splitTextToSize(companyAddress, 100); 
         doc.text(addressLines, 14, 30);
         const addressHeight = (addressLines.length * 5);
         doc.text('Telepon: (021) 555-1234', 14, 30 + addressHeight);
-
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.text('INVOICE', 200, 22, { align: 'right' });
-
-        // Invoice Info
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.text('INVOICE', 200, 22, { align: 'right' });
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal');
         doc.text(`No. Invoice: ${tripId}`, 200, 32, { align: 'right' });
         doc.text(`Tanggal: ${fmtDate(new Date().toISOString().slice(0,10))}`, 200, 38, { align: 'right' });
-
-        // Bill To
         let startY = 36 + addressHeight + 10;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Tagihan Kepada:', 14, startY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(recipientName, 14, startY + 6);
-        doc.text(recipientAddress.split('\n'), 14, startY + 12);
-        
-        // AutoTable for items
+        doc.setFont('helvetica', 'bold'); doc.text('Tagihan Kepada:', 14, startY);
+        doc.setFont('helvetica', 'normal'); doc.text(recipientName, 14, startY + 6); doc.text(recipientAddress.split('\n'), 14, startY + 12);
         const ruteDisplay = `${routeCodeMap[tripData.asal] || tripData.asal}, ${Array.isArray(tripData.tujuan) ? tripData.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[tripData.tujuan] || tripData.tujuan)}`;
         const deskripsi = `Pengiriman ${tripData.muatan}`;
-
         doc.autoTable({
             startY: startY + 25,
             head: [['Trip ID', 'Deskripsi', 'Rute', 'Keberangkatan', 'Jumlah']],
-            body: [
-                [tripId, deskripsi, ruteDisplay, fmtDate(tripData.tanggal), idr(tripData.uang_jalan)],
-            ],
-            theme: 'striped',
-            headStyles: { fillColor: [22, 34, 53], fontSize: 10 },
-            bodyStyles: { fontSize: 10 },
+            body: [[tripId, deskripsi, ruteDisplay, fmtDate(tripData.tanggal), idr(tripData.uang_jalan)]],
+            theme: 'striped', headStyles: { fillColor: [22, 34, 53], fontSize: 10 }, bodyStyles: { fontSize: 10 },
             didDrawPage: function (data) {
                 const tableEndY = data.cursor.y;
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Supir: ${tripData.driver_name}`, 14, tableEndY + 10);
                 doc.text(`Kendaraan: ${tripData.vehicle_number}`, 14, tableEndY + 15);
-
                 const finalY = tableEndY + 25;
-                doc.setFontSize(11);
-                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11); doc.setFont('helvetica', 'bold');
                 doc.text('Total Tagihan:', 140, finalY, { align: 'left' });
                 doc.text(idr(tripData.uang_jalan), 200, finalY, { align: 'right' });
-
                 const pageHeight = doc.internal.pageSize.height;
                 doc.addImage(qrCodeDataUrl, 'PNG', 14, pageHeight - 50, 40, 40);
-                doc.setFontSize(8);
-                doc.text('Scan untuk Verifikasi', 16, pageHeight - 8);
-                
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(8); doc.text('Scan untuk Verifikasi', 16, pageHeight - 8);
+                doc.setFontSize(10); doc.setFont('helvetica', 'italic');
                 doc.text('Terima kasih atas kepercayaan Anda.', 200, pageHeight - 20, { align: 'right' });
                 doc.text('Pembayaran ke BCA 123456789 a/n PT Maju Mundur Syantiq.', 200, pageHeight - 14, { align: 'right' });
             }
         });
-
         doc.save(`Invoice-${tripId}.pdf`);
     }
     
@@ -1195,76 +1136,45 @@
       const filteredTrips = allTrips.filter(trip => {
           const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
           const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-          const searchMatch = !searchTerm ||
-              (trip.id || '').toLowerCase().includes(searchTerm) ||
-              (trip.driver_name || '').toLowerCase().includes(searchTerm) ||
-              (trip.asal || '').toLowerCase().includes(searchTerm) ||
-              tujuanText.toLowerCase().includes(searchTerm);
+          const searchMatch = !searchTerm || (trip.id || '').toLowerCase().includes(searchTerm) || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
           return statusMatch && searchMatch;
       });
       const start = (currentPage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedTrips = filteredTrips.slice(start, end);
-      if (paginatedTrips.length === 0 && filteredTrips.length > 0) {
-        currentPage = Math.ceil(filteredTrips.length / rowsPerPage);
-        return displayTrips(currentPage);
-      }
+      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
+      if (paginatedTrips.length === 0 && filteredTrips.length > 0) { currentPage = Math.ceil(filteredTrips.length / rowsPerPage); return displayTrips(currentPage); }
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada perjalanan ditemukan.</td></tr>';
+        elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
-            const tripId = trip.id;
             const tr = el('tr');
-
             const asalCode = routeCodeMap[trip.asal] || trip.asal;
-            let tujuanCodes;
-            if (Array.isArray(trip.tujuan)) {
-                tujuanCodes = trip.tujuan.map(t => routeCodeMap[t] || t).join(', ');
-            } else {
-                tujuanCodes = routeCodeMap[trip.tujuan] || trip.tujuan;
-            }
+            const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
             const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
-            const tripInfoForDelete = `${asalCode}, ${tujuanCodes}`;
-            
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
-            const actionsContainer = el('div', '', { class: 'trip-actions' });
-            actionsContainer.style.justifyContent = 'flex-end';
-            
+            const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content: flex-end;' });
             if (trip.status === 'submitted') {
                 const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
                 const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
-                approveBtn.onclick = () => updateTripStatus(tripId, 'approved', { approved_at: new Date().toISOString(), approved_by: currentUser.id, is_read_coor: false });
-                rejectBtn.onclick = () => updateTripStatus(tripId, 'rejected', { rejected_at: new Date().toISOString(), rejected_by: currentUser.id, is_read_coor: false });
+                approveBtn.onclick = () => updateTripStatus(trip.id, 'approved', { approved_at: new Date().toISOString(), approved_by: currentUser.id, is_read_coor: false });
+                rejectBtn.onclick = () => updateTripStatus(trip.id, 'rejected', { rejected_at: new Date().toISOString(), rejected_by: currentUser.id, is_read_coor: false });
                 actionsContainer.append(approveBtn, rejectBtn);
             }
-
             if (['approved', 'delivering', 'arriving_soon', 'arrived'].includes(trip.status)) {
                 const invButton = el('button', '<i class="fas fa-file-invoice"></i> Invoice', { class: 'btn-sm info' });
                 invButton.onclick = () => openInvoiceModal(trip);
                 actionsContainer.append(invButton);
             }
-
-            if (currentUserData && currentUserData.role === 'super admin') {
-                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': tripId, 'data-trip-info': tripInfoForDelete });
-                deleteBtn.onclick = () => deleteTrip(tripId, tripInfoForDelete);
+            if (currentUserData.role === 'super admin') {
+                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': trip.id, 'data-trip-info': ruteDisplay });
+                deleteBtn.onclick = () => deleteTrip(trip.id, ruteDisplay);
                 actionsContainer.appendChild(deleteBtn);
             }
-
             actionsCell.appendChild(actionsContainer);
             const statusCell = el('td', '', {'data-label': 'Status'});
             statusCell.appendChild(badge(trip.status));
-            tr.innerHTML = `
-                <td data-label="Trip ID">${tripId}</td>
-                <td data-label="Rute">${ruteDisplay}</td>
-                <td data-label="Supir">${trip.driver_name || 'N/A'}</td>
-                <td data-label="No. Kendaraan">${trip.vehicle_number || 'N/A'}</td>
-                <td data-label="Muatan">${trip.muatan || 'N/A'}</td>
-                <td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td>
-                <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
-            `;
-            tr.appendChild(statusCell);
-            tr.appendChild(actionsCell);
+            tr.innerHTML = `<td data-label="Trip ID">${trip.id}</td><td data-label="Rute">${ruteDisplay}</td><td data-label="Supir">${trip.driver_name || 'N/A'}</td><td data-label="No. Kendaraan">${trip.vehicle_number || 'N/A'}</td><td data-label="Muatan">${trip.muatan || 'N/A'}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>`;
+            tr.append(statusCell, actionsCell);
             elements.tripList.appendChild(tr);
         });
       }
@@ -1275,44 +1185,28 @@
     }
 
     async function updateTripStatus(tripId, status, additionalData = {}) {
-        const { error } = await supabase
-            .from('trips')
-            .update({ status, ...additionalData })
-            .eq('id', tripId);
-
-        if (error) {
-            alert(`Gagal memperbarui status: ${error.message}`);
-        } else {
-            loadTrips(); // Muat ulang data perjalanan
-        }
+        const { error } = await supabase.from('trips').update({ status, ...additionalData }).eq('id', tripId);
+        if (error) alert(`Gagal memperbarui status: ${error.message}`);
     }
 
     async function deleteTrip(tripId, tripInfo) {
         if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) {
             const { error } = await supabase.from('trips').delete().eq('id', tripId);
-            if (error) {
-                alert(`Gagal menghapus perjalanan: ${error.message}`);
-            } else {
-                alert('Perjalanan berhasil dihapus.');
-                loadTrips(); // Muat ulang data perjalanan
-            }
+            if (error) alert(`Gagal menghapus perjalanan: ${error.message}`);
+            else alert('Perjalanan berhasil dihapus.');
         }
     }
     
-    elements.prevBtn.addEventListener('click', () => { if (currentPage > 1) { displayTrips(currentPage - 1); } });
+    elements.prevBtn.addEventListener('click', () => { if (currentPage > 1) displayTrips(currentPage - 1); });
     elements.nextBtn.addEventListener('click', () => { 
-        const searchTerm = elements.searchTrip.value.toLowerCase();
-        const statusFilter = elements.filterTripStatus.value;
-        const filteredTrips = allTrips.filter(trip => {
-            const statusMatch = statusFilter === 'all' || trip.status === statusFilter;
-            const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-            const searchMatch = !searchTerm || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
-            return statusMatch && searchMatch;
-        });
-        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage); 
-        if (currentPage < totalPages) { displayTrips(currentPage + 1); } 
+        const filtered = allTrips.filter(t => (elements.filterTripStatus.value === 'all' || t.status === elements.filterTripStatus.value));
+        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        if (currentPage < totalPages) displayTrips(currentPage + 1); 
     });
 
+    // =========================================================================
+    // FUNGSI YANG DIPERBARUI: `displayUsers`
+    // =========================================================================
     function displayUsers(page) {
       elements.userList.innerHTML = '';
       currentUserPage = page;
@@ -1324,12 +1218,8 @@
         return nameMatch && roleMatch;
       });
       const start = (currentUserPage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedUsers = filteredUsers.slice(start, end);
-      if (paginatedUsers.length === 0 && filteredUsers.length > 0) {
-        currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage);
-        return displayUsers(currentUserPage);
-      }
+      const paginatedUsers = filteredUsers.slice(start, start + rowsPerPage);
+      if (paginatedUsers.length === 0 && filteredUsers.length > 0) { currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage); return displayUsers(currentUserPage); }
       elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedUsers.length === 0) {
         elements.userList.innerHTML = '<tr><td colspan="8">Tidak ada user ditemukan.</td></tr>';
@@ -1338,15 +1228,21 @@
           const tr = el('tr');
           const isCurrentUser = (u.id === currentUser.id);
           const isTargetSuperAdmin = u.role === 'super admin';
-          const isCurrentUserAdmin = currentUserData.role === 'admin';
-          let deleteButton;
-          if (isCurrentUser) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Tidak dapat menghapus diri sendiri"><i class="fa-solid fa-trash"></i> Hapus</button>`;
-          } else if (isCurrentUserAdmin && isTargetSuperAdmin) {
-              deleteButton = `<button class="delete-user-btn" disabled title="Admin tidak dapat menghapus Super Admin"><i class="fa-solid fa-trash"></i> Hapus</button>`;
-          } else {
-              deleteButton = `<button class="delete-user-btn" data-uid="${u.id}" data-name="${u.name || 'tanpa nama'}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
+          
+          let actionButtonHTML = '';
+          if (!isCurrentUser && !isTargetSuperAdmin) {
+              if (currentUserData.role === 'super admin') {
+                  actionButtonHTML = `<button class="delete-user-btn" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
+              } else if (currentUserData.role === 'admin') {
+                  const existingRequest = allDeletionRequests.find(req => req.user_to_delete === u.id && req.status === 'pending');
+                  if (existingRequest) {
+                      actionButtonHTML = `<button class="request-deletion-btn" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
+                  } else {
+                      actionButtonHTML = `<button class="request-deletion-btn" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-user-slash"></i> Minta Hapus</button>`;
+                  }
+              }
           }
+
           const roleClass = (u.role || '').replace(' ', '-');
           tr.innerHTML = `
               <td data-label="Nama">${u.name || '-'}</td>
@@ -1356,7 +1252,7 @@
               <td data-label="Status Karyawan">${u.employee_status || '-'}</td>
               <td data-label="Login Terakhir">${u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-'}</td>
               <td data-label="Status" class="${u.online ? 'status-online' : 'status-offline'}"><i class="fas fa-circle"></i> ${u.online ? 'Online' : 'Offline'}</td>
-              <td data-label="Aksi">${deleteButton}</td>
+              <td data-label="Aksi">${actionButtonHTML}</td>
           `;
           elements.userList.appendChild(tr);
         });
@@ -1366,75 +1262,150 @@
       elements.prevUserBtn.disabled = currentUserPage === 1;
       elements.nextUserBtn.disabled = currentUserPage === totalPages;
     }
-    elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) { displayUsers(currentUserPage - 1); } });
-    elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(allUsers.length / rowsPerPage); if (currentUserPage < totalPages) { displayUsers(currentUserPage + 1); } });
+    elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) displayUsers(currentUserPage - 1); });
+    elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(allUsers.length / rowsPerPage); if (currentUserPage < totalPages) displayUsers(currentUserPage + 1); });
     
     // =========================================================================
-    // KODE YANG DIPERBARUI: Event listener untuk menghapus pengguna
+    // FUNGSI BARU: Untuk meminta penghapusan (Admin)
+    // =========================================================================
+    async function requestUserDeletion(uid, name) {
+        if (!confirm(`Anda akan meminta Super Admin untuk menghapus pengguna: ${name}.\nLanjutkan?`)) return;
+        
+        const { error } = await supabase.from('deletion_requests').insert({
+            requested_by: currentUser.id,
+            user_to_delete: uid,
+            status: 'pending'
+        });
+
+        if (error) {
+            alert('Gagal mengirim permintaan: ' + error.message);
+        } else {
+            alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
+            // loadDeletionRequests(); // Realtime akan menangani ini
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI BARU: Untuk menangani persetujuan/penolakan (Super Admin)
+    // =========================================================================
+    async function handleDeletionRequest(requestId, action, userIdToDelete) {
+        if (action === 'approve') {
+            if (!confirm('Anda akan MENGHAPUS pengguna ini secara permanen. Lanjutkan?')) return;
+            
+            // Panggil Edge Function untuk menghapus
+            const { error: funcError } = await supabase.functions.invoke('delete-user', { body: { uid: userIdToDelete } });
+            if (funcError) {
+                alert('Gagal menghapus pengguna: ' + funcError.message);
+                return;
+            }
+        }
+        
+        // Update status permintaan
+        const newStatus = (action === 'approve') ? 'approved' : 'rejected';
+        const { error } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId);
+        
+        if (error) {
+            alert('Gagal memperbarui status permintaan: ' + error.message);
+        } else {
+            alert(`Permintaan telah berhasil di-${newStatus === 'approved' ? 'setujui' : 'tolak'}.`);
+        }
+    }
+    
+    // =========================================================================
+    // KODE YANG DIPERBARUI: Event listener untuk menghapus atau meminta hapus
     // =========================================================================
     elements.userList.addEventListener('click', async (e) => {
-        // Gunakan .closest() untuk memastikan kita mendapatkan tombol bahkan jika ikon di dalamnya yang diklik
-        const deleteBtn = e.target.closest('.delete-user-btn');
+        const btn = e.target.closest('button');
+        if (!btn) return;
 
-        if (deleteBtn && !deleteBtn.disabled) {
-            const uid = deleteBtn.dataset.uid;
-            const name = deleteBtn.dataset.name;
+        const uid = btn.dataset.uid;
+        const name = btn.dataset.name;
 
-            if (confirm(`Yakin ingin MENGHAPUS PERMANEN akun dan data untuk pengguna: ${name}? Aksi ini tidak dapat dibatalkan.`)) {
+        if (btn.classList.contains('delete-user-btn')) {
+            // Logika Super Admin
+            if (confirm(`Yakin ingin MENGHAPUS PERMANEN akun dan data untuk pengguna: ${name}?`)) {
                 try {
-                    // Panggil Edge Function 'delete-user' yang sudah kita buat
-                    const { data, error } = await supabase.functions.invoke('delete-user', {
-                        body: { uid }
-                    });
-
-                    if (error) {
-                        // Jika function gagal, tampilkan error
-                        throw error;
-                    }
-
-                    alert(`Pengguna ${name} berhasil dihapus sepenuhnya dari sistem.`);
-                    // Data akan diperbarui secara otomatis oleh listener realtime,
-                    // jadi pemanggilan loadUsers() tidak diperlukan lagi.
-
+                    const { error } = await supabase.functions.invoke('delete-user', { body: { uid } });
+                    if (error) throw error;
+                    alert(`Pengguna ${name} berhasil dihapus sepenuhnya.`);
                 } catch (err) {
                     alert(`Gagal menghapus pengguna: ${err.message}`);
                 }
             }
+        } else if (btn.classList.contains('request-deletion-btn')) {
+            // Logika Admin
+            requestUserDeletion(uid, name);
         }
     });
+
     // =========================================================================
-    // AKHIR DARI KODE YANG DIPERBARUI
+    // FUNGSI BARU: Menampilkan daftar permintaan penghapusan
     // =========================================================================
+    function displayDeletionRequests() {
+        elements.deletionRequestList.innerHTML = '';
+        if (allDeletionRequests.length === 0) {
+            elements.deletionRequestList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada permintaan penghapusan.</td></tr>';
+            return;
+        }
+
+        allDeletionRequests.forEach(req => {
+            const tr = el('tr');
+            const targetUserName = req.user ? req.user.name : 'Pengguna tidak ditemukan';
+            const requesterName = req.requester ? req.requester.name : 'Admin tidak ditemukan';
+            
+            let actionsHTML = '';
+            if (req.status === 'pending') {
+                actionsHTML = `
+                    <button class="btn-sm success" data-action="approve" data-req-id="${req.id}" data-uid="${req.user_to_delete}"><i class="fas fa-check"></i> Setujui</button>
+                    <button class="btn-sm danger" data-action="reject" data-req-id="${req.id}"><i class="fas fa-times"></i> Tolak</button>
+                `;
+            } else {
+                actionsHTML = `<span>Telah diproses</span>`;
+            }
+
+            tr.innerHTML = `
+                <td data-label="Pengguna (Target)">${targetUserName}</td>
+                <td data-label="Diminta oleh (Admin)">${requesterName}</td>
+                <td data-label="Tanggal Permintaan">${new Date(req.created_at).toLocaleString('id-ID')}</td>
+                <td data-label="Status">${req.status}</td>
+                <td data-label="Aksi">${actionsHTML}</td>
+            `;
+            elements.deletionRequestList.appendChild(tr);
+        });
+    }
+
+    elements.deletionRequestList.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        
+        const action = btn.dataset.action;
+        const requestId = btn.dataset.reqId;
+        const userIdToDelete = btn.dataset.uid;
+
+        handleDeletionRequest(requestId, action, userIdToDelete);
+    });
+
 
     function displayRoutes(page) {
       elements.routeList.innerHTML = '';
       currentRoutePage = page;
       const searchTerm = elements.searchRoute.value.toLowerCase();
-      const filteredRoutes = allRoutes.filter(route => {
-          return !searchTerm || (route.code || '').toLowerCase().includes(searchTerm) || (route.address || '').toLowerCase().includes(searchTerm);
-      });
-      const start = (currentRoutePage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedRoutes = filteredRoutes.slice(start, end);
-      if (paginatedRoutes.length === 0 && filteredRoutes.length > 0) {
-        currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage);
-        return displayRoutes(currentRoutePage);
-      }
+      const filteredRoutes = allRoutes.filter(route => !searchTerm || (route.code || '').toLowerCase().includes(searchTerm) || (route.address || '').toLowerCase().includes(searchTerm));
+      const paginatedRoutes = filteredRoutes.slice((currentRoutePage - 1) * rowsPerPage, currentRoutePage * rowsPerPage);
+      if (paginatedRoutes.length === 0 && filteredRoutes.length > 0) { currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage); return displayRoutes(currentRoutePage); }
       elements.routePaginationControls.style.display = filteredRoutes.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedRoutes.length === 0) {
         elements.routeList.innerHTML = '<tr><td colspan="3">Tidak ada rute ditemukan.</td></tr>';
       } else {
         paginatedRoutes.forEach(route => {
-          const routeId = route.id;
           const tr = el('tr');
           tr.innerHTML = `<td data-label="Kode">${route.code}</td><td data-label="Rute">${route.address}</td>`;
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus rute ${route.code} - ${route.address}?`)) {
-                const { error } = await supabase.from('routes').delete().eq('id', routeId);
+                const { error } = await supabase.from('routes').delete().eq('id', route.id);
                 if (error) alert(`Gagal menghapus rute: ${error.message}`);
-                else loadRoutes();
             }
           };
           actionsCell.appendChild(deleteBtn);
@@ -1447,45 +1418,33 @@
       elements.prevRouteBtn.disabled = currentRoutePage === 1;
       elements.nextRouteBtn.disabled = currentRoutePage === totalPages;
     }
-    elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) { displayRoutes(currentRoutePage - 1); } });
+    elements.prevRouteBtn.addEventListener('click', () => { if (currentRoutePage > 1) displayRoutes(currentRoutePage - 1); });
     elements.nextRouteBtn.addEventListener('click', () => { 
-        const searchTerm = elements.searchRoute.value.toLowerCase();
-        const filteredRoutes = allRoutes.filter(route => {
-            return !searchTerm || (route.code || '').toLowerCase().includes(searchTerm) || (route.address || '').toLowerCase().includes(searchTerm);
-        });
-        const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage); 
-        if (currentRoutePage < totalPages) { displayRoutes(currentRoutePage + 1); } 
+        const filtered = allRoutes.filter(r => !elements.searchRoute.value || (r.code || '').toLowerCase().includes(elements.searchRoute.value.toLowerCase()) || (r.address || '').toLowerCase().includes(elements.searchRoute.value.toLowerCase()));
+        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        if (currentRoutePage < totalPages) displayRoutes(currentRoutePage + 1); 
     });
     
     function displayVehicles(page) {
       elements.vehicleList.innerHTML = '';
       currentVehiclePage = page;
       const searchTerm = elements.searchVehicle.value.toLowerCase();
-      const filteredVehicles = allVehicles.filter(vehicle => {
-          return !searchTerm || (vehicle.vehicle_number || '').toLowerCase().includes(searchTerm) || (vehicle.unit || '').toLowerCase().includes(searchTerm);
-      });
-      const start = (currentVehiclePage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedVehicles = filteredVehicles.slice(start, end);
-      if (paginatedVehicles.length === 0 && filteredVehicles.length > 0) {
-        currentVehiclePage = Math.ceil(filteredVehicles.length / rowsPerPage);
-        return displayVehicles(currentVehiclePage);
-      }
+      const filteredVehicles = allVehicles.filter(v => !searchTerm || (v.vehicle_number || '').toLowerCase().includes(searchTerm) || (v.unit || '').toLowerCase().includes(searchTerm));
+      const paginatedVehicles = filteredVehicles.slice((currentVehiclePage - 1) * rowsPerPage, currentVehiclePage * rowsPerPage);
+      if (paginatedVehicles.length === 0 && filteredVehicles.length > 0) { currentVehiclePage = Math.ceil(filteredVehicles.length / rowsPerPage); return displayVehicles(currentVehiclePage); }
       elements.vehiclePaginationControls.style.display = filteredVehicles.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedVehicles.length === 0) {
         elements.vehicleList.innerHTML = '<tr><td colspan="4">Tidak ada kendaraan ditemukan.</td></tr>';
       } else {
         paginatedVehicles.forEach(vehicle => {
-          const vehicleId = vehicle.id;
           const tr = el('tr');
           tr.innerHTML = `<td data-label="No. Kendaraan">${vehicle.vehicle_number}</td><td data-label="Unit">${vehicle.unit || '-'}</td><td data-label="Kepemilikan">${vehicle.ownership || '-'}</td>`;
           const actionsCell = el('td', '', {'data-label': 'Aksi'});
           const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger' });
           deleteBtn.onclick = async () => {
             if (confirm(`Yakin ingin hapus Kendaraan ${vehicle.vehicle_number}?`)) {
-                const { error } = await supabase.from('vehicles').delete().eq('id', vehicleId);
+                const { error } = await supabase.from('vehicles').delete().eq('id', vehicle.id);
                 if (error) alert(`Gagal menghapus kendaraan: ${error.message}`);
-                else loadVehicles();
             }
           };
           actionsCell.appendChild(deleteBtn);
@@ -1498,14 +1457,11 @@
       elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
       elements.nextVehicleBtn.disabled = currentVehiclePage === totalPages;
     }
-    elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) { displayVehicles(currentVehiclePage - 1); } });
+    elements.prevVehicleBtn.addEventListener('click', () => { if (currentVehiclePage > 1) displayVehicles(currentVehiclePage - 1); });
     elements.nextVehicleBtn.addEventListener('click', () => { 
-        const searchTerm = elements.searchVehicle.value.toLowerCase();
-        const filteredVehicles = allVehicles.filter(vehicle => {
-            return !searchTerm || (vehicle.vehicle_number || '').toLowerCase().includes(searchTerm) || (vehicle.unit || '').toLowerCase().includes(searchTerm);
-        });
-        const totalPages = Math.ceil(filteredVehicles.length / rowsPerPage); 
-        if (currentVehiclePage < totalPages) { displayVehicles(currentVehiclePage + 1); }
+        const filtered = allVehicles.filter(v => !elements.searchVehicle.value || (v.vehicle_number || '').toLowerCase().includes(elements.searchVehicle.value.toLowerCase()) || (v.unit || '').toLowerCase().includes(elements.searchVehicle.value.toLowerCase()));
+        const totalPages = Math.ceil(filtered.length / rowsPerPage); 
+        if (currentVehiclePage < totalPages) displayVehicles(currentVehiclePage + 1);
     });
 
     function displayFinance(page) {
@@ -1514,39 +1470,23 @@
       const searchTerm = elements.searchFinance.value.toLowerCase();
       const filteredTrips = allTrips.filter(trip => {
         const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-        return !searchTerm ||
-              (trip.id || '').toLowerCase().includes(searchTerm) ||
-              (trip.driver_name || '').toLowerCase().includes(searchTerm) ||
-              (trip.asal || '').toLowerCase().includes(searchTerm) ||
-              tujuanText.toLowerCase().includes(searchTerm);
+        return !searchTerm || (trip.id || '').toLowerCase().includes(searchTerm) || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
       });
-      
       const totalUangJalan = filteredTrips.reduce((sum, trip) => sum + (Number(trip.uang_jalan) || 0), 0);
       elements.totalUangJalan.textContent = idr(totalUangJalan);
-
-      const start = (currentFinancePage - 1) * rowsPerPage;
-      const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
-
+      const paginatedTrips = filteredTrips.slice((currentFinancePage - 1) * rowsPerPage, currentFinancePage * rowsPerPage);
       elements.financePaginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
-        elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state" style="padding: 1rem; text-align: center;">Tidak ada data keuangan ditemukan.</td></tr>';
+        elements.financeList.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data keuangan ditemukan.</td></tr>';
       } else {
         paginatedTrips.forEach(trip => {
           const tr = el('tr');
           const asalCode = routeCodeMap[trip.asal] || trip.asal;
           const tujuanCodes = Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan);
-          const ruteDisplay = `${asalCode}, ${tujuanCodes}`;
-          tr.innerHTML = `
-            <td data-label="Trip ID">${trip.id}</td>
-            <td data-label="Rute">${ruteDisplay}</td>
-            <td data-label="Supir">${trip.driver_name || 'N/A'}</td>
-            <td data-label="Tanggal">${fmtDate(trip.tanggal)}</td>
-            <td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td>
-          `;
+          tr.innerHTML = `<td data-label="Trip ID">${trip.id}</td><td data-label="Rute">${asalCode}, ${tujuanCodes}</td><td data-label="Supir">${trip.driver_name || 'N/A'}</td><td data-label="Tanggal">${fmtDate(trip.tanggal)}</td><td data-label="Uang Jalan">${idr(trip.uang_jalan)}</td>`;
           elements.financeList.appendChild(tr);
         });
       }
-
       const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
       elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages}`;
       elements.prevFinanceBtn.disabled = currentFinancePage === 1;
@@ -1554,12 +1494,8 @@
     }
     elements.prevFinanceBtn.addEventListener('click', () => { if (currentFinancePage > 1) displayFinance(currentFinancePage - 1); });
     elements.nextFinanceBtn.addEventListener('click', () => {
-        const searchTerm = elements.searchFinance.value.toLowerCase();
-        const filteredTrips = allTrips.filter(trip => {
-            const tujuanText = Array.isArray(trip.tujuan) ? trip.tujuan.join(' ') : (trip.tujuan || '');
-            return !searchTerm || (trip.id || '').toLowerCase().includes(searchTerm) || (trip.driver_name || '').toLowerCase().includes(searchTerm) || (trip.asal || '').toLowerCase().includes(searchTerm) || tujuanText.toLowerCase().includes(searchTerm);
-        });
-        const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
+        const filtered = allTrips.filter(t => !elements.searchFinance.value || (t.id || '').toLowerCase().includes(elements.searchFinance.value.toLowerCase()));
+        const totalPages = Math.ceil(filtered.length / rowsPerPage);
         if (currentFinancePage < totalPages) displayFinance(currentFinancePage + 1);
     });
 
@@ -1568,19 +1504,13 @@
         const vehicleNumber = document.getElementById('vehicleNumberInput').value.toUpperCase(); 
         const unit = document.getElementById('vehicleUnit').value; 
         const ownership = document.getElementById('vehicleOwnership').value;
-        elements.addVehicleStatus.style.display = 'block'; 
-        elements.addVehicleStatus.textContent = 'Menambahkan...'; 
+        elements.addVehicleStatus.style.display = 'block'; elements.addVehicleStatus.textContent = 'Menambahkan...'; 
         const { error } = await supabase.from('vehicles').insert([{ vehicle_number: vehicleNumber, unit, ownership }]);
-        if (error) {
-            elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
-        } else {
+        if (error) elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
+        else {
             elements.addVehicleStatus.textContent = '✔️ Kendaraan berhasil ditambahkan.'; 
             elements.addVehicleForm.reset(); 
-            loadVehicles();
-            setTimeout(() => { 
-                elements.addVehicleStatus.textContent = ''; 
-                elements.addVehicleStatus.style.display = 'none'; 
-            }, 3000);
+            setTimeout(() => { elements.addVehicleStatus.style.display = 'none'; }, 3000);
         }
     });
 
@@ -1588,26 +1518,19 @@
         e.preventDefault(); 
         const code = document.getElementById('routeCode').value.toUpperCase(); 
         const address = document.getElementById('routeAddress').value; 
-        elements.addRouteStatus.style.display = 'block'; 
-        elements.addRouteStatus.textContent = 'Menambahkan...';
+        elements.addRouteStatus.style.display = 'block'; elements.addRouteStatus.textContent = 'Menambahkan...';
         const { error } = await supabase.from('routes').insert([{ code, address }]);
-        if (error) {
-            elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
-        } else {
+        if (error) elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
+        else {
             elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.'; 
             elements.addRouteForm.reset(); 
-            loadRoutes();
-            setTimeout(() => { 
-                elements.addRouteStatus.textContent = ''; 
-                elements.addRouteStatus.style.display = 'none'; 
-            }, 3000); 
+            setTimeout(() => { elements.addRouteStatus.style.display = 'none'; }, 3000); 
         }
     });
 
     elements.addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        elements.addUserStatus.style.display = 'block';
-        elements.addUserStatus.textContent = 'Menambahkan...';
+        elements.addUserStatus.style.display = 'block'; elements.addUserStatus.textContent = 'Menambahkan...';
         const name = document.getElementById('newUserName').value;
         const email = document.getElementById('newUserEmail').value;
         const password = document.getElementById('newUserPassword').value;
@@ -1615,36 +1538,18 @@
         const nik = document.getElementById('newUserNik').value;
         const gender = document.getElementById('newUserGender').value;
         const employeeStatus = document.getElementById('newUserStatus').value;
-
-        // Panggil serverless function untuk membuat user
-        const { data, error } = await supabase.functions.invoke('create-user', {
-            body: { email, password, name, role, nik, gender, employeeStatus }
-        });
-
-        if (error) {
-            elements.addUserStatus.textContent = 'Gagal: ' + (error.context?.msg || error.message);
-        } else {
+        const { data, error } = await supabase.functions.invoke('create-user', { body: { email, password, name, role, nik, gender, employeeStatus } });
+        if (error) elements.addUserStatus.textContent = 'Gagal: ' + (error.context?.msg || error.message);
+        else {
             elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
             elements.addUserForm.reset();
-            loadUsers();
-            setTimeout(() => {
-                elements.addUserStatus.textContent = '';
-                elements.addUserStatus.style.display = 'none';
-            }, 3000);
+            setTimeout(() => { elements.addUserStatus.style.display = 'none'; }, 3000);
         }
     });
     
     function loadRoleStats() { 
-        if (allUsers.length === 0) { 
-            elements.roleStats.textContent = "Memuat data user..."; 
-            return;
-        }
-
-        const userMap = allUsers.reduce((acc, user) => {
-            acc[user.id] = user;
-            return acc;
-        }, {});
-
+        if (allUsers.length === 0) { elements.roleStats.textContent = "Memuat data user..."; return; }
+        const userMap = allUsers.reduce((acc, user) => { acc[user.id] = user; return acc; }, {});
         let activities = { admin: [], coordinator: [], driver: [] }; 
         allTrips.forEach(trip => { 
             const tripInfo = `${routeCodeMap[trip.asal] || trip.asal}, ${Array.isArray(trip.tujuan) ? trip.tujuan.map(t => routeCodeMap[t] || t).join(', ') : (routeCodeMap[trip.tujuan] || trip.tujuan)}`;
@@ -1667,16 +1572,15 @@
         
         const createActivityTable = (role, title) => { 
             let tableHtml = `<h4>${title} (${activities[role].length} Total Aksi)</h4>`; 
-            if (activities[role].length === 0) { return tableHtml + `<p class="empty-state" style="padding: 1rem; text-align: center;">Belum ada aktivitas.</p>`; } 
+            if (activities[role].length === 0) return tableHtml + `<p class="empty-state">Belum ada aktivitas.</p>`;
             const sortedActivities = activities[role].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 15); 
-            tableHtml += `<div class="table-responsive"><table class="performance-table"><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`; 
+            tableHtml += `<div class="table-responsive"><table><thead><tr><th>Nama</th><th>Aksi</th><th>Waktu</th></tr></thead><tbody>`; 
             sortedActivities.forEach(act => { 
                 const userName = userMap[act.userId]?.name || 'User Dihapus'; 
                 const actionTime = new Date(act.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); 
                 tableHtml += `<tr><td data-label="Nama">${userName}</td><td data-label="Aksi">${act.action}</td><td data-label="Waktu">${actionTime}</td></tr>`; 
             }); 
-            tableHtml += '</tbody></table></div>'; 
-            return tableHtml; 
+            return tableHtml + '</tbody></table></div>'; 
         }; 
         elements.roleStats.innerHTML = `${createActivityTable('admin', 'Aktivitas Admin')}<hr>${createActivityTable('coordinator', 'Aktivitas Koordinator')}<hr>${createActivityTable('driver', 'Aktivitas Supir')}`; 
     }
@@ -1690,17 +1594,12 @@
       
       sortedUsers.forEach(user => {
         const tr = el('tr');
-        const nameCell = el('td', user.name || 'N/A', {'data-label': 'Nama Pengguna'});
-        const roleCell = el('td', user.role || 'N/A', {'data-label': 'Role'});
         const statusCell = el('td', '', {'data-label': 'Status Pengguna'});
-        
         if (user.role === 'super admin') {
           statusCell.textContent = 'Tidak dapat dinonaktifkan';
         } else {
           eligibleUsers++;
-          if (!user.locked) {
-            allLocked = false;
-          }
+          if (!user.locked) allLocked = false;
           const switchLabel = el('label', '', { class: 'switch' });
           const switchInput = el('input', '', { type: 'checkbox' });
           switchInput.checked = user.locked || false;
@@ -1708,11 +1607,11 @@
             const { error } = await supabase.from('users').update({ locked: e.target.checked }).eq('id', user.id);
             if (error) alert('Gagal mengubah status: ' + error.message);
           });
-          const slider = el('span', '', { class: 'slider' });
-          switchLabel.append(switchInput, slider);
+          switchLabel.append(switchInput, el('span', '', { class: 'slider' }));
           statusCell.appendChild(switchLabel);
         }
-        tr.append(nameCell, roleCell, statusCell);
+        tr.innerHTML = `<td data-label="Nama Pengguna">${user.name || 'N/A'}</td><td data-label="Role">${user.role || 'N/A'}</td>`;
+        tr.appendChild(statusCell);
         elements.lockdownUserList.appendChild(tr);
       });
       elements.massLockdownSwitch.checked = eligibleUsers > 0 && allLocked;
@@ -1724,15 +1623,9 @@
       if (confirm(`Anda yakin ingin ${action} semua pengguna (kecuali super admin)?`)) {
         const usersToUpdate = allUsers.filter(u => u.role !== 'super admin').map(u => ({ ...u, locked: lock }));
         const { error } = await supabase.from('users').upsert(usersToUpdate);
-        if (error) {
-            alert('Gagal memperbarui status pengguna: ' + error.message);
-        } else {
-            alert('Status semua pengguna berhasil diperbarui.');
-            loadUsers();
-        }
-      } else {
-        e.target.checked = !lock;
-      }
+        if (error) alert('Gagal memperbarui status pengguna: ' + error.message);
+        else alert('Status semua pengguna berhasil diperbarui.');
+      } else e.target.checked = !lock;
     });
 
     elements.logoutBtn.addEventListener('click', async () => { 
@@ -1743,55 +1636,26 @@
     const { jsPDF } = window.jspdf;
 
     function exportToExcel(data, filename, title) {
-        if (data.length === 0) {
-          alert("Tidak ada data untuk diekspor.");
-          return;
-        }
+        if (data.length === 0) { alert("Tidak ada data untuk diekspor."); return; }
         const worksheet = XLSX.utils.json_to_sheet(data, { origin: 'A2' });
         XLSX.utils.sheet_add_aoa(worksheet, [[title]], { origin: 'A1' });
-
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan');
         XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
     function exportToPDF(headers, body, filename, title, summary) {
-        if (body.length === 0) {
-          alert("Tidak ada data untuk diekspor.");
-          return;
-        }
+        if (body.length === 0) { alert("Tidak ada data untuk diekspor."); return; }
         const doc = new jsPDF();
-        
-        // Header
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Dahromo 1, RT.02, Segoroyoso, Pleret, Bantul, DIY 55791', 14, 30);
-        doc.setLineWidth(0.5);
-        doc.line(14, 35, 196, 35);
-
-        // Judul Laporan
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text(title, 105, 45, { align: 'center' });
-
-        // Ringkasan
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text(summary, 14, 55);
-
-        // Tabel
+        doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text('PT MAJU MUNDUR SYANTIQ', 14, 22);
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text('Dahromo 1, RT.02, Segoroyoso, Pleret, Bantul, DIY 55791', 14, 30);
+        doc.setLineWidth(0.5); doc.line(14, 35, 196, 35);
+        doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text(title, 105, 45, { align: 'center' });
+        doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.text(summary, 14, 55);
         doc.autoTable({ 
-            head: [headers], 
-            body: body, 
-            startY: 60,
-            theme: 'grid',
-            headStyles: { fillColor: [26, 34, 53] }, // --dark-slate-blue
-            styles: { fontSize: 9 },
+            head: [headers], body: body, startY: 60, theme: 'grid',
+            headStyles: { fillColor: [26, 34, 53] }, styles: { fontSize: 9 },
             didDrawPage: function (data) {
-                // Footer
                 const pageCount = doc.internal.getNumberOfPages();
                 doc.setFontSize(8);
                 const pageHeight = doc.internal.pageSize.height;
@@ -1799,103 +1663,56 @@
                 doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 196 - data.settings.margin.right, pageHeight - 10, { align: 'right' });
             }
         });
-
         doc.save(`${filename}_${new Date().toISOString().slice(0,10)}.pdf`);
     }
     
     function handleExport(format) {
       const reportType = elements.reportType.value;
       let dataForExcel, bodyForPDF, headers, filename, title, summary;
-      const statusMap = {
-          submitted: "Menunggu", approved: "Disetujui", delivering: "Dalam Perjalanan",
-          arriving_soon: "Hampir Sampai", arrived: "Selesai", rejected: "Ditolak",
-      };
-
+      const statusMap = { submitted: "Menunggu", approved: "Disetujui", delivering: "Dalam Perjalanan", arriving_soon: "Hampir Sampai", arrived: "Selesai", rejected: "Ditolak" };
       switch (reportType) {
         case 'trips':
-          const startDate = elements.startDate.value;
-          const endDate = elements.endDate.value;
-          if (!startDate || !endDate) {
-              alert("Silakan pilih rentang tanggal terlebih dahulu.");
-              return;
-          }
-          const filteredTrips = allTrips.filter(trip => {
-              const tripDate = trip.tanggal;
-              return tripDate >= startDate && tripDate <= endDate;
-          });
-          
-          dataForExcel = filteredTrips.map(t => ({
-            'Rute': `${routeCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.tujuan] || t.tujuan)}`, 
-            'Supir': t.driver_name || 'N/A',
-            'No. Kendaraan': t.vehicle_number || 'N/A', 
-            'Muatan': t.muatan || 'N/A',
-            'Uang Jalan': idr(t.uang_jalan),
-            'Tanggal': fmtDate(t.tanggal), 
-            'Status': statusMap[t.status] || t.status
-          }));
-          bodyForPDF = dataForExcel.map(Object.values);
-          headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
-          filename = 'Laporan_Perjalanan';
-          title = `Laporan Perjalanan`;
-          summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal Perjalanan: ${filteredTrips.length}`;
+          const startDate = elements.startDate.value, endDate = elements.endDate.value;
+          if (!startDate || !endDate) { alert("Silakan pilih rentang tanggal terlebih dahulu."); return; }
+          const filteredTrips = allTrips.filter(t => t.tanggal >= startDate && t.tanggal <= endDate);
+          dataForExcel = filteredTrips.map(t => ({ 'Rute': `${routeCodeMap[t.asal] || t.asal}, ${Array.isArray(t.tujuan) ? t.tujuan.map(tujuan => routeCodeMap[tujuan] || tujuan).join(', ') : (routeCodeMap[t.tujuan] || t.tujuan)}`, 'Supir': t.driver_name || 'N/A', 'No. Kendaraan': t.vehicle_number || 'N/A', 'Muatan': t.muatan || 'N/A', 'Uang Jalan': idr(t.uang_jalan), 'Tanggal': fmtDate(t.tanggal), 'Status': statusMap[t.status] || t.status }));
+          bodyForPDF = dataForExcel.map(Object.values); headers = ["Rute", "Supir", "No. Kendaraan", "Muatan", "Uang Jalan", "Tanggal", "Status"];
+          filename = 'Laporan_Perjalanan'; title = `Laporan Perjalanan`; summary = `Periode: ${fmtDate(startDate)} - ${fmtDate(endDate)}\nTotal Perjalanan: ${filteredTrips.length}`;
           break;
-
         case 'users':
-          dataForExcel = allUsers.map(u => ({
-            'Nama': u.name || '-', 'Role': u.role || '-',
-            'Login Terakhir': u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-',
-            'Status': u.online ? 'Online' : 'Offline'
-          }));
-          bodyForPDF = dataForExcel.map(Object.values);
-          headers = ["Nama", "Role", "Login Terakhir", "Status"];
-          filename = 'Laporan_Pengguna';
-          title = 'Laporan Data Pengguna';
-          summary = `Total Pengguna: ${allUsers.length}`;
+          dataForExcel = allUsers.map(u => ({ 'Nama': u.name || '-', 'Role': u.role || '-', 'Login Terakhir': u.last_login ? new Date(u.last_login).toLocaleString('id-ID') : '-', 'Status': u.online ? 'Online' : 'Offline' }));
+          bodyForPDF = dataForExcel.map(Object.values); headers = ["Nama", "Role", "Login Terakhir", "Status"];
+          filename = 'Laporan_Pengguna'; title = 'Laporan Data Pengguna'; summary = `Total Pengguna: ${allUsers.length}`;
           break;
         case 'routes':
           dataForExcel = allRoutes.map(r => ({ 'Kode': r.code, 'Alamat/Lokasi': r.address }));
-          bodyForPDF = dataForExcel.map(Object.values);
-          headers = ["Kode", "Alamat/Lokasi"];
-          filename = 'Laporan_Rute';
-          title = 'Laporan Data Rute';
-          summary = `Total Rute: ${allRoutes.length}`;
+          bodyForPDF = dataForExcel.map(Object.values); headers = ["Kode", "Alamat/Lokasi"];
+          filename = 'Laporan_Rute'; title = 'Laporan Data Rute'; summary = `Total Rute: ${allRoutes.length}`;
           break;
         case 'vehicles':
           dataForExcel = allVehicles.map(v => ({ 'No. Kendaraan': v.vehicle_number, 'Unit': v.unit, 'Kepemilikan': v.ownership }));
-          bodyForPDF = dataForExcel.map(Object.values);
-          headers = ["No. Kendaraan", "Unit", "Kepemilikan"];
-          filename = 'Laporan_Kendaraan';
-          title = 'Laporan Data Kendaraan';
-          summary = `Total Kendaraan: ${allVehicles.length}`;
+          bodyForPDF = dataForExcel.map(Object.values); headers = ["No. Kendaraan", "Unit", "Kepemilikan"];
+          filename = 'Laporan_Kendaraan'; title = 'Laporan Data Kendaraan'; summary = `Total Kendaraan: ${allVehicles.length}`;
           break;
       }
-      if (format === 'excel') { exportToExcel(dataForExcel, filename, title); } 
-      else if (format === 'pdf') { exportToPDF(headers, bodyForPDF, filename, title, summary); }
+      if (format === 'excel') exportToExcel(dataForExcel, filename, title); 
+      else if (format === 'pdf') exportToPDF(headers, bodyForPDF, filename, title, summary);
     }
     
     async function handleBackup() {
         console.log("Memulai proses backup...");
         const dataToBackup = {};
         try {
-            const { data: users } = await supabase.from('users').select('*');
-            dataToBackup.users = users;
-            const { data: trips } = await supabase.from('trips').select('*');
-            dataToBackup.trips = trips;
-            const { data: routes } = await supabase.from('routes').select('*');
-            dataToBackup.routes = routes;
-            const { data: vehicles } = await supabase.from('vehicles').select('*');
-            dataToBackup.vehicles = vehicles;
-
+            const { data: users } = await supabase.from('users').select('*'); dataToBackup.users = users;
+            const { data: trips } = await supabase.from('trips').select('*'); dataToBackup.trips = trips;
+            const { data: routes } = await supabase.from('routes').select('*'); dataToBackup.routes = routes;
+            const { data: vehicles } = await supabase.from('vehicles').select('*'); dataToBackup.vehicles = vehicles;
             const jsonString = JSON.stringify(dataToBackup, null, 2);
             const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const date = new Date().toISOString().slice(0, 10);
-            a.download = `backup-sla-trucking-${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const a = document.createElement('a'); a.href = url;
+            a.download = `backup-sla-trucking-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
             alert('Backup berhasil diunduh!');
         } catch (error) {
@@ -1907,29 +1724,21 @@
     async function handleRestore() {
         const file = elements.restoreFileInput.files[0];
         if (!file) { alert('Silakan pilih file backup terlebih dahulu.'); return; }
-        if (!confirm('PERINGATAN!\n\nAnda akan menimpa SEMUA data yang ada dengan data dari file ini. Aksi ini tidak dapat dibatalkan.\n\nApakah Anda benar-benar yakin ingin melanjutkan?')) { return; }
-        if (!confirm('KONFIRMASI AKHIR!\n\nIni adalah kesempatan terakhir untuk membatalkan. Setelah ini, data lama akan hilang selamanya.\n\nLanjutkan pemulihan data?')) { return; }
+        if (!confirm('PERINGATAN!\n\nAnda akan menimpa SEMUA data yang ada dengan data dari file ini. Aksi ini tidak dapat dibatalkan.\n\nApakah Anda benar-benar yakin ingin melanjutkan?')) return;
+        if (!confirm('KONFIRMASI AKHIR!\n\nIni adalah kesempatan terakhir untuk membatalkan. Setelah ini, data lama akan hilang selamanya.\n\nLanjutkan pemulihan data?')) return;
         const reader = new FileReader();
         reader.onload = async (event) => {
             try {
                 const data = JSON.parse(event.target.result);
-                elements.restoreStatus.style.display = 'block';
-                elements.restoreStatus.textContent = 'Memulihkan data... Harap jangan tutup halaman ini.';
-                
-                if (!data.users || !data.trips || !data.routes || !data.vehicles) {
-                    throw new Error("File backup tidak valid atau rusak (salah satu tabel utama hilang).");
-                }
-
-                // Hapus data lama dan masukkan data baru
+                elements.restoreStatus.style.display = 'block'; elements.restoreStatus.textContent = 'Memulihkan data... Harap jangan tutup halaman ini.';
+                if (!data.users || !data.trips || !data.routes || !data.vehicles) throw new Error("File backup tidak valid atau rusak.");
                 await supabase.from('trips').delete().neq('id', 0);
                 await supabase.from('vehicles').delete().neq('id', 0);
                 await supabase.from('routes').delete().neq('id', 0);
-                // Untuk users, lebih baik update/upsert daripada hapus total
                 await supabase.from('users').upsert(data.users);
                 await supabase.from('trips').insert(data.trips);
                 await supabase.from('vehicles').insert(data.vehicles);
                 await supabase.from('routes').insert(data.routes);
-
                 elements.restoreStatus.textContent = '✔️ Data berhasil dipulihkan. Halaman akan dimuat ulang.';
                 alert('Data berhasil dipulihkan. Sistem akan dimuat ulang sekarang.');
                 setTimeout(() => window.location.reload(), 2000);
@@ -1945,17 +1754,14 @@
 
     elements.downloadBackupBtn.addEventListener('click', handleBackup);
     elements.restoreBackupBtn.addEventListener('click', handleRestore);
-    elements.reportType.addEventListener('change', (e) => {
-        elements.dateFilterContainer.style.display = (e.target.value === 'trips') ? 'grid' : 'none';
-    });
+    elements.reportType.addEventListener('change', (e) => { elements.dateFilterContainer.style.display = (e.target.value === 'trips') ? 'grid' : 'none'; });
     elements.exportExcelBtn.addEventListener('click', () => handleExport('excel'));
     elements.exportPdfBtn.addEventListener('click', () => handleExport('pdf'));
 
-    // Inisialisasi halaman
     (async () => {
         await checkUserSession();
         await loadInitialData();
-      setupRealtimeListeners();
+        setupRealtimeListeners();
     })();
   </script>
 </body>
