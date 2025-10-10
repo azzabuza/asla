@@ -75,7 +75,7 @@
         </div>
         <div class="sidebar-footer">
           <button id="logoutBtn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-          <p>V.3.1.0</p>
+          <p>V.3.2.0</p>
         </div>
       </div>
     </nav>
@@ -774,6 +774,25 @@
     const activityRowsPerPage = 5;
     const rowsPerPage = 20;
 
+    // =========================================================================
+    // FUNGSI INTI: PEMBARUAN UI SECARA INSTAN
+    // =========================================================================
+    function refreshAllViews() {
+        console.log("🔄 Merender ulang semua tampilan...");
+        displayTrips(currentPage);
+        displayUsers(currentUserPage);
+        displayRoutes(currentRoutePage);
+        displayVehicles(currentVehiclePage);
+        displayFinance(currentFinancePage);
+        displayRecentActivity(currentActivityPage);
+        loadDashboardStats();
+        loadRoleStats();
+        displayLockdownUsers();
+        if (currentUserData.role === 'super admin') {
+            displayDeletionRequests();
+        }
+    }
+
     function setupNavigation() {
         elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -906,18 +925,29 @@
     }
 
     async function loadInitialData() {
-        await Promise.all([
-            loadRoutes(),
-            loadVehicles(),
-            loadUsers(),
-            loadTrips(),
-            loadDeletionRequests()
+        // Gabungkan semua pengambilan data
+        const [routesRes, vehiclesRes, usersRes, tripsRes, requestsRes] = await Promise.all([
+            supabase.from('routes').select('*'),
+            supabase.from('vehicles').select('*'),
+            supabase.from('users').select('*'),
+            supabase.from('trips').select('*').order('created_at', { ascending: false }),
+            currentUserData.role === 'super admin' ? supabase.from('deletion_requests').select(`*, requester:requested_by ( name )`) : Promise.resolve({ data: [] })
         ]);
+
+        allRoutes = routesRes.data || [];
+        allVehicles = vehiclesRes.data || [];
+        allUsers = usersRes.data || [];
+        allTrips = tripsRes.data || [];
+        allDeletionRequests = (requestsRes.data || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Update route code map
+        routeCodeMap = {};
+        allRoutes.forEach(route => { routeCodeMap[route.address] = route.code; });
         
-        loadDashboardStats();
-        loadRoleStats();
-        displayLockdownUsers();
+        // Render semua tampilan untuk pertama kali
+        refreshAllViews();
         
+        // Pasang event listener setelah data awal dimuat
         elements.filterRole.onchange = () => displayUsers(1);
         elements.searchName.oninput = () => displayUsers(1);
         elements.filterTripStatus.onchange = () => displayTrips(1);
@@ -932,69 +962,60 @@
         if (__realtimeSubscribed) return;
         __realtimeSubscribed = true;
 
-        const subscribeTable = (tableName, loaderFn) => {
-            try {
-                supabase.channel(`public:${tableName}`)
-                    .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
-                        console.log(`[Realtime][${tableName}]`, payload);
-                        loaderFn();
-                    })
-                    .subscribe();
-            } catch (err) {
-                console.error(`Gagal subscribe realtime ${tableName}:`, err);
-            }
+        const handleRealtimeChange = (payload, loader) => {
+            console.log(`[Realtime] Perubahan terdeteksi:`, payload);
+            loader();
         };
 
-        subscribeTable('trips', loadTrips);
-        subscribeTable('users', loadUsers);
-        subscribeTable('routes', loadRoutes);
-        subscribeTable('vehicles', loadVehicles);
-        subscribeTable('deletion_requests', loadDeletionRequests);
+        supabase.channel('public-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, (p) => handleRealtimeChange(p, loadTrips))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (p) => handleRealtimeChange(p, loadUsers))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'routes' }, (p) => handleRealtimeChange(p, loadRoutes))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, (p) => handleRealtimeChange(p, loadVehicles))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'deletion_requests' }, (p) => handleRealtimeChange(p, loadDeletionRequests))
+            .subscribe();
 
-        console.info('✅ Realtime listeners aktif.');
+        console.info('✅ Realtime listeners aktif untuk semua tabel.');
     }
     
+    // Fungsi loader sekarang hanya mengambil data dan merender ulang.
     async function loadDeletionRequests() {
         if (currentUserData.role !== 'super admin') return;
         const { data, error } = await supabase.from('deletion_requests').select(`*, requester:requested_by ( name )`);
-        if (error) {
-            console.error('Gagal memuat permintaan penghapusan:', error);
-            return;
+        if (!error) {
+            allDeletionRequests = data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            displayDeletionRequests();
         }
-        allDeletionRequests = data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        displayDeletionRequests();
     }
-    
     async function loadRoutes() {
         const { data, error } = await supabase.from('routes').select('*');
-        if (error) { console.error('Gagal memuat rute:', error); return; }
-        allRoutes = data;
-        routeCodeMap = {};
-        allRoutes.forEach(route => { routeCodeMap[route.address] = route.code; });
-        displayRoutes(1);
+        if (!error) {
+            allRoutes = data;
+            routeCodeMap = {};
+            allRoutes.forEach(route => { routeCodeMap[route.address] = route.code; });
+            displayRoutes(currentRoutePage);
+        }
     }
-
     async function loadVehicles() {
         const { data, error } = await supabase.from('vehicles').select('*');
-        if (error) { console.error('Gagal memuat kendaraan:', error); return; }
-        allVehicles = data;
-        displayVehicles(1);
+        if (!error) {
+            allVehicles = data;
+            displayVehicles(currentVehiclePage);
+        }
     }
-
     async function loadUsers() {
         const { data, error } = await supabase.from('users').select('*');
-        if (error) { console.error('Gagal memuat pengguna:', error); return; }
-        allUsers = data;
-        displayUsers(1);
-        displayLockdownUsers();
+        if (!error) {
+            allUsers = data;
+            refreshAllViews(); // User data affects many parts, so refresh all
+        }
     }
-
     async function loadTrips() {
         const { data, error } = await supabase.from('trips').select('*').order('created_at', { ascending: false });
-        if (error) { console.error('Gagal memuat perjalanan:', error); return; }
-        allTrips = data;
-        displayTrips(1);
-        displayFinance(1);
+        if (!error) {
+            allTrips = data;
+            refreshAllViews(); // Trip data affects many parts, so refresh all
+        }
     }
 
     function displayRecentActivity(page) {
@@ -1062,8 +1083,6 @@
         elements.tripsThisMonth.textContent = thisMonthCount;
         elements.tripsLastMonth.textContent = lastMonthCount;
         elements.activeVehiclesToday.textContent = activeVehiclesToday.size;
-        
-        displayRecentActivity(1);
     }
 
     function openInvoiceModal(trip) {
@@ -1138,7 +1157,7 @@
       });
       const start = (currentPage - 1) * rowsPerPage;
       const paginatedTrips = filteredTrips.slice(start, start + rowsPerPage);
-      if (paginatedTrips.length === 0 && filteredTrips.length > 0) { currentPage = Math.ceil(filteredTrips.length / rowsPerPage); return displayTrips(currentPage); }
+      if (paginatedTrips.length === 0 && filteredTrips.length > 0 && currentPage > 1) { currentPage = Math.ceil(filteredTrips.length / rowsPerPage); return displayTrips(currentPage); }
       elements.paginationControls.style.display = filteredTrips.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedTrips.length === 0) {
         elements.tripList.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada perjalanan ditemukan.</td></tr>';
@@ -1151,10 +1170,8 @@
             const actionsCell = el('td', '', {'data-label': 'Aksi'});
             const actionsContainer = el('div', '', { class: 'trip-actions', style: 'justify-content: flex-end;' });
             if (trip.status === 'submitted') {
-                const approveBtn = el('button', 'Setujui', { class: 'btn-sm success' });
-                const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger' });
-                approveBtn.onclick = () => updateTripStatus(trip.id, 'approved', { approved_at: new Date().toISOString(), approved_by: currentUser.id, is_read_coor: false });
-                rejectBtn.onclick = () => updateTripStatus(trip.id, 'rejected', { rejected_at: new Date().toISOString(), rejected_by: currentUser.id, is_read_coor: false });
+                const approveBtn = el('button', 'Setujui', { class: 'btn-sm success', 'data-trip-id': trip.id, 'data-action': 'approve' });
+                const rejectBtn = el('button', 'Tolak', { class: 'btn-sm danger', 'data-trip-id': trip.id, 'data-action': 'reject' });
                 actionsContainer.append(approveBtn, rejectBtn);
             }
             if (['approved', 'delivering', 'arriving_soon', 'arrived'].includes(trip.status)) {
@@ -1163,8 +1180,7 @@
                 actionsContainer.append(invButton);
             }
             if (currentUserData.role === 'super admin') {
-                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm btn-delete-trip', 'data-trip-id': trip.id, 'data-trip-info': ruteDisplay });
-                deleteBtn.onclick = () => deleteTrip(trip.id, ruteDisplay);
+                const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm', 'data-trip-id': trip.id, 'data-trip-info': ruteDisplay, 'data-action': 'delete-trip' });
                 actionsContainer.appendChild(deleteBtn);
             }
             actionsCell.appendChild(actionsContainer);
@@ -1176,21 +1192,36 @@
         });
       }
       const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
-      elements.pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+      elements.pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages || 1}`;
       elements.prevBtn.disabled = currentPage === 1;
-      elements.nextBtn.disabled = currentPage === totalPages;
+      elements.nextBtn.disabled = currentPage === totalPages || totalPages === 0;
     }
 
-    async function updateTripStatus(tripId, status, additionalData = {}) {
-        const { error } = await supabase.from('trips').update({ status, ...additionalData }).eq('id', tripId);
-        if (error) alert(`Gagal memperbarui status: ${error.message}`);
+    async function updateTripStatus(tripId, status) {
+        let additionalData = {};
+        if (status === 'approved') additionalData = { approved_at: new Date().toISOString(), approved_by: currentUser.id, is_read_coor: false };
+        if (status === 'rejected') additionalData = { rejected_at: new Date().toISOString(), rejected_by: currentUser.id, is_read_coor: false };
+
+        const { data, error } = await supabase.from('trips').update({ status, ...additionalData }).eq('id', tripId).select().single();
+        if (error) {
+            alert(`Gagal memperbarui status: ${error.message}`);
+        } else {
+            const index = allTrips.findIndex(t => t.id === tripId);
+            if (index !== -1) allTrips[index] = data;
+            refreshAllViews();
+        }
     }
 
     async function deleteTrip(tripId, tripInfo) {
         if (confirm(`Yakin ingin hapus perjalanan:\n${tripInfo}?`)) {
             const { error } = await supabase.from('trips').delete().eq('id', tripId);
-            if (error) alert(`Gagal menghapus perjalanan: ${error.message}`);
-            else alert('Perjalanan berhasil dihapus.');
+            if (error) {
+                alert(`Gagal menghapus perjalanan: ${error.message}`);
+            } else {
+                alert('Perjalanan berhasil dihapus.');
+                allTrips = allTrips.filter(t => t.id !== tripId);
+                refreshAllViews();
+            }
         }
     }
     
@@ -1199,6 +1230,18 @@
         const filtered = allTrips.filter(t => (elements.filterTripStatus.value === 'all' || t.status === elements.filterTripStatus.value));
         const totalPages = Math.ceil(filtered.length / rowsPerPage); 
         if (currentPage < totalPages) displayTrips(currentPage + 1); 
+    });
+
+    elements.tripList.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-action]');
+        if (!button) return;
+
+        const action = button.dataset.action;
+        if (action === 'approve' || action === 'reject') {
+            updateTripStatus(parseInt(button.dataset.tripId), action);
+        } else if (action === 'delete-trip') {
+            deleteTrip(parseInt(button.dataset.tripId), button.dataset.tripInfo);
+        }
     });
 
     function displayUsers(page) {
@@ -1213,7 +1256,7 @@
       });
       const start = (currentUserPage - 1) * rowsPerPage;
       const paginatedUsers = filteredUsers.slice(start, start + rowsPerPage);
-      if (paginatedUsers.length === 0 && filteredUsers.length > 0) { currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage); return displayUsers(currentUserPage); }
+      if (paginatedUsers.length === 0 && filteredUsers.length > 0 && currentUserPage > 1) { currentUserPage = Math.ceil(filteredUsers.length / rowsPerPage); return displayUsers(currentUserPage); }
       elements.userPaginationControls.style.display = filteredUsers.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedUsers.length === 0) {
         elements.userList.innerHTML = '<tr><td colspan="8">Tidak ada user ditemukan.</td></tr>';
@@ -1256,12 +1299,16 @@
         });
       }
       const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
-      elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
+      elements.userPageInfo.textContent = `Halaman ${currentUserPage} dari ${totalPages || 1}`;
       elements.prevUserBtn.disabled = currentUserPage === 1;
       elements.nextUserBtn.disabled = totalPages === 0 || currentUserPage === totalPages;
     }
     elements.prevUserBtn.addEventListener('click', () => { if (currentUserPage > 1) displayUsers(currentUserPage - 1); });
-    elements.nextUserBtn.addEventListener('click', () => { const totalPages = Math.ceil(allUsers.length / rowsPerPage); if (currentUserPage < totalPages) displayUsers(currentUserPage + 1); });
+    elements.nextUserBtn.addEventListener('click', () => { 
+        const filtered = allUsers.filter(u => (elements.filterRole.value === 'all' || u.role === elements.filterRole.value));
+        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        if (currentUserPage < totalPages) displayUsers(currentUserPage + 1); 
+    });
     
     // =========================================================================
     // PUSAT LOGIKA PERMINTAAN HAPUS (BARU & TERPADU)
@@ -1270,21 +1317,16 @@
     async function createDeletionRequest(itemId, itemType, itemInfo) {
         if (!confirm(`Anda akan meminta Super Admin untuk menghapus ${itemType}: ${itemInfo}.\nLanjutkan?`)) return;
         
-        const payload = {
-            requested_by: currentUser.id,
-            item_type: itemType,
-            item_id: itemId,
-            item_info: itemInfo,
-            status: 'pending'
-        };
-
-        const { error } = await supabase.from('deletion_requests').insert(payload);
+        const { data, error } = await supabase.from('deletion_requests').insert({
+            requested_by: currentUser.id, item_type: itemType, item_id: itemId, item_info: itemInfo
+        }).select(`*, requester:requested_by ( name )`).single();
 
         if (error) {
             alert('Gagal mengirim permintaan: ' + error.message);
         } else {
             alert('Permintaan penghapusan telah dikirim ke Super Admin untuk ditinjau.');
-            // Tidak perlu load ulang manual jika realtime aktif
+            allDeletionRequests.unshift(data);
+            refreshAllViews();
         }
     }
 
@@ -1296,10 +1338,15 @@
             if (itemType === 'user') {
                 const { error } = await supabase.functions.invoke('delete-user', { body: { uid: itemId } });
                 deleteError = error;
+                if (!error) allUsers = allUsers.filter(u => u.id !== itemId);
             } else {
                 const tableName = itemType === 'route' ? 'routes' : 'vehicles';
                 const { error } = await supabase.from(tableName).delete().eq('id', itemId);
                 deleteError = error;
+                if (!error) {
+                    if (itemType === 'route') allRoutes = allRoutes.filter(r => r.id != itemId);
+                    else if (itemType === 'vehicle') allVehicles = allVehicles.filter(v => v.id != itemId);
+                }
             }
 
             if (deleteError) {
@@ -1309,12 +1356,15 @@
         }
         
         const newStatus = (action === 'approve') ? 'approved' : 'rejected';
-        const { error: updateError } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId);
+        const { data, error } = await supabase.from('deletion_requests').update({ status: newStatus }).eq('id', requestId).select(`*, requester:requested_by ( name )`).single();
         
-        if (updateError) {
-            alert('Gagal memperbarui status permintaan: ' + updateError.message);
+        if (error) {
+            alert('Gagal memperbarui status permintaan: ' + error.message);
         } else {
             alert(`Permintaan telah berhasil di-${newStatus === 'approved' ? 'setujui' : 'tolak'}.`);
+            const index = allDeletionRequests.findIndex(req => req.id == requestId);
+            if (index !== -1) allDeletionRequests[index] = data;
+            refreshAllViews();
         }
     }
 
@@ -1328,11 +1378,8 @@
         allDeletionRequests.forEach(req => {
             const tr = el('tr');
             const requesterName = req.requester ? req.requester.name : 'Admin Dihapus';
-            let itemTypeDisplay = 'Tidak Dikenal';
-            if (req.item_type === 'user') itemTypeDisplay = 'Pengguna';
-            else if (req.item_type === 'route') itemTypeDisplay = 'Rute';
-            else if (req.item_type === 'vehicle') itemTypeDisplay = 'Kendaraan';
-            
+            let itemTypeDisplay = req.item_type.charAt(0).toUpperCase() + req.item_type.slice(1);
+
             let actionsHTML = '';
             if (req.status === 'pending') {
                 actionsHTML = `
@@ -1351,7 +1398,6 @@
                 <td data-label="Status">${req.status}</td>
                 <td data-label="Aksi">${actionsHTML}</td>
             `;
-            // Simpan data di elemen tr untuk diakses nanti
             tr.dataset.itemType = req.item_type;
             tr.dataset.itemId = req.item_id;
             tr.dataset.itemInfo = req.item_info;
@@ -1369,23 +1415,18 @@
         handleDeletionRequest(reqId, action, itemType, itemId, itemInfo);
     });
     
-    // Event listener terpusat untuk semua tombol Minta Hapus dan Hapus Langsung
     document.querySelector('.content-container').addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
-        if (!btn) return;
+        if (!btn || !btn.dataset.itemId) return;
 
         const { itemId, itemType, itemInfo } = btn.dataset;
 
         if (btn.classList.contains('request-deletion-btn')) {
             createDeletionRequest(itemId, itemType, itemInfo);
-        } else if (btn.classList.contains('delete-btn')) { // Tombol hapus langsung untuk Super Admin
+        } else if (btn.classList.contains('delete-btn')) {
             handleDeletionRequest(null, 'approve', itemType, itemId, itemInfo);
         }
     });
-
-    // =========================================================================
-    // MODIFIKASI: displayRoutes & displayVehicles (untuk disesuaikan dengan sistem baru)
-    // =========================================================================
 
     function displayRoutes(page) {
       elements.routeList.innerHTML = '';
@@ -1393,7 +1434,7 @@
       const searchTerm = elements.searchRoute.value.toLowerCase();
       const filteredRoutes = allRoutes.filter(route => !searchTerm || (route.code || '').toLowerCase().includes(searchTerm) || (route.address || '').toLowerCase().includes(searchTerm));
       const paginatedRoutes = filteredRoutes.slice((currentRoutePage - 1) * rowsPerPage, currentRoutePage * rowsPerPage);
-      if (paginatedRoutes.length === 0 && filteredRoutes.length > 0) { currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage); return displayRoutes(currentRoutePage); }
+      if (paginatedRoutes.length === 0 && filteredRoutes.length > 0 && currentRoutePage > 1) { currentRoutePage = Math.ceil(filteredRoutes.length / rowsPerPage); return displayRoutes(currentRoutePage); }
       elements.routePaginationControls.style.display = filteredRoutes.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedRoutes.length === 0) {
         elements.routeList.innerHTML = '<tr><td colspan="3">Tidak ada rute ditemukan.</td></tr>';
@@ -1406,7 +1447,7 @@
           if (currentUserData.role === 'super admin') {
               const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': route.id, 'data-item-type': 'route', 'data-item-info': itemInfo });
               actionsCell.appendChild(deleteBtn);
-          } else { // Role is 'admin'
+          } else {
               const existingRequest = allDeletionRequests.find(req => req.item_type === 'route' && req.item_id == route.id && req.status === 'pending');
               if (existingRequest) {
                   const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
@@ -1423,7 +1464,7 @@
         });
       }
       const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage);
-      elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages}`;
+      elements.routePageInfo.textContent = `Halaman ${currentRoutePage} dari ${totalPages || 1}`;
       elements.prevRouteBtn.disabled = currentRoutePage === 1;
       elements.nextRouteBtn.disabled = totalPages === 0 || currentRoutePage === totalPages;
     }
@@ -1440,7 +1481,7 @@
       const searchTerm = elements.searchVehicle.value.toLowerCase();
       const filteredVehicles = allVehicles.filter(v => !searchTerm || (v.vehicle_number || '').toLowerCase().includes(searchTerm) || (v.unit || '').toLowerCase().includes(searchTerm));
       const paginatedVehicles = filteredVehicles.slice((currentVehiclePage - 1) * rowsPerPage, currentVehiclePage * rowsPerPage);
-      if (paginatedVehicles.length === 0 && filteredVehicles.length > 0) { currentVehiclePage = Math.ceil(filteredVehicles.length / rowsPerPage); return displayVehicles(currentVehiclePage); }
+      if (paginatedVehicles.length === 0 && filteredVehicles.length > 0 && currentVehiclePage > 1) { currentVehiclePage = Math.ceil(filteredVehicles.length / rowsPerPage); return displayVehicles(currentVehiclePage); }
       elements.vehiclePaginationControls.style.display = filteredVehicles.length > rowsPerPage ? 'flex' : 'none';
       if (paginatedVehicles.length === 0) {
         elements.vehicleList.innerHTML = '<tr><td colspan="4">Tidak ada kendaraan ditemukan.</td></tr>';
@@ -1453,7 +1494,7 @@
           if (currentUserData.role === 'super admin') {
               const deleteBtn = el('button', '<i class="fa-solid fa-trash"></i> Hapus', { class: 'btn-sm danger delete-btn', 'data-item-id': vehicle.id, 'data-item-type': 'vehicle', 'data-item-info': itemInfo });
               actionsCell.appendChild(deleteBtn);
-          } else { // Role is 'admin'
+          } else {
               const existingRequest = allDeletionRequests.find(req => req.item_type === 'vehicle' && req.item_id == vehicle.id && req.status === 'pending');
               if (existingRequest) {
                   const requestedBtn = el('button', '<i class="fa-solid fa-clock"></i> Diminta', { class: 'btn-sm', disabled: true, title: 'Permintaan sudah dikirim' });
@@ -1470,7 +1511,7 @@
         });
       }
       const totalPages = Math.ceil(filteredVehicles.length / rowsPerPage);
-      elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages}`;
+      elements.vehiclePageInfo.textContent = `Halaman ${currentVehiclePage} dari ${totalPages || 1}`;
       elements.prevVehicleBtn.disabled = currentVehiclePage === 1;
       elements.nextVehicleBtn.disabled = totalPages === 0 || currentVehiclePage === totalPages;
     }
@@ -1505,7 +1546,7 @@
         });
       }
       const totalPages = Math.ceil(filteredTrips.length / rowsPerPage);
-      elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages}`;
+      elements.financePageInfo.textContent = `Halaman ${currentFinancePage} dari ${totalPages || 1}`;
       elements.prevFinanceBtn.disabled = currentFinancePage === 1;
       elements.nextFinanceBtn.disabled = totalPages === 0 || currentFinancePage === totalPages;
     }
@@ -1522,11 +1563,14 @@
         const unit = document.getElementById('vehicleUnit').value; 
         const ownership = document.getElementById('vehicleOwnership').value;
         elements.addVehicleStatus.style.display = 'block'; elements.addVehicleStatus.textContent = 'Menambahkan...'; 
-        const { error } = await supabase.from('vehicles').insert([{ vehicle_number: vehicleNumber, unit, ownership }]);
-        if (error) elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
-        else {
+        const { data, error } = await supabase.from('vehicles').insert([{ vehicle_number: vehicleNumber, unit, ownership }]).select().single();
+        if (error) {
+            elements.addVehicleStatus.textContent = 'Gagal: ' + error.message;
+        } else {
             elements.addVehicleStatus.textContent = '✔️ Kendaraan berhasil ditambahkan.'; 
             elements.addVehicleForm.reset(); 
+            allVehicles.push(data);
+            refreshAllViews();
             setTimeout(() => { elements.addVehicleStatus.style.display = 'none'; }, 3000);
         }
     });
@@ -1536,11 +1580,14 @@
         const code = document.getElementById('routeCode').value.toUpperCase(); 
         const address = document.getElementById('routeAddress').value; 
         elements.addRouteStatus.style.display = 'block'; elements.addRouteStatus.textContent = 'Menambahkan...';
-        const { error } = await supabase.from('routes').insert([{ code, address }]);
-        if (error) elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
-        else {
+        const { data, error } = await supabase.from('routes').insert([{ code, address }]).select().single();
+        if (error) {
+            elements.addRouteStatus.textContent = 'Gagal: ' + error.message; 
+        } else {
             elements.addRouteStatus.textContent = '✔️ Rute berhasil ditambahkan.'; 
             elements.addRouteForm.reset(); 
+            allRoutes.push(data);
+            refreshAllViews();
             setTimeout(() => { elements.addRouteStatus.style.display = 'none'; }, 3000); 
         }
     });
@@ -1556,10 +1603,13 @@
         const gender = document.getElementById('newUserGender').value;
         const employeeStatus = document.getElementById('newUserStatus').value;
         const { data, error } = await supabase.functions.invoke('create-user', { body: { email, password, name, role, nik, gender, employeeStatus } });
-        if (error) elements.addUserStatus.textContent = 'Gagal: ' + (error.context?.msg || error.message);
-        else {
+        if (error) {
+            elements.addUserStatus.textContent = 'Gagal: ' + (error.context?.msg || error.message);
+        } else {
             elements.addUserStatus.textContent = `✔️ User ${name} berhasil ditambahkan.`;
             elements.addUserForm.reset();
+            // User baru mungkin tidak langsung terkirim lewat realtime, jadi kita muat ulang data user
+            await loadUsers();
             setTimeout(() => { elements.addUserStatus.style.display = 'none'; }, 3000);
         }
     });
@@ -1621,8 +1671,16 @@
           const switchInput = el('input', '', { type: 'checkbox' });
           switchInput.checked = user.locked || false;
           switchInput.addEventListener('change', async (e) => {
-            const { error } = await supabase.from('users').update({ locked: e.target.checked }).eq('id', user.id);
-            if (error) alert('Gagal mengubah status: ' + error.message);
+            const isLocked = e.target.checked;
+            const { data, error } = await supabase.from('users').update({ locked: isLocked }).eq('id', user.id).select().single();
+            if (error) {
+                alert('Gagal mengubah status: ' + error.message);
+                e.target.checked = !isLocked; // Revert UI on error
+            } else {
+                const index = allUsers.findIndex(u => u.id === user.id);
+                if (index !== -1) allUsers[index] = data;
+                refreshAllViews();
+            }
           });
           switchLabel.append(switchInput, el('span', '', { class: 'slider' }));
           statusCell.appendChild(switchLabel);
@@ -1638,11 +1696,21 @@
       const lock = e.target.checked;
       const action = lock ? 'menonaktifkan' : 'mengaktifkan';
       if (confirm(`Anda yakin ingin ${action} semua pengguna (kecuali super admin)?`)) {
-        const usersToUpdate = allUsers.filter(u => u.role !== 'super admin').map(u => ({ ...u, locked: lock }));
-        const { error } = await supabase.from('users').upsert(usersToUpdate);
-        if (error) alert('Gagal memperbarui status pengguna: ' + error.message);
-        else alert('Status semua pengguna berhasil diperbarui.');
-      } else e.target.checked = !lock;
+        const usersToUpdate = allUsers.filter(u => u.role !== 'super admin').map(u => u.id);
+        const { data, error } = await supabase.from('users').update({ locked: lock }).in('id', usersToUpdate).select();
+        if (error) {
+            alert('Gagal memperbarui status pengguna: ' + error.message);
+        } else {
+            alert('Status semua pengguna berhasil diperbarui.');
+            data.forEach(updatedUser => {
+                const index = allUsers.findIndex(u => u.id === updatedUser.id);
+                if (index !== -1) allUsers[index] = updatedUser;
+            });
+            refreshAllViews();
+        }
+      } else {
+        e.target.checked = !lock;
+      }
     });
 
     elements.logoutBtn.addEventListener('click', async () => { 
