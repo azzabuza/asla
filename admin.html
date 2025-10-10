@@ -1256,13 +1256,13 @@
           let actionButtonHTML = '';
           if (!isCurrentUser && !isTargetSuperAdmin) {
               if (currentUserData.role === 'super admin') {
-                  actionButtonHTML = `<button class="delete-user-btn" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
+                  actionButtonHTML = `<button class="delete-user-btn btn-sm danger" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-trash"></i> Hapus</button>`;
               } else if (currentUserData.role === 'admin') {
                   const existingRequest = allDeletionRequests.find(req => req.item_id === u.id && req.item_type === 'user' && req.status === 'pending');
                   if (existingRequest) {
-                      actionButtonHTML = `<button class="request-deletion-btn" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
+                      actionButtonHTML = `<button class="btn-sm" disabled title="Permintaan sudah dikirim"><i class="fa-solid fa-clock"></i> Diminta</button>`;
                   } else {
-                      actionButtonHTML = `<button class="request-deletion-btn" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-user-slash"></i> Minta Hapus</button>`;
+                      actionButtonHTML = `<button class="request-deletion-btn btn-sm warm" data-uid="${u.id}" data-name="${u.name || ''}"><i class="fa-solid fa-user-slash"></i> Minta Hapus</button>`;
                   }
               }
           }
